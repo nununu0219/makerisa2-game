@@ -236,7 +236,6 @@
 <div class="wrap" id="app"></div>
 
 <script>
-// --- 地域データベース（全国8箇所のおもしろい大人たち） ---
 const REGIONS = [
   {
     name: "鹿児島県さつま町",
@@ -311,12 +310,12 @@ let S = {
   dad: "",
   mom: "",
   
-  // 完全分岐管理フラグ
+  // 完全分岐追跡フラグ
   jukuState: "NONE",        // SAPIX_ACTIVE, SAPIX_QUIT, NO_JUKU, CREATIVE
   middleRoute: "NONE",      // ELITE, IKKEN_FAIL, PUBLIC_JHS
-  highRoute: "NONE",        // LOCAL_RYUGAKU (越境), JINNAI (高校で飛び込み), JUKEN (受験専念), TSUSHIN (通信制)
+  highRoute: "NONE",        // LOCAL_RYUGAKU, JINNAI, JUKEN, TSUSHIN
   univRoute: "NONE",        // TODAI, PRACTICE, NO_UNIV, NORMAL_UNIV, GLOBAL_UNIV
-  joinedYumeCan: false,     // 「夢canクリエイター」参加フラグ
+  joinedYumeCan: false,
   localReaction: "NONE",    // BOND_DEEP, BOND_SHALLOW, BOND_NONE
   assignedRegion: null,
   schoolLabel: "未就学",
@@ -329,6 +328,7 @@ let S = {
   friends: 5,
   studyDrive: 10,
   title: "産声をあげた子",
+  finalEndingDesc: "",      // 自動判定された最終結末テキスト
   logs: [],
   activeEvent: null,
   autoPlay: false,
@@ -706,7 +706,6 @@ function getStoryEvent(age, seasonIdx) {
         ]
       };
     } else {
-      // 公立中組には、高校選びの段階で地域未来留学の道が確実に登場！
       return {
         type: "decision",
         badge: "15歳・人生の分岐点：高校進路の選択",
@@ -868,7 +867,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 19歳・春（大2）：★【新イベント】大学公認団体「夢canクリエイター」の甘い罠 ---
+  // --- 19歳・春（大2）：夢canクリエイターの甘い罠 ---
   if (age === 19 && seasonIdx === 0 && (S.univRoute === "NORMAL_UNIV" || S.univRoute === "PRACTICE")) {
     return {
       type: "decision",
@@ -897,7 +896,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 19歳・秋（大2）：★【新イベント】「夢can'tクリエイターだぁ…」の絶望 ---
+  // --- 19歳・秋（大2）：「夢can'tクリエイターだぁ…」の絶望 ---
   if (age === 19 && seasonIdx === 2 && S.joinedYumeCan) {
     return {
       type: "reflection",
@@ -1070,108 +1069,63 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 24歳・春：物語の完全結実（★結末バリエーションを大幅拡張！） ---
-  if (age === 24 && seasonIdx === 0) {
-    const choices = [];
+  return null;
+}
 
-    // 1. 地域と深い関係性を結んだルートの結末
-    if (S.localReaction === "BOND_DEEP") {
-      choices.push({
-        t: "都市の会社に勤めつつ、週末はあの地域で若者の居場所づくりを伴走する『二拠点プロデューサー』へ",
-        sub: "チーム力+35 / やってみたい+35 / 人を繋ぐゴール",
-        act: () => {
-          S.teamwork += 35; S.motto += 35; S.friends += 30;
-          S.title = "都市と地域を繋ぐ越境プロデューサー";
-          addLog("二拠点生活を開始！かつての自分が救われたように、悩める大学生や若者を地域に繋ぎ、新たな一歩を応援する大人になった！", "turning");
-        }
-      });
-      choices.push({
-        t: "会社を辞めて地域へ移住！空き家を活用した拠点を開き、誰もが挑戦できる『場づくりのローカル起業家』へ",
-        sub: "主体性MAX / やってみたい指数100% / 人生完全ダイブのゴール",
-        act: () => {
-          S.action += 45; S.motto = 100; S.friends += 40;
-          S.title = "地域を切り拓くローカル起業家";
-          addLog("地域へ完全移住！若者や住民が失敗を恐れず『やってみたい』を試せる拠点をオープン。町の精神的支柱となるリーダーになった！", "turning");
-        }
-      });
-    }
-
-    // 2. 東大・エリート街道の結末（AI代替の挫折 vs 政策プロフェッショナル）
-    if (S.univRoute === "TODAI") {
-      choices.push({
-        t: "大手シンクタンクで調査分析をしていたが、指示待ちの仕事が大半AIに代替され、自分の生き方に悩む『学歴エリートの挫折』へ",
-        sub: "AI時代への直面 / 知識偏重の限界",
-        act: () => {
-          S.thinking += 20; S.motto = 30; S.title = "AI時代に立ち尽くす知識エリート";
-          addLog("『正解を出す仕事』はAIに奪われた。偏差値の高さを誇ってきた自分が、現場で何も生み出せないことに強い無力感を覚える。", "turning");
-        }
-      });
-      choices.push({
-        t: "中央省庁で現場の血の通った感覚を忘れない『政策プロフェッショナル（官僚）』へ",
-        sub: "考え抜く力MAX / 政策エリートの結実",
-        act: () => {
-          S.thinking += 45; S.title = "未来を構想する政策プロフェッショナル";
-          addLog("机上の空論を排し、全国の現場が挑戦できる法制度や予算を設計する骨太な官僚になった！", "turning");
-        }
-      });
-    }
-
-    // 3. グローバル大学・海外ルートの結末
-    if (S.univRoute === "GLOBAL_UNIV") {
-      choices.push({
-        t: "外資系企業や海外NGOに所属し、世界中を飛び回る『グローバル・フロントランナー』へ",
-        sub: "国際視野MAX / 越境キャリア",
-        act: () => {
-          S.insight += 50; S.action += 40; S.title = "国境を越えるグローバル実践者";
-          addLog("国境を意識せず、世界各地の社会課題解決やビジネスを動かすグローバルな大人へと羽ばたいた！", "turning");
-        }
-      });
-    }
-
-    // 4. 地域を客観視したルートの結末
-    if (S.localReaction === "BOND_SHALLOW") {
-      choices.push({
-        t: "大手企業の事業開発部で、都市の資本と地方の資源を結びつける『事業プロデューサー』へ",
-        sub: "ビジネス力MAX / 広い視野の結実",
-        act: () => {
-          S.thinking += 35; S.action += 30; S.title = "地域と資本を繋ぐ事業開発リーダー";
-          addLog("冷静に両方の世界を知る強みを活かし、大企業の中で地域連携のプロジェクトを牽引する大人になった！", "turning");
-        }
-      });
-    }
-
-    // 5. 堅実な会社員ルート
-    choices.push({
-      t: "会社の主力として着実に実績を上げ、後輩や仲間から厚く信頼される『誠実なビジネスパーソン』へ",
-      sub: "社内評価+30 / 地に足のついたゴール",
-      act: () => {
-        S.thinking += 25; S.teamwork += 25; S.title = "信頼されるビジネスパーソン";
-        addLog("会社の中で着実に実績を上げ、周囲から頼りにされる立派な大人へと成長。確固たる人生の基盤を築き上げた！", "turning");
-      }
-    });
-
-    // 6. やりたいことが定まらなかった場合の結末
-    if (S.localReaction === "BOND_NONE" || S.motto < 30) {
-      choices.push({
-        t: "満員電車に揺られながら『本当にこのままでいいのか』とモヤモヤを抱え続ける『模索中の会社員』へ",
-        sub: "現状維持 / 人生の模索継続",
-        act: () => {
-          S.motto = 25; S.title = "自分の旗を探し続ける会社員";
-          addLog("安定した給料は得ているが、心の奥底で『本当にやりたいこと』に出会えていない焦燥感を今も抱き続けている。", "turning");
-        }
-      });
-    }
-
-    return {
-      type: "decision",
-      badge: "24歳・青春の集大成：あなたが選んだ生き方",
-      title: "24歳・春：社会人2年目。あなたは、どんな大人になりましたか？",
-      desc: "やりたいことを見つけるとは、単に職を決めることではない。自分が何を面白いと感じ、誰と生きていきたいのかを知ること。すべての経験が一本の線として繋がり、今、あなたの生き方が定まる。",
-      choices: choices
-    };
+// 24歳到達時の完全自動結末判定（ゲーム性・因果の完全回収）
+function determineEnding() {
+  // 1. 東大・知識偏重エリートの挫折（地域関係なし＆東大ルート）
+  if (S.univRoute === "TODAI" && S.localReaction !== "BOND_DEEP") {
+    S.title = "AI時代に立ち尽くす知識エリート";
+    S.finalEndingDesc = "日本最高峰の学歴を手に入れ、大手シンクタンクやメガバンクでエリートとして働き始めたあなた。しかし、生成AIの爆発的進化により『答えのある知識作業・分析』の大半が代替される現実に直面しました。これまで偏差値や知識の多さを誇ってきた自分が、現場で人の心を動かしゼロから課題を見つける力を持っていなかったことに強い無力感を覚え、今、人生で初めて『自分は何をしたいのか』を痛切に問い直しています。";
+    return;
   }
 
-  return null;
+  // 2. 東大×現場の政策プロフェッショナル（東大＆深く地域と結びついた）
+  if (S.univRoute === "TODAI" && S.localReaction === "BOND_DEEP") {
+    S.title = "未来を構想する政策プロフェッショナル（官僚）";
+    S.finalEndingDesc = "中央省庁へ進み、国家の制度設計を担う官僚となったあなた。同僚たちが机上のデータだけで政策を語る中、あなたには『現場の農家や町民の泥臭い顔と生活』が焼き付いています。居酒屋での悔しさから学び直した法律と経済の知見を武器に、現場で挑戦する人々を真に支える血の通った制度や予算を設計する、骨太なリーダーとして活躍しています。";
+    return;
+  }
+
+  // 3. グローバル大学×海外越境
+  if (S.univRoute === "GLOBAL_UNIV") {
+    S.title = "国境を越えるグローバル実践者";
+    S.finalEndingDesc = "日本の枠組みを飛び出し、世界の現場で多様性に揉まれてきたあなた。外資系ソーシャルビジネスや国際機関を舞台に、国境を越えて人と現場を繋ぐ実践者として歩んでいます。語学力以上に、相手の懐に飛び込んで信頼を勝ち取る『現場での胆力』を武器に、地球規模の課題解決を牽引しています。";
+    return;
+  }
+
+  // 4. 地域完全移住・ローカル起業家（やってみたい指数MAX＆現場ダイブ）
+  if (S.localReaction === "BOND_DEEP" && S.action >= 60) {
+    S.title = "地域を切り拓くローカル起業家";
+    S.finalEndingDesc = "かつて机の上で悩んでいたあなたが、会社を辞めて地域へ完全移住！空き家を改修した複合拠点（カフェ・シェアオフィス）を立ち上げ、町の内外から人が集まるハブを作りました。今度はあなたが、昔の自分のように悩んでいる高校生や大学生を受け入れ、『やってみたい』を形にする挑戦の背中を押す精神的支柱となっています。";
+    return;
+  }
+
+  // 5. 二拠点生活プロデューサー（バランス型・協創）
+  if (S.localReaction === "BOND_DEEP") {
+    S.title = "都市と地域を繋ぐ二拠点プロデューサー";
+    S.finalEndingDesc = "平日は都市の企業でビジネスを回し、週末はあの町に通い詰めて地域プロジェクトを伴走する二拠点生活を確立しました。都市の資金やITノウハウを地域に流し込み、現場の仲間と共に新たな産業を生み出しています。複数の居場所と頼れる仲間を持つ生き方は、どんな時代の変化にも揺らがないあなたの確固たる背骨になっています。";
+    return;
+  }
+
+  // 6. 地域と資本を繋ぐ事業開発リーダー（客観視ルート）
+  if (S.localReaction === "BOND_SHALLOW") {
+    S.title = "地域と資本を繋ぐ事業開発リーダー";
+    S.finalEndingDesc = "都市の生活をベースにしつつも、外の世界の広さと地方の現実をその目で見てきたあなた。大企業の新規事業開発部門で、地方の一次産業や資源と都市のマーケットを結びつける大型プロジェクトを牽引しています。熱狂に流されず冷静に両方の世界を知るあなたのバランス感覚は、組織の中で替えの利かない大きな強みとなっています。";
+    return;
+  }
+
+  // 7. やりたいことが定まらなかった場合の結末（拒絶・受動的）
+  if (S.localReaction === "BOND_NONE" || S.motto <= 35) {
+    S.title = "自分の旗を探し続ける会社員（モヤモヤ）";
+    S.finalEndingDesc = "無難な選択を重ね、安全なレールに乗って都内の会社員となったあなた。毎月決まった給料は振り込まれますが、満員電車に揺られながら『本当にこの仕事がやりたかったことなんだろうか…』という晴れないモヤモヤを抱え続けています。あの日、地域の熱量から目を背けた記憶が時折蘇り、自分の旗（やってみたいこと）を必死に探し続けています。";
+    return;
+  }
+
+  // 8. 誠実で信頼されるビジネスパーソン（標準的な堅実ルート）
+  S.title = "信頼されるビジネスパーソン";
+  S.finalEndingDesc = "派手な冒険や波乱は選ばなかったものの、置かれた場所で誠実に努力を積み重ね、会社やチームから厚い信頼を寄せられる中核メンバーへと成長しました。地に足のついた生活基盤を築き、周囲の人々を温かく支える立派な大人として歩んでいます。";
 }
 
 function startGame() {
@@ -1195,6 +1149,7 @@ function startGame() {
   S.friends = 5;
   S.studyDrive = 10;
   S.title = "産声をあげた子";
+  S.finalEndingDesc = "";
   S.logs = [];
   S.activeEvent = null;
   S.autoPlay = false;
@@ -1245,8 +1200,10 @@ function stepForward() {
       S.year++;
     }
 
-    if (S.age >= 24 && S.seasonIdx >= 1) {
+    // ★24歳・春に到達した瞬間、選ばせるのではなく自動で結末を判定してENDへ！
+    if (S.age >= 24) {
       pauseAuto();
+      determineEnding(); // 過去の行動・ステータスから結末を自動決定
       S.screen = "END";
       render();
       return;
@@ -1271,15 +1228,6 @@ function choose(idx) {
   if (!S.activeEvent) return;
   const c = S.activeEvent.choices[idx];
   c.act();
-  
-  if (S.age === 24 && S.seasonIdx === 0) {
-    S.activeEvent = null;
-    pauseAuto();
-    S.screen = "END";
-    render();
-    return;
-  }
-
   S.activeEvent = null;
   render();
 }
@@ -1329,7 +1277,7 @@ function render() {
           マケリサ2 Y7班
         </span>
         <h1 style="margin: 6px 0 8px; font-size: 25px; line-height:1.35;">
-          あなたの47808分の1の人生。<br>
+          47808分の1の人生。<br>
           <span style="color:var(--shu); font-size:21px;">やりたいことを見つけるとは。</span>
         </h1>
         <p class="lead" style="font-size:13px; line-height:1.7; margin-bottom:18px;">
@@ -1340,10 +1288,10 @@ function render() {
 
         <div style="background:var(--paper); padding:16px; border-radius:6px; font-size:12px; color:var(--sub); text-align:left; margin:18px 0; line-height:1.8;">
           <b style="color:var(--ink); font-size:13px;">【人生シミュレーションの設計思想】</b><br>
+          ・<b>結末は自動判定</b>：最後の大人像は自分で選ぶのではなく、これまでの選択・挫折・ステータスから必然的に1つ導き出されます。<br>
           ・<b>人によるよなーのリアリティ</b>：地域に飛び込んで人生が変わる人もいれば、客観的に距離を置く人、合わずに帰る人もいる。<br>
           ・<b>偶然の出会い</b>：最初は誰もが地域に興味ゼロ。少しずつ外の世界に近づき、20歳で初めて現場に接触する。<br>
-          ・<b>見つけた先にあるゴール</b>：自分が「やってみたい」を見つけた人間は、今度は次の誰かのきっかけ（精神的支柱）になり、まちと人を動かす存在へ結実する。<br>
-          ・<b>プロトタイプ</b>：これはマケリサ2のためにY7チームのプロトタイプです。
+          ・<b>プロトタイプ</b>：これはマケリサ2の講義用に作られた「Y7班」のプロトタイプです。
         </div>
 
         <button class="btn" style="width:100%; padding:14px; font-size:15px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
@@ -1360,16 +1308,10 @@ function render() {
         <p style="font-size:12px; color:var(--sub);">あなたが選び、歩み、出会ってきたすべてが今の姿をつくった</p>
 
         <div style="background:var(--paper); padding:16px; border-radius:6px; margin:16px 0; text-align:left;">
-          <span style="font-size:11px; color:var(--sub);">あなたがなった大人</span>
+          <span style="font-size:11px; color:var(--sub);">あなたが到達した大人の姿</span>
           <h3 style="color:var(--shu); margin:4px 0 10px; font-size:20px;">${S.title}</h3>
           <p style="font-size:13px; line-height:1.8;">
-            ${S.localReaction === "BOND_DEEP"
-              ? "机の上で偏差値や目の前のことだけに追われていたあなたが、安全な場所から飛び出し、地域で熱くおもしろい大人たちと関係性を築き上げました。居酒屋での悔しさから始まった学び直しは確かな武器となり、自分の頭で考え、人を巻き込みながら新たな価値を創り出す大人へと成長を遂げました。今度はあなたが、誰かの『やってみたい』を照らす精神的支柱となっています。"
-              : S.localReaction === "BOND_SHALLOW"
-              ? "都市の生活をベースにしつつも、外の世界の広さと現場のリアリティをその目で見てきたあなた。地に足をつけながら、大企業や都市の仕組みの中で地域や他者と緩やかにつながり、バランスの取れた視野の広い大人として歩んでいます。"
-              : S.univRoute === "TODAI" && S.title.includes("AI")
-              ? "日本最高峰の学歴を手に入れ、大企業やシンクタンクで知識を武器に働いていたものの、生成AIの進化によって『答えを出す仕事』の大半が代替される現実に直面。指示待ちの秀才として生きてきた自分に強い危機感を覚え、今、人生で初めて『自分は何をしたいのか』を必死に問い直しています。"
-              : "無難で安全な選択を重ねながらも、社会の中で着実に自分の足で立ち、周囲から信頼される大人へと成長しました。激しい波乱は選ばなかったものの、地に足のついた確固たる生活基盤を築き、着実に社会を支える一員となっています。"}
+            ${S.finalEndingDesc}
           </p>
         </div>
 
