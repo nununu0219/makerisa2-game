@@ -181,7 +181,7 @@
   .log-row.encounter-log { color: var(--moss); font-weight: 600; background: var(--moss-soft); border-radius: 4px; border-bottom: none; }
   .log-row.reflect-log { color: var(--purple); font-weight: 600; background: var(--purple-soft); border-radius: 4px; border-bottom: none; }
 
-  /* 強調キーワードタグ */
+  /* 強調キーワード */
   .kw-red { color: #b91c1c; font-weight: 700; }
   .kw-green { color: #15803d; font-weight: 700; }
   .kw-blue { color: #1d4ed8; font-weight: 700; }
@@ -206,16 +206,45 @@
 <div class="wrap" id="app"></div>
 
 <script>
-const PREFS = [
-  { n: "東京都" }, { n: "神奈川県" }, { n: "大阪府" }, { n: "愛知県" },
-  { n: "埼玉県" }, { n: "千葉県" }, { n: "兵庫県" }, { n: "北海道" },
-  { n: "福岡県" }, { n: "静岡県" }, { n: "長野県" }, { n: "鹿児島県" },
-  { n: "愛媛県" }, { n: "島根県" }, { n: "山形県" }, { n: "岩手県" }
+// --- 地域データベース（出会う大人たちのバリエーション） ---
+const REGIONS = [
+  {
+    name: "鹿児島県さつま町",
+    person: "川野さん（58歳・元大工／商店街再生リーダー）",
+    quote: "お前ら若者は安全な場所で頭ばっか使って手ぇ動かさん！この町を面白くすんのはな、正解を知っとる奴じゃなくて、恥かいて泥被る覚悟のあるバカだけじゃ！手伝え！",
+    work: "空き店舗の解体とペンキ塗り"
+  },
+  {
+    name: "島根県海士町（隠岐諸島）",
+    person: "神田さん（35歳・元ITベンチャー／クラフトビール醸造家）",
+    quote: "行政が動かない？予算がない？知るかよ！若者が失敗できる場所を俺たちが作らなきゃこの町は死ぬんだよ。失敗したって死にはしない、お前は何が怖くて縮こまってんだ？",
+    work: "島の特産品を使った新ビールのラベル開発と泥臭い対話"
+  },
+  {
+    name: "愛媛県内子町（小田地区）",
+    person: "松下さん（64歳・和紙職人／古民家宿オーナー）",
+    quote: "数字や効率ばかり追ってると心が痩せていくよ。自分の手で漉いた紙の温もり、朝採れた野菜の味。東京の便利さと引き換えに失ったものが、ここには全部ある。",
+    work: "古民家宿の庭園整備と和紙漉きの修行"
+  },
+  {
+    name: "長野県木曽町",
+    person: "伊達さん（41歳・元総合商社／木工家具ブランド起業家）",
+    quote: "大企業で億の金を動かしても、誰の顔も見えなかった。ここでは山を守り、木を切り、使う人の笑顔が直接見える。君は自分の人生の手触りを感じてるかい？",
+    work: "間伐材を活用したスツール製作と森の整備"
+  },
+  {
+    name: "山形県金山町",
+    person: "佐藤のおばあ（72歳・限界集落のよろず屋店主）",
+    quote: "過疎で何もないって言うけどね、人が減ったからこそ誰一人として無駄な人間なんていないのさ。アンタが来てくれただけで、この集落の明かりが一つ増えたんだよ。",
+    work: "集落の共同売店の棚卸しと移動販売車の同乗"
+  }
 ];
-const LAST_NAMES = ["佐藤","鈴木","高橋","田中","渡辺","伊藤","山本","中村","小林","加藤","高野","杉本","松下"];
+
+const PREFS = ["東京都", "神奈川県", "大阪府", "愛知県", "埼玉県", "千葉県", "福岡県", "北海道"];
+const LAST_NAMES = ["佐藤","鈴木","高橋","田中","渡辺","伊藤","山本","中村","小林","加藤","高野","杉本"];
 const FIRST_M = ["蓮","湊","樹","悠真","大翔","朝陽","陽翔","律","颯","拓海","翔太","慎之介"];
 const FIRST_F = ["陽葵","凛","詩","結菜","芽依","紬","澪","咲良","莉子","花","晴美","美咲"];
-const JOBS = ["会社員","公務員","教員","看護師","自営業","エンジニア","保育士","医師","銀行員"];
+const JOBS = ["会社員","公務員","教員","看護師","自営業","エンジニア","銀行員"];
 const SEASONS = ["春", "夏", "秋", "冬"];
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -231,13 +260,13 @@ let S = {
   dad: "",
   mom: "",
   
-  // 完全因果追跡フラグ
-  jukuState: "NONE",       // SAPIX_ACTIVE, QUIT_PUBLIC, NO_JUKU
-  middleRoute: "NONE",     // ELITE, IKKEN_FAIL, PUBLIC_JHS
-  highRoute: "NONE",       // JINNAI_ACTION(社会飛び込み), JUKEN_FOCUS(机の上専念), NORMAL_CLUB(普通の部活)
-  univRoute: "NONE",       // TODAI, PRACTICE, NO_UNIV, NORMAL_UNIV
-  hasLocalBond: false,     // 20歳で地域と「泥臭い関係性」を結んだか
-  visitedRegionName: "",   // 接触した地域名
+  // 分岐因果フラグ
+  jukuState: "NONE",        // SAPIX_ACTIVE, QUIT_PUBLIC, NO_JUKU
+  middleRoute: "NONE",      // ELITE, IKKEN_FAIL, PUBLIC_JHS
+  highRoute: "NONE",        // JINNAI_ACTION, JUKEN_FOCUS, NORMAL_CLUB
+  univRoute: "NONE",        // TODAI, PRACTICE, NO_UNIV, NORMAL_UNIV
+  hasLocalBond: false,      // 地域で深い関係性を作ったか
+  assignedRegion: null,     // 接触した地域データ（完全ランダム割当）
   schoolLabel: "未就学",
 
   motto: 8,
@@ -260,9 +289,7 @@ function addLog(text, type = "") {
   S.logs.unshift({ term: termStr, year: S.year, text, type });
 }
 
-// ========================================================
-// 全年齢・全季節・全ルートの1対1完全ストーリーマップ（24歳まで）
-// ========================================================
+// 季節ごとの日常叙述（重複しないストーリーマップ）
 const NARRATIVE_MAP = {
   infant: {
     1: "初めて自分の足で立ち上がり、両親が拍手して大騒ぎした。",
@@ -375,11 +402,9 @@ function getNarrative(age, seasonIdx) {
   return "選んだ道を一歩ずつ着実に歩んでいる。";
 }
 
-// ========================================================
-// 厳密な因果連鎖・ストーリー分岐イベント
-// ========================================================
+// 決断・出会いイベント生成エンジン
 function getStoryEvent(age, seasonIdx) {
-  // --- 6歳・春：第1の分岐（SAPIX vs のびのび公立） ---
+  // 6歳・春：SAPIX入塾か、外遊びか
   if (age === 6 && seasonIdx === 0) {
     return {
       type: "decision",
@@ -409,7 +434,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 10歳・秋：SAPIXでの葛藤と退塾分岐 ---
+  // 10歳・秋：SAPIXでの葛藤と退塾分岐
   if (age === 10 && seasonIdx === 2 && S.jukuState === "SAPIX_ACTIVE") {
     return {
       type: "decision",
@@ -438,7 +463,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 12歳・冬：中学受験の結果と進路 ---
+  // 12歳・冬：中学受験の結果と進路
   if (age === 12 && seasonIdx === 3) {
     if (S.jukuState === "SAPIX_ACTIVE") {
       const isPass = Math.random() < 0.45;
@@ -598,7 +623,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 18歳・春：大学進学（高校の行動に応じた選択肢） ---
+  // --- 18歳・春：大学進学 ---
   if (age === 18 && seasonIdx === 0) {
     const choices = [];
     
@@ -655,37 +680,40 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 20歳・夏：過疎地への接触（高校・大学の文脈によって接触の理由が全く異なる！） ---
+  // --- 20歳・夏：地方・地域への接触（おもしろい大人との出会い） ---
   if (age === 20 && seasonIdx === 1) {
-    let descText = "";
-    S.visitedRegionName = "鹿児島県さつま町";
+    if (!S.assignedRegion) {
+      S.assignedRegion = pick(REGIONS);
+    }
+    const r = S.assignedRegion;
 
+    let descText = "";
     if (S.univRoute === "TODAI") {
-      descText = "東大のゼミのフィールドワーク実習。机上の理論だけでなく、一度過疎地の現実を見ろと教授に連れてこられた。";
+      descText = `東大のゼミのフィールドワーク実習。机上の理論だけでなく、過疎地のリアルを見ろと教授に連れてこられた。`;
     } else if (S.univRoute === "NORMAL_UNIV") {
-      descText = "大学の単位がもらえる集中講義。興味はなかったが、単位のために半ば強制的に派遣された。";
+      descText = `大学の集中講義。地方創生なんて興味はなかったが、単位のために半ば強制的に派遣された。`;
     } else if (S.univRoute === "PRACTICE") {
-      descText = "大学のフィールドワーク。以前から関心を持っていた地域再生の現場に自ら志願してやってきた。";
+      descText = `大学の地域共創プログラム。自ら志願して、最前線の課題を抱える現場へやってきた。`;
     } else if (S.univRoute === "NO_UNIV") {
-      descText = "仕事の出張。空き店舗活用の実地調査として、現場のリーダーに会いにやってきた。";
+      descText = `仕事の出張。現場のキーマンに会うため、一人夜行バスに乗ってやってきた。`;
     }
 
     return {
       type: "encounter",
-      badge: "地方の現場での遭遇",
-      title: `20歳・夏：${S.visitedRegionName}での出会い`,
-      desc: `${descText}そこで出会ったのは、行政と喧嘩しながら空き店舗再生を仕掛ける異様な熱量のオヤジ・川野さんだった。`,
-      profile: "【川野さん（58歳・元大工／商店街再生リーダー）】\n『お前ら若者は安全な場所で頭ばっか使って手ぇ動かさん！<span class='kw-red'>この町を面白くすんのはな、正解を知っとる奴じゃなくて、恥かいて泥被る覚悟のあるバカだけじゃ！手伝え！</span>』",
-      question: "怒鳴られながら壁のペンキ塗りを手伝わされた時、あなたはどう行動した？",
+      badge: "地方の現場での遭遇：おもしろい大人",
+      title: `20歳・夏：${r.name}での出会い`,
+      desc: `${descText}そこで出会ったのは、常識にとらわれず規格外の熱量で町を動かしている${r.person}だった。`,
+      profile: `【${r.person}】\n『<span class='kw-red'>${r.quote}</span>』`,
+      question: `手伝いを命じられ、${r.work}を目の当たりにした時、あなたはどう行動した？`,
       choices: [
         {
           t: "『悔しいけど、この人の熱意は本物だ…！』と泥だらけになって夜中まで作業し、酒を酌み交わした",
           sub: "社会人基礎力全開 / 頼れる味方+30 / 関係性成立！",
           act: () => {
             S.action += 35; S.teamwork += 35; S.thinking += 25; S.motto += 40; S.friends += 30;
-            S.hasLocalBond = true;
+            S.hasLocalBond = true; // ★関係性成立
             S.title = "現場に飛び込んだ実践者";
-            addLog(`${S.visitedRegionName}で川野さんや地元の人たちと泥だらけになって作業し、朝まで語り合う。<span class='kw-green'>『いつでも帰ってこい』</span>と言われる深い関係性ができた！`, "encounter-log");
+            addLog(`${r.name}で${r.person}たちと泥だらけになって作業し、朝まで語り合う。<span class='kw-green'>『いつでも帰ってこい』</span>と言われる深い関係性ができた！`, "encounter-log");
           }
         },
         {
@@ -702,12 +730,13 @@ function getStoryEvent(age, seasonIdx) {
 
   // --- 21歳・夏：再訪の条件分岐（関係性がある場合のみ再訪・激論が発生！） ---
   if (age === 21 && seasonIdx === 1) {
-    if (S.hasLocalBond) {
+    if (S.hasLocalBond && S.assignedRegion) {
+      const r = S.assignedRegion;
       return {
         type: "reflection",
         badge: "伏線回収：再訪と学びの点火",
-        title: `21歳・夏：${S.visitedRegionName}を再訪。居酒屋での激論と『話に入れない悔しさ』`,
-        desc: "『またあの人たちに会いたい』と夏休みに再びあの町へ！夜、地元の若手農家、移住起業家、行政職員が集まる居酒屋で『農地法と自治体の財政破綻をどう乗り越えるか』の激論が始まった。熱く語る彼らに対し、自分は専門用語も法律も知らず、一言も発言できずにただビールを握りしめていた。",
+        title: `21歳・夏：${r.name}を再訪。居酒屋での激論と『話に入れない悔しさ』`,
+        desc: `『またあの人たちに会いたい』と夏休みに再びあの町へ！夜、地元の若手農家、移住起業家、行政職員が集まる居酒屋で『農地法と自治体の財政破綻をどう乗り越えるか』の激論が始まった。熱く語る彼らに対し、自分は専門用語も法律も知らず、一言も発言できずにただビールを握りしめていた。`,
         question: "この強烈な悔しさを味わった時、あなたは何を決意しましたか？",
         choices: [
           {
@@ -749,7 +778,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 24歳・春：物語の完全結実 ---
+  // --- 24歳・春：物語の完全結実（どんな大人になったか） ---
   if (age === 24 && seasonIdx === 0) {
     const choices = [];
 
@@ -812,7 +841,7 @@ function startGame() {
   const ln = pick(LAST_NAMES);
   const fn = pick(isM ? FIRST_M : FIRST_F);
   S.name = `${ln} ${fn}`;
-  S.pref = pick(PREFS).n;
+  S.pref = pick(PREFS);
   S.dad = `${ln} ${pick(FIRST_M)}（${pick(JOBS)}）`;
   S.mom = `${pick(LAST_NAMES)} ${pick(FIRST_F)}（${pick(JOBS)}）`;
 
@@ -837,7 +866,7 @@ function startGame() {
   S.highRoute = "NONE";
   S.univRoute = "NONE";
   S.hasLocalBond = false;
-  S.visitedRegionName = "";
+  S.assignedRegion = null;
   S.schoolLabel = "未就学";
   S.screen = "PLAY";
 
@@ -875,7 +904,7 @@ function stepForward() {
       S.year++;
     }
 
-    // 24歳・春の決断を終えた直後（24歳・夏以降）、エンディングへ！
+    // 24歳・春の決断を終えた直後（24歳・夏以降）、エンディングへ完全移行！
     if (S.age >= 24 && S.seasonIdx >= 1) {
       pauseAuto();
       S.screen = "END";
@@ -883,7 +912,7 @@ function stepForward() {
       return;
     }
 
-    // 決断イベント判定
+    // イベント判定
     const ev = getStoryEvent(S.age, S.seasonIdx);
     if (ev) {
       S.activeEvent = ev;
@@ -904,6 +933,7 @@ function choose(idx) {
   const c = S.activeEvent.choices[idx];
   c.act();
   
+  // 24歳の決断を選んだら即座にエンディングへ
   if (S.age === 24 && S.seasonIdx === 0) {
     S.activeEvent = null;
     pauseAuto();
@@ -947,16 +977,17 @@ function render() {
         <span style="font-size:11px; letter-spacing:0.18em; color:var(--sub); font-weight:800;">人生シミュレーション</span>
         <h1 style="margin: 8px 0; font-size: 24px;">80億分の1の、<br>やってみたい。</h1>
         <p class="lead">
-          人生は全部分岐。何もない空白の年齢なんてない――。<br>
-          SAPIXの重圧、中学受験の挫折と栄光、高校での型破り教師の一喝。<br>
-          地域での出会いと関係性、そして24歳であなたがどんな大人になったかを辿る物語。
+          机の上だけでは、人は変われない――。<br>
+          地域に出ることで出会う、教科書にはいない規格外のおもしろい大人たち。<br>
+          泥臭い摩擦と関係性を通して、あなたが24歳でどんな大人になったかを辿る物語。
         </p>
 
         <div style="background:var(--paper); padding:14px; border-radius:6px; font-size:12px; color:var(--sub); text-align:left; margin:20px 0; line-height:1.7;">
-          <b>【リアルな分岐のルール】</b><br>
-          ・最初から地域に行ける選択肢はありません。少しずつ外の世界に近づき、20歳で初めて現場に接触します。<br>
-          ・20歳の現場で<b>「関係性を築いた人」だけが、21歳で「再訪したい」という感情を持ちます。</b><br>
-          ・24歳の春で物語は綺麗に結実し、あなたが選んできた生き方の完全個別エンディングを迎えます。
+          <b>【リアルなストーリー連鎖のルール】</b><br>
+          ・最初は誰もが地域に興味ゼロ。少しずつ外の世界に近づき、20歳で初めて現場に接触します。<br>
+          ・地域にはさつま町の農家や隠岐の醸造家など、<b>規格外におもしろい大人たち</b>が待っています。<br>
+          ・現場で<b>「関係性を築いた人」だけが、21歳で「再訪したい」という感情を持ちます。</b><br>
+          ・24歳の春で物語は完結し、歩んできた道に応じた大人の姿へと結実します。
         </div>
 
         <button class="btn" style="width:100%; padding:14px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
@@ -976,7 +1007,7 @@ function render() {
           <h3 style="color:var(--shu); margin:4px 0 10px; font-size:20px;">${S.title}</h3>
           <p style="font-size:13px; line-height:1.8;">
             ${S.hasLocalBond
-              ? "かつて机の上で偏差値や目の前のことだけに追われていたあなたが、高校・大学で泥臭い現場へ飛び出し、地域で熱い大人たちと関係性を築き上げました。居酒屋での悔しさから始まった学び直しは確かな武器となり、自分の頭で考え、人を巻き込みながら新たな価値を創り出す大人へと成長を遂げました。"
+              ? "机の上で偏差値や目の前のことだけに追われていたあなたが、安全な場所から飛び出し、地域で熱くおもしろい大人たちと関係性を築き上げました。居酒屋での悔しさから始まった学び直しは確かな武器となり、自分の頭で考え、人を巻き込みながら新たな価値を創り出す大人へと成長を遂げました。"
               : "無難で安全な選択を重ねながらも、社会の中で着実に自分の足で立ち、周囲から信頼される大人へと成長しました。激しい波乱は選ばなかったものの、地に足のついた確固たる生活基盤を築いています。"}
           </p>
         </div>
