@@ -224,11 +224,10 @@ let S = {
   dad: "",
   mom: "",
   
-  // 分岐フラグ
   jukuState: "NONE",      // SAPIX_ACTIVE, QUIT_PUBLIC, NO_JUKU
-  middleRoute: "NONE",    // ELITE(名門御三家), IKKEN_FAIL(滑り止め中高一貫), PUBLIC_JHS(公立中)
-  highRoute: "NONE",      // JINNAI_ACTION(飛び込み), JUKEN_FOCUS(受験専念), TANKYU_KO(探究高校)
-  univRoute: "NONE",      // TODAI(東大エリート), PRACTICE(地域共創), NO_UNIV(現場直行)
+  middleRoute: "NONE",    // ELITE, IKKEN_FAIL, PUBLIC_JHS
+  highRoute: "NONE",      // JINNAI_ACTION, JUKEN_FOCUS, TANKYU_KO
+  univRoute: "NONE",      // TODAI, PRACTICE, NO_UNIV
   schoolLabel: "未就学",
 
   motto: 8,
@@ -252,11 +251,8 @@ function addLog(text, type = "") {
   S.logs.unshift({ term: termStr, year: S.year, text, type });
 }
 
-// ========================================================
-// 全年齢・全季節・全ルートの1対1完全ストーリーマップ
-// ========================================================
+// 季節ごとの日常叙述（重複しないストーリーマップ）
 const NARRATIVE_MAP = {
-  // --- 0〜5歳（幼少期） ---
   infant: {
     1: "初めて自分の足で立ち上がり、両親が拍手して大騒ぎした。",
     2: "熱を出して母が夜通し看病してくれた。翌朝、少し背が伸びた気がした。",
@@ -264,8 +260,6 @@ const NARRATIVE_MAP = {
     4: "保育園の砂場で泥だらけになって遊んだ。泥団子を上手に丸められた。",
     5: "スーパーで迷子になり、サービスカウンターで泣きじゃくった。"
   },
-
-  // --- SAPIX継続ルート（6〜11歳） ---
   sapix: {
     6: ["SAPIXの低学年クラスに入塾。小学校と塾の宿題の両立が始まる。", "夏期講習。シールを集めてもらえる文房具が唯一の楽しみだった。", "塾の確認テスト。満点を取って母に頭を撫でられた。", "冬の寒い夜、父親が駅まで塾の迎えに来てくれた。"],
     7: ["2年生のクラス替え。1番上のクラスを維持できてホッとする。", "放課後、友達の公園でのドッジボールを横目に塾へと向かう。", "算数の思考力問題が難しくなり、机の前で頭を抱える時間が増えた。", "年末のテストでミスをしてしまい、帰りの電車で小さく涙ぐんだ。"],
@@ -274,14 +268,10 @@ const NARRATIVE_MAP = {
     10: ["5年生。志望校別コースが意識され始め、教室の緊張感が一段跳ね上がる。", "真夏の夏期志望校別特訓。1日10時間の勉強に体が悲鳴を上げそうになる。", "秋のマンスリーテスト。合格可能性パーセントに一喜一憂する日々。", "正月特訓。ハチマキを締めて『絶対合格』の掛け声を全員で叫んだ。"],
     11: ["6年生の春。学校が終わるとランドセルを置いて塾へ直行する毎日。", "夏休み。人生で一番勉強した夏。友達と会話する余裕すら消え去っていた。", "秋の学校別冠模試。合格可能性40%が出て、母が泣き出しそうな顔をした。", "12月。過去問のやり直しノートが何冊も積み上がり、本番の足音が近づく。"]
   },
-
-  // --- SAPIX退塾ルート（10〜11歳） ---
   quit_public: {
     10: ["退塾した春。放課後が急に長くなり、部屋で何をすればいいか戸惑った。", "夏休み、近所の市民プールに毎日通い、真っ黒に日焼けした。", "秋の夕暮れ、公園のベンチで友達とアイスを食べながら他愛もない話をした。", "冬、家族で久しぶりに温泉旅行に行き、温かいご飯を笑顔で食べた。"],
     11: ["小6の春。受験組がピリピリする中、自分は地元の公立中進学に向けて部活の準備。", "夏休み、地域のボランティア活動に参加し、町のお年寄りと触れ合う。", "地域のサッカー大会でチームが初勝利。みんなで抱き合って喜んだ。", "小学校最後の冬休み。中学で何をしようか、ワクワクしながら過ごした。"]
   },
-
-  // --- 最初からのびのび公立ルート（6〜11歳） ---
   free_public: {
     6: ["小学校に入学！黄色い帽子をかぶって通学路を元気いっぱいに駆けた。", "夏休み、近所の川で友達とザリガニ釣りをして靴を泥だらけにした。", "秋の運動会。徒競走で全力で走って1位になり、家族で大喜びした。", "冬の朝、息を白く吐きながら友達と氷の張った水たまりを割って遊んだ。"],
     7: ["2年生の新学期。新しくできた友達と放課後の秘密基地作りを始めた。", "市民プールに通い詰め、初めて25メートルを泳ぎ切ることができた！", "図工の時間に作ったダンボールの城が先生に褒められ、教室の後ろに飾られた。", "こたつに入って友達とゲームの対戦で大盛り上がりした冬休み。"],
@@ -290,8 +280,6 @@ const NARRATIVE_MAP = {
     10: ["5年生。放課後は友達の家で新しいゲームの協力プレイに熱中した。", "夏休みの自由研究で地域の川の生き物を調べ、クラスで発表した。", "秋、学芸会で劇の主役に選ばれ、大勢の観客の前で堂々と演じきった。", "冬休み、友達と近所の神社へ初詣に行き、おみくじで大吉を引いて笑い合った。"],
     11: ["6年生。小学校最高学年として、1年生の登校の手助けをした。", "最後の夏休み。友達と自転車で走った夕暮れの土手は一生の思い出になった。", "秋の修学旅行。夜の宿の部屋で友達と夜遅くまで語り合った。", "卒業を前に、地元の中学校の見学に行き、部活動の先輩たちの姿を見学した。"]
   },
-
-  // --- 中学校時代（12〜14歳） ---
   elite_jhs: {
     12: ["難関中高一貫へ入学。周囲の会話のレベルが高く、圧倒される春。", "夏休み、同級生が大学入試レベルの英語を読んでいるのを見て焦りを覚える。", "秋の文化祭。名門校特有の自由な校風とクオリティの高さに圧倒される。", "冬休み、数学の難問演習プリントを解きながら深夜まで机に向かった。"],
     13: ["中2。定期テストの順位がシビアに出るが、なんとか上位をキープする。", "夏合宿。名門校の仲間たちと将来の進路や海外大について語り合った。", "秋の模試。東大合格判定を意識した進路指導が早くも始まる。", "冬。勉強するのが当たり前という環境に慣れ、淡々と日常をこなす。"],
@@ -307,8 +295,6 @@ const NARRATIVE_MAP = {
     13: ["中2になり、後輩ができて少し先輩としての自覚が芽生え始める。", "夏休み、部活の大会で惜しくも敗退。悔しくてロッカールームで涙を流した。", "秋の合唱コンクール。パートリーダーとしてバラバラだった男子をまとめた。", "冬。高校受験を意識し始め、地元の塾で高校入試の過去問に取り組み始める。"],
     14: ["中3。部活を引退し、いよいよ高校受験に向けた受験生モードへ突入。", "夏休みの受験勉強。クーラーの効いた図書館の自習室に毎日通い詰めた。", "秋の進路面談。内申点と模試の偏差値を睨みながら志望校を絞り込む。", "冬。推薦入試と一般入試のプレッシャーの中、体調管理に気をつけて机に向かう。"]
   },
-
-  // --- 高校時代（15〜17歳） ---
   jinnai_action_hs: {
     15: ["高校入学。机の上の勉強だけでなく、外の世界に飛び出す準備を始める。", "夏休み、地域の空き店舗を使ったコミュニティカフェのボランティアに初参加！", "秋、商店街の秋祭りの企画会議に高校生として参加し、大人の議論に驚く。", "冬、町の人たちと焚き火を囲みながら、町の未来について熱く語り合った。"],
     16: ["高2。大人たちと一緒に地域課題を解決するイベントを自ら企画・運営！", "夏休み、大学生や社会人に混ざって合宿に参加。大歓迎され可愛がられる。", "秋、イベントの大成功で地元新聞に『高校生の仕掛け人』として掲載された！", "冬、教科書にはない『人と人を繋ぐ面白さ』に完全に目覚める。"],
@@ -319,8 +305,6 @@ const NARRATIVE_MAP = {
     16: ["高2。志望校を東大・難関大に絞り、勉強時間をさらに増やす日々。", "夏休み、1日12時間勉強を達成したが、何のために学ぶのかは曖昧なまま。", "秋の冠模試。B判定が出て手応えを感じつつも、心の奥の空虚さは消えない。", "冬。周囲のライバルたちと会話することも減り、ひたすら問題集と向き合う。"],
     17: ["高3の春。受験生としてのラストスパート。机の周りは赤本で埋め尽くされる。", "真夏の天王山。過去問20年分を徹底的に解き直し、合格最低点を追う。", "秋。模試の判定に一喜一憂しながら、胃薬を飲む日が増えた。", "冬。いよいよ大学入試本番。これまでの努力のすべてを解答用紙にぶつける。"]
   },
-
-  // --- 大学・社会人時代（18歳以降） ---
   univ_todai: [
     "東大の駒場キャンパス。周囲の圧倒的な知性に囲まれつつ、解のない社会への不安を覚える春。",
     "夏休み、官庁のインターンに参加。政策の現場に触れるが、どこか机上の空論を感じる。",
@@ -343,30 +327,25 @@ const NARRATIVE_MAP = {
 
 function getNarrative(age, seasonIdx) {
   if (age < 6) return NARRATIVE_MAP.infant[age];
-
   if (age >= 6 && age <= 11) {
     if (S.jukuState === "SAPIX_ACTIVE") return NARRATIVE_MAP.sapix[age][seasonIdx];
     if (S.jukuState === "QUIT_PUBLIC") return NARRATIVE_MAP.quit_public[age][seasonIdx];
     return NARRATIVE_MAP.free_public[age][seasonIdx];
   }
-
   if (age >= 12 && age <= 14) {
     if (S.middleRoute === "ELITE") return NARRATIVE_MAP.elite_jhs[age][seasonIdx];
     if (S.middleRoute === "IKKEN_FAIL") return NARRATIVE_MAP.ikken_fail_jhs[age][seasonIdx];
     return NARRATIVE_MAP.public_jhs[age][seasonIdx];
   }
-
   if (age >= 15 && age <= 17) {
     if (S.highRoute === "JINNAI_ACTION") return NARRATIVE_MAP.jinnai_action_hs[age][seasonIdx];
     return NARRATIVE_MAP.juken_focus_hs[age][seasonIdx];
   }
-
   if (age >= 18 && age <= 22) {
     if (S.univRoute === "TODAI") return NARRATIVE_MAP.univ_todai[seasonIdx];
     if (S.univRoute === "PRACTICE") return NARRATIVE_MAP.univ_practice[seasonIdx];
     return NARRATIVE_MAP.univ_no_univ[seasonIdx];
   }
-
   return "選んだ道を着実に歩み、経験と出会いが自分の血肉となっていくのを感じている。";
 }
 
@@ -431,7 +410,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // 12歳・冬：中学受験の結果と進路（すべてのルートで必ず発生！）
+  // 12歳・冬：中学受験の結果と進路（全ルートで必ず発生）
   if (age === 12 && seasonIdx === 3) {
     if (S.jukuState === "SAPIX_ACTIVE") {
       const isPass = Math.random() < 0.45;
@@ -506,7 +485,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // 16歳・春：高校時代の完全分岐（陣内先生／修学旅行／探究）
+  // 16歳・春：高校時代の完全分岐
   if (age === 16 && seasonIdx === 0) {
     if (S.middleRoute === "IKKEN_FAIL") {
       return {
@@ -769,16 +748,29 @@ function startGame() {
 }
 
 function stepForward() {
+  // すでにイベント待ちなら進めない
   if (S.activeEvent) {
     pauseAuto();
     return;
   }
 
-  if (S.age < 6) {
+  if (S.age < 5) {
     S.age++;
     S.year++;
     const narrative = getNarrative(S.age, 0);
     addLog(narrative);
+  } else if (S.age === 5) {
+    // ★ 5歳から6歳・春へ入る瞬間を確実に捕捉
+    S.age = 6;
+    S.seasonIdx = 0;
+    S.year++;
+    const ev = getStoryEvent(6, 0);
+    if (ev) {
+      S.activeEvent = ev;
+      pauseAuto();
+      render();
+      return;
+    }
   } else {
     S.seasonIdx++;
     if (S.seasonIdx >= 4) {
@@ -787,16 +779,16 @@ function stepForward() {
       S.year++;
     }
 
-    // 分岐イベント判定
+    // 決断イベント判定
     const ev = getStoryEvent(S.age, S.seasonIdx);
     if (ev) {
       S.activeEvent = ev;
-      pauseAuto();
+      pauseAuto(); // イベント時は即座に自動送り停止
       render();
       return;
     }
 
-    // 必ずルートと年齢・季節に1対1対応したテキストを出力（重複ゼロ）
+    // 必ず現在歩んでいるルートに1対1対応した専用ストーリーを出力
     const narrative = getNarrative(S.age, S.seasonIdx);
     addLog(narrative);
   }
@@ -821,6 +813,7 @@ function toggleAuto() {
   if (S.autoPlay) {
     pauseAuto();
   } else {
+    if (S.activeEvent) return; // イベント待ち中は開始不可
     S.autoPlay = true;
     S.autoTimer = setInterval(() => {
       stepForward();
@@ -831,7 +824,10 @@ function toggleAuto() {
 
 function pauseAuto() {
   S.autoPlay = false;
-  if (S.autoTimer) clearInterval(S.autoTimer);
+  if (S.autoTimer) {
+    clearInterval(S.autoTimer);
+    S.autoTimer = null;
+  }
   render();
 }
 
@@ -850,10 +846,10 @@ function render() {
         </p>
 
         <div style="background:var(--paper); padding:14px; border-radius:6px; font-size:12px; color:var(--sub); text-align:left; margin:20px 0; line-height:1.7;">
-          <b>【完全修正版のポイント】</b><br>
-          ・<b>テキストの重複ループを完全根絶</b>（全年齢・全季節・全ルートに1対1の専用ストーリー）<br>
-          ・どの選択肢（SAPIX継続・退塾・公立）を選んでも、<b>12歳の決断イベントが確実に発動</b><br>
-          ・中学生に大学生のログが混ざるなどの破綻を完全解消
+          <b>【修正完了】</b><br>
+          ・5歳から6歳への切り替わりで<b>6歳・春のSAPIX入塾判定が100%確実に発動</b>します。<br>
+          ・自動送り中もイベント発生時は即時一時停止し、プレイヤーの選択を待ちます。<br>
+          ・全季節・全ルートに専用テキストを1対1で割り当てているため、同じ文のループは発生しません。
         </div>
 
         <button class="btn" style="width:100%; padding:14px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
@@ -929,7 +925,7 @@ function render() {
 
     <!-- コントロールバー -->
     <div class="control-bar">
-      <button class="btn ${S.autoPlay ? "secondary" : ""}" style="padding: 6px 14px; font-size: 13px;" onclick="toggleAuto()">
+      <button class="btn ${S.autoPlay ? "secondary" : ""}" style="padding: 6px 14px; font-size: 13px;" onclick="toggleAuto()" ${S.activeEvent ? "disabled" : ""}>
         ${S.autoPlay ? "一時停止 ⏸" : "自動で進める（ゆっくり） ▶"}
       </button>
       <button class="btn secondary" style="padding: 6px 14px; font-size: 13px;" onclick="stepForward()" ${S.activeEvent ? "disabled" : ""}>
