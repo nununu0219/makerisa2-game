@@ -2,1355 +2,559 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>80億分の1の、やってみたい。 ― 偶然と地域の人生シミュレーター</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>80億分の1の、やってみたい。- 進化版 -</title>
 <style>
-:root {
-  --paper: #eef1f4;
-  --sheet: #fbfcfd;
-  --ink: #1d2533;
-  --sub: #5b6577;
-  --rule: #cfd6e0;
-  --ai: #24407a;
-  --ai-soft: #dfe6f3;
-  --shu: #c8372d;
-  --shu-soft: #f6dedb;
-  --moss: #3e6b48;
-  --moss-soft: #e5f0e7;
-  --amber: #b46b1d;
-  --amber-soft: #fdf2e4;
-  --display: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  --body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, monospace;
-}
-@media (prefers-color-scheme: dark) {
   :root {
-    --paper: #12161d;
-    --sheet: #1a2029;
-    --ink: #e7ebf1;
-    --sub: #9aa4b5;
-    --rule: #2e3746;
-    --ai: #8eaaf0;
-    --ai-soft: #24304a;
-    --shu: #ef6a5d;
-    --shu-soft: #3d2423;
-    --moss: #86c08c;
-    --moss-soft: #1d2c20;
-    --amber: #e5a758;
-    --amber-soft: #362817;
-    color-scheme: dark;
+    --paper: #f1f5f9;
+    --sheet: #ffffff;
+    --ink: #0f172a;
+    --sub: #475569;
+    --rule: #cbd5e1;
+    --ai: #1d4ed8;
+    --ai-soft: #eff6ff;
+    --shu: #b91c1c;
+    --shu-soft: #fef2f2;
+    --moss: #15803d;
+    --moss-soft: #f0fdf4;
+    --amber: #b45309;
+    --amber-soft: #fffbeb;
   }
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: var(--paper);
-  background-image: repeating-linear-gradient(0deg, transparent 0 31px, rgba(36,64,122,0.04) 31px 32px);
-  color: var(--ink);
-  font-family: var(--body);
-  font-size: 14.5px;
-  line-height: 1.75;
-  -webkit-font-smoothing: antialiased;
-}
-.wrap {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 16px 14px 80px;
-  display: grid;
-  gap: 16px;
-}
-h1, h2, h3, h4 {
-  font-family: var(--display);
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.35;
-}
-.sheet {
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  padding: 18px 20px;
-  box-shadow: 0 1px 0 rgba(29,37,51,0.03), 0 8px 24px -14px rgba(29,37,51,0.22);
-}
-.label {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  color: var(--sub);
-  display: block;
-}
-.num {
-  font-family: var(--mono);
-  font-variant-numeric: tabular-nums;
-}
-.muted { color: var(--sub); }
-button { font: inherit; cursor: pointer; border: 0; background: transparent; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Yu Gothic", sans-serif;
+    line-height: 1.6;
+    padding: 16px 12px 80px;
+  }
+  .wrap { max-width: 660px; margin: 0 auto; display: grid; gap: 14px; }
+  .sheet {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  h1 { font-size: 24px; color: var(--ai); line-height: 1.3; margin-bottom: 6px; }
+  .lead { font-size: 13px; color: var(--sub); margin-bottom: 14px; }
 
-.btn {
-  background: var(--ai);
-  color: #fff;
-  border-radius: 4px;
-  padding: 11px 22px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px -5px rgba(36,64,122,0.5);
-  user-select: none;
-}
-.btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
-.btn:active { transform: translateY(1px); }
-.btn.ghost {
-  background: transparent;
-  color: var(--ai);
-  border: 1px solid var(--ai);
-  box-shadow: none;
-}
-.btn.ghost:hover { background: var(--ai-soft); }
-.btn.shu {
-  background: var(--shu);
-  box-shadow: 0 4px 14px -5px rgba(200,55,45,0.5);
-}
-.btn.big { width: 100%; padding: 14px; font-size: 16px; }
+  /* 出生届カード */
+  .cert {
+    position: relative;
+    border: 2px solid var(--ai);
+    padding: 16px;
+    background: #fff;
+    border-radius: 6px;
+  }
+  .cert h2 { font-size: 16px; color: var(--ai); letter-spacing: 0.2em; text-align: center; margin-bottom: 10px; }
+  .cert-row { display: grid; grid-template-columns: 7em 1fr; gap: 4px; font-size: 13px; margin-bottom: 4px; }
+  .cert-row span { color: var(--sub); }
+  .cert-row b { font-size: 13px; }
+  .hanko {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    width: 56px;
+    height: 56px;
+    border: 2px solid var(--shu);
+    border-radius: 50%;
+    color: var(--shu);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    transform: rotate(-10deg);
+  }
 
-/* 出生届 */
-.cert {
-  position: relative;
-  border: 2px solid var(--ai);
-  padding: 24px 22px;
-  background: var(--sheet);
-  border-radius: 6px;
-  box-shadow: 0 10px 30px -15px rgba(36,64,122,0.25);
-}
-.cert::before {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border: 1px solid var(--ai);
-  opacity: 0.35;
-  pointer-events: none;
-}
-.cert h2 {
-  font-size: 24px;
-  color: var(--ai);
-  letter-spacing: 0.35em;
-  margin-bottom: 4px;
-}
-.hanko {
-  position: absolute;
-  right: 18px;
-  top: 18px;
-  width: 66px;
-  height: 66px;
-  border: 3px solid var(--shu);
-  border-radius: 50%;
-  color: var(--shu);
-  display: grid;
-  place-items: center;
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: 14px;
-  line-height: 1.15;
-  text-align: center;
-  transform: rotate(-10deg);
-  opacity: 0.9;
-  pointer-events: none;
-  animation: stamp 0.5s cubic-bezier(0.2, 1.5, 0.5, 1);
-}
-@keyframes stamp {
-  from { transform: scale(2.3) rotate(-35deg); opacity: 0; }
-  to { transform: scale(1) rotate(-10deg); opacity: 0.9; }
-}
-.cert-dl {
-  display: grid;
-  grid-template-columns: 8em 1fr;
-  gap: 8px 12px;
-  margin: 16px 0 0;
-  font-size: 14px;
-}
-.cert-dl dt { color: var(--sub); font-size: 13px; }
-.cert-dl dd { margin: 0; font-weight: 500; }
+  /* ステータスバー */
+  .topline { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px; }
+  .age-display { font-size: 28px; font-weight: 800; color: var(--ai); }
+  .type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--ai-soft);
+    color: var(--ai);
+    border: 1px solid var(--ai);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+    text-align: center;
+  }
+  .stat-box { background: var(--paper); padding: 8px 4px; border-radius: 6px; }
+  .stat-box span { font-size: 10px; color: var(--sub); display: block; }
+  .stat-box b { font-size: 14px; color: var(--ink); }
 
-/* プレイ中トップ固定バー */
-.sticky-top {
-  position: sticky;
-  top: env(safe-area-inset-top, 6px);
-  z-index: 30;
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  padding: 12px 16px;
-  box-shadow: 0 8px 24px -10px rgba(0,0,0,0.25);
-  display: grid;
-  gap: 8px;
-}
-.top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-}
-.age-num {
-  font-family: var(--display);
-  font-size: 34px;
-  font-weight: 900;
-  line-height: 1;
-  color: var(--ai);
-}
-.who-box {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.who-name {
-  font-size: 17px;
-  font-weight: 700;
-  font-family: var(--display);
-}
-.who-tag {
-  font-size: 12px;
-  background: var(--ai-soft);
-  color: var(--ai);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-weight: 500;
-}
-.stat-bars {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
-}
-@media (max-width: 600px) {
-  .stat-bars { grid-template-columns: repeat(3, 1fr); gap: 6px 8px; }
-}
-.s-col {
-  display: grid;
-  gap: 2px;
-}
-.s-col span {
-  font-size: 11px;
-  color: var(--sub);
-  display: flex;
-  justify-content: space-between;
-}
-.bar-wrap {
-  height: 6px;
-  background: var(--rule);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.bar-wrap i {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.35s ease;
-}
+  /* 決断カード */
+  .decision-box {
+    border: 2px solid var(--shu);
+    background: var(--shu-soft);
+    border-radius: 6px;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+  }
+  .decision-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--shu);
+    letter-spacing: 0.1em;
+  }
+  .decision-title { font-size: 15px; font-weight: 700; line-height: 1.4; }
+  .choice-btn {
+    text-align: left;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: all 0.15s;
+  }
+  .choice-btn:hover { border-color: var(--ai); background: var(--ai-soft); }
+  .choice-btn small { display: block; color: var(--sub); font-size: 11px; margin-top: 3px; }
 
-/* 場面ピクセルキャンバス */
-canvas.pixel-scene {
-  width: 100%;
-  aspect-ratio: 96 / 36;
-  display: block;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  background: #cbe9f5;
-  border-radius: 4px;
-}
-.scene-caption {
-  font-size: 12px;
-  color: var(--sub);
-  margin-top: 6px;
-  text-align: right;
-}
+  /* 年表ログ */
+  .log-container {
+    display: grid;
+    gap: 6px;
+    max-height: 340px;
+    overflow-y: auto;
+    font-size: 13px;
+    padding-right: 4px;
+  }
+  .log-row {
+    padding: 6px 4px;
+    border-bottom: 1px dashed var(--rule);
+    display: grid;
+    grid-template-columns: 3.5em 1fr;
+    gap: 8px;
+    line-height: 1.5;
+  }
+  .log-row .yr { color: var(--sub); font-size: 12px; font-family: monospace; }
+  .log-row.turning {
+    color: var(--shu);
+    font-weight: 700;
+    background: var(--shu-soft);
+    border-radius: 4px;
+    border-bottom: none;
+  }
+  .log-row.growth {
+    color: var(--moss);
+    font-weight: 600;
+    background: var(--moss-soft);
+    border-radius: 4px;
+    border-bottom: none;
+  }
 
-/* 決断カード */
-.decision-wrap {
-  border: 2px solid var(--shu);
-  background: var(--sheet);
-  border-radius: 6px;
-  padding: 16px 18px;
-  box-shadow: 0 10px 28px -12px rgba(200,55,45,0.4);
-  display: grid;
-  gap: 8px;
-}
-.choice-list {
-  display: grid;
-  gap: 8px;
-  margin-top: 6px;
-}
-.choice-btn {
-  text-align: left;
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 10px 14px;
-  color: var(--ink);
-  transition: all 0.2s;
-}
-.choice-btn:hover {
-  background: var(--shu-soft);
-  border-color: var(--shu);
-  transform: translateX(2px);
-}
-.choice-btn b { display: block; font-size: 14px; }
-.choice-btn small { display: block; color: var(--sub); font-size: 11.5px; margin-top: 2px; }
+  /* ボタン */
+  .btn {
+    background: var(--ai);
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn-group { display: flex; gap: 8px; }
+  .btn-group .btn { flex: 1; }
 
-/* 年表ログ */
-.log-box {
-  max-height: 440px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-.ev-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: 3.8em 1fr;
-  gap: 10px;
-  padding: 8px 0 8px 4px;
-  border-bottom: 1px dashed var(--rule);
-}
-.ev-row .age-col {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--sub);
-  padding-top: 2px;
-  position: relative;
-}
-.ev-row .age-col::after {
-  content: "";
-  position: absolute;
-  right: -6px;
-  top: 9px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--rule);
-}
-.ev-row.big .age-col::after { background: var(--ai); box-shadow: 0 0 0 3px var(--ai-soft); }
-.ev-row.red .age-col::after { background: var(--shu); box-shadow: 0 0 0 3px var(--shu-soft); }
-.ev-row.moss .age-col::after { background: var(--moss); box-shadow: 0 0 0 3px var(--moss-soft); }
-.ev-row.big { background: linear-gradient(90deg, var(--ai-soft), transparent 80%); border-radius: 4px; padding-left: 8px; }
-.ev-row.red { background: linear-gradient(90deg, var(--shu-soft), transparent 80%); border-radius: 4px; padding-left: 8px; }
-.ev-row.moss { background: linear-gradient(90deg, var(--moss-soft), transparent 80%); border-radius: 4px; padding-left: 8px; }
-.ev-row p { margin: 0; font-size: 14px; }
-.ev-row.big p { font-weight: 700; color: var(--ink); }
-.ev-row.red p { color: var(--shu); }
-.ev-row.moss p { color: var(--moss); font-weight: 700; }
-.ev-row.note p { font-family: var(--display); color: var(--ai); }
-
-/* コントロール・ボタン群 */
-.ctrl-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.chip {
-  background: var(--sheet);
-  border: 1px solid var(--rule);
-  color: var(--ink);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 500;
-}
-.chip:hover { border-color: var(--ai); }
-.chip[aria-pressed="true"] {
-  background: var(--ink);
-  color: var(--sheet);
-  border-color: var(--ink);
-}
-
-/* 結末画面 */
-.lifetitle {
-  font-family: var(--display);
-  font-size: 24px;
-  font-weight: 900;
-  margin: 10px 0 6px;
-  padding: 10px 14px;
-  background: var(--ai-soft);
-  border-left: 5px solid var(--ai);
-  border-radius: 0 6px 6px 0;
-}
-.epitaph {
-  font-family: var(--display);
-  font-size: 15px;
-  line-height: 1.85;
-  padding-left: 12px;
-  border-left: 2px solid var(--rule);
-  margin: 10px 0;
-}
-.facts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
-}
-.facts-grid div {
-  border-top: 1px solid var(--rule);
-  padding-top: 6px;
-}
-.facts-grid b { display: block; font-size: 16px; }
-.bonds-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
-}
-.bond-tag {
-  background: var(--moss-soft);
-  color: var(--moss);
-  border: 1px solid var(--moss);
-  border-radius: 4px;
-  padding: 3px 10px;
-  font-size: 12px;
-  font-weight: 700;
-}
-.grades-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin-top: 10px;
-}
-.grades-grid div {
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  padding: 8px 4px;
-  text-align: center;
-  background: var(--paper);
-}
-.grades-grid span { font-size: 11px; color: var(--sub); display: block; }
-.grades-grid b { font-family: var(--display); font-size: 22px; }
+  /* 選択タイプカード */
+  .type-select-grid {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .type-card {
+    text-align: left;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+  .type-card:hover { border-color: var(--ai); background: var(--ai-soft); }
+  .type-card b { display: block; font-size: 13px; color: var(--ink); }
+  .type-card small { display: block; font-size: 11px; color: var(--sub); margin-top: 2px; }
 </style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
 
 <script>
-// ==========================================
-// 47都道府県 リアル人口統計データベース (2024最新基準)
-// [県, 出生数, 乳児死亡, 婚姻, 離婚, 寿命男, 寿命女, 大学進学率, 高卒就職率, 県外就職率, 人口千人]
-// ==========================================
-const RAW = `北海道,22658,52,17618,8778,80.92,87.08,51.7,17.8,5.9,5043
-青森,5099,11,3313,1752,79.27,86.33,53.5,23.7,38.3,1165
-岩手,4896,8,3284,1449,80.64,87.05,47.6,25.6,27.5,1145
-宮城,11242,21,8157,3177,81.70,87.51,55.5,18.5,18.5,2248
-秋田,3282,3,2247,1043,80.48,87.10,47.5,27.0,25.9,897
-山形,4699,11,2946,1181,81.39,87.38,48.8,24.5,20.5,1011
-福島,8216,18,5495,2600,80.60,86.81,50.1,25.7,16.5,1743
-茨城,13976,36,9414,4176,80.89,86.94,56.5,17.3,13.4,2806
-栃木,9262,16,6537,2748,81.00,86.89,57.0,18.4,18.6,1885
-群馬,9334,19,6246,2783,81.13,87.18,57.6,16.1,14.1,1890
-埼玉,39956,57,28250,10562,81.44,87.31,64.6,10.5,29.9,7332
-千葉,33763,53,24093,9110,81.45,87.50,62.5,9.9,18.8,6251
-東京,84207,113,76441,20424,81.77,87.86,72.9,4.5,13.5,14178
-神奈川,51423,112,39586,13202,82.04,87.89,68.2,6.4,18.5,9225
-新潟,9941,22,6352,2472,81.29,87.57,53.8,14.3,9.5,2099
-富山,5078,6,3324,1096,81.74,87.97,57.5,19.7,5.3,997
-石川,6078,7,3761,1356,82.00,88.11,60.2,17.6,8.9,1098
-福井,4383,3,2584,913,81.98,87.84,62.7,17.6,10.2,739
-山梨,4153,7,2781,1167,81.71,87.94,61.2,14.4,12.1,791
-長野,10513,18,6728,2626,82.68,88.23,54.4,15.8,10.2,1987
-岐阜,9831,21,6263,2625,81.90,87.51,60.0,19.3,24.0,1916
-静岡,17439,17,12316,4902,81.59,87.48,57.3,18.2,8.9,3527
-愛知,45514,90,32250,11109,81.77,87.52,62.8,15.6,5.2,7460
-三重,8896,10,6095,2533,81.68,87.59,54.9,23.9,12.5,1711
-滋賀,8795,19,5304,1901,82.73,88.26,61.6,15.3,8.9,1402
-京都,12938,24,9037,3650,82.24,88.25,73.0,6.4,21.6,2520
-大阪,53351,90,39387,15141,80.81,87.37,67.6,8.4,9.4,8757
-兵庫,30535,64,19676,8262,81.72,87.90,67.1,11.2,16.1,5337
-奈良,6697,22,3856,1857,82.40,87.95,64.7,9.6,33.8,1285
-和歌山,4457,14,2966,1479,81.03,87.36,57.0,17.9,22.7,880
-鳥取,3092,5,1738,781,81.34,87.91,52.0,19.1,23.8,531
-島根,3622,3,1982,830,81.63,88.21,50.0,20.0,22.0,642
-岡山,10926,20,6753,2908,81.90,88.29,57.3,19.2,20.3,1831
-広島,15765,37,10099,4099,81.95,88.16,64.8,12.0,12.6,2714
-山口,6777,10,4189,1817,81.12,87.43,47.3,27.0,16.8,1281
-徳島,3547,6,2280,996,81.27,87.42,59.6,19.8,23.1,685
-香川,5059,10,3327,1440,81.56,87.64,58.4,15.8,14.8,917
-愛媛,6557,6,4104,1884,81.13,87.34,57.6,18.3,20.2,1276
-高知,3108,7,2071,1074,80.79,87.84,56.0,14.4,29.2,656
-福岡,32280,78,21033,8927,81.38,87.70,58.5,14.6,18.9,5092
-佐賀,4824,13,2609,1159,81.41,87.78,47.9,28.0,34.2,788
-長崎,7000,14,4114,1902,81.01,87.41,48.4,25.9,30.4,1252
-熊本,10337,25,5981,2781,81.91,88.22,49.0,23.0,36.8,1697
-大分,5957,11,3608,1736,81.88,87.99,52.2,21.8,23.5,1085
-宮崎,6000,13,3444,1777,81.15,87.60,48.7,25.5,36.2,1033
-鹿児島,8939,19,5065,2497,80.95,87.53,46.4,23.7,36.8,1532
-沖縄,11753,23,6388,3222,80.73,87.88,46.3,13.5,27.9,1466`;
-
-const SUF = { 北海道:"", 東京:"都", 京都:"府", 大阪:"府" };
-const PREFS = RAW.trim().split("\n").map(l => {
-  const f = l.split(",");
-  return {
-    n: f[0],
-    full: f[0] + (f[0] in SUF ? SUF[f[0]] : "県"),
-    b: +f[1], inf: +f[2], mar: +f[3], div: +f[4],
-    leM: +f[5], leF: +f[6], uni: +f[7], job: +f[8], out: +f[9], pop: +f[10]
-  };
-});
-const TOTAL_BIRTHS = PREFS.reduce((s, p) => s + p.b, 0);
-
-// 実在高校データ（一部）
-const HS_DATA = {
-  "愛媛": [["内子高校小田分校", 44, "内子町"], ["松山東高校", 69, "松山市"], ["今治西高校", 65, "今治市"], ["大洲高校", 57, "大洲市"]],
-  "島根": [["隠岐島前高校", 51, "海士町"], ["隠岐高校", 45, "隠岐の島町"], ["松江北高校", 67, "松江市"], ["出雲高校", 63, "出雲市"]],
-  "鹿児島": [["川薩清修館高校", 46, "さつま町"], ["鶴丸高校", 73, "鹿児島市"], ["甲南高校", 69, "鹿児島市"], ["宮之城高校跡", 44, "さつま町"]],
-  "東京": [["都立日比谷高校", 74, "千代田区"], ["都立戸山高校", 71, "新宿区"], ["都市大等々力高校", 66, "世田谷区"], ["多摩高校", 52, "多摩市"]],
-  "Default": [["県立第一高校", 66], ["県立西高校", 58], ["市立総合高校", 49], ["南高校", 43]]
-};
-
-// 実在大学データ（一部）
-const UNIV_DATA = [
-  { name: "東京都市大学", fac: "都市生活学部", dev: 52, note: "坂倉研究室・現場実践型" },
-  { name: "東京大学", fac: "教養学部", dev: 67.5, note: "国立最難関" },
-  { name: "早稲田大学", fac: "社会科学部", dev: 65, note: "私立名門" },
-  { name: "愛媛大学", fac: "社会共創学部", dev: 50, note: "地方創生型" },
-  { name: "島根大学", fac: "地域共創学部", dev: 48, note: "中山間・離島探究" },
-  { name: "鹿児島大学", fac: "法文学部", dev: 50, note: "地域政策" },
-  { name: "地元の国公立大学", fac: "経済学部", dev: 50, note: "手堅い進路" },
-  { name: "中堅私立大学", fac: "商学部", dev: 46, note: "一般的な文系" }
+// --- 都道府県統計サンプル ---
+const PREFS = [
+  { n: "東京都", b: 140 }, { n: "神奈川県", b: 90 }, { n: "大阪府", b: 85 },
+  { n: "愛知県", b: 75 }, { n: "埼玉県", b: 70 }, { n: "千葉県", b: 60 },
+  { n: "兵庫県", b: 50 }, { n: "北海道", b: 50 }, { n: "福岡県", b: 50 },
+  { n: "静岡県", b: 35 }, { n: "愛媛県", b: 12 }, { n: "島根県", b: 8 },
+  { n: "鹿児島県", b: 15 }, { n: "長野県", b: 20 }, { n: "岩手県", b: 11 }
 ];
+const LAST_NAMES = ["佐藤", "鈴木", "高橋", "田中", "渡辺", "伊藤", "山本", "中村", "小林", "加藤", "高野", "杉本"];
+const FIRST_NAMES_M = ["蓮", "湊", "慎之介", "樹", "悠真", "朝陽", "颯", "律", "拓海", "翔太"];
+const FIRST_NAMES_F = ["陽葵", "凛", "結菜", "晴美", "紬", "澪", "咲良", "芽依", "莉子", "美月"];
 
-// 時事イベント・歴史背景
-const NEWS_EVENTS = {
-  2024: "新紙幣発行。能登半島地震支援。各地で地域おこし協力隊や関係人口の取り組みが注目される。",
-  2025: "大阪・関西万博開催。地方留学や多拠点居住を支援する制度が全国に拡大。",
-  2028: "空き家再生法が強化。全国のシャッター商店街で若者によるカフェやシェアオフィスの開業が急増。",
-  2030: "AI自動化が進展。マニュアルワークから「人と人との泥臭い共創」へ価値が大きくシフト。",
-  2035: "地方移住支援が定着。都会と地方を行き来する二拠点ワーカーが若年層の定番スタイルに。"
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// 学生インタビューから抽出した初期キャラクタータイプ
+const STUDENT_TYPES = {
+  TAP: {
+    name: "グローバル・語学志向型（①②⑥タイプ）",
+    mottoInit: 10,
+    insightInit: 15,
+    friendsInit: 8,
+    desc: "海外やマーケティングに関心があり、国内の地方や地域活動には興味が薄い。"
+  },
+  WAIT: {
+    name: "受動・様子見型（④⑤タイプ）",
+    mottoInit: 15,
+    insightInit: 10,
+    friendsInit: 10,
+    desc: "非日常には惹かれるが、一人で飛び込むのが不安で締切を逃しがち。"
+  },
+  ACTION: {
+    name: "課題意識先行・内気打破型（③タイプ）",
+    mottoInit: 25,
+    insightInit: 10,
+    friendsInit: 5,
+    desc: "元々は内気だが「自分を変えたい」という強い動機があり、実践の場を求めている。"
+  }
 };
 
-const SURNAMES = ["高野", "杉本", "佐藤", "鈴木", "高橋", "田中", "渡辺", "伊藤", "山本", "中村", "小林", "加藤", "松下", "坂倉", "三浦"];
-const NAMES_M = ["慎之介", "蓮", "湊", "大和", "樹", "悠真", "拓海", "光", "颯太", "陸"];
-const NAMES_F = ["晴美", "陽葵", "凛", "結菜", "紬", "咲良", "芽依", "澪", "葵", "千尋"];
-
-const R = Math.random;
-const pick = (arr) => arr[Math.floor(R() * arr.length)];
-const wpick = (items, weights) => {
-  let total = weights.reduce((a, b) => a + b, 0);
-  let r = R() * total;
-  for (let i = 0; i < items.length; i++) {
-    r -= weights[i];
-    if (r <= 0) return items[i];
-  }
-  return items[items.length - 1];
+let S = {
+  screen: "TITLE", // TITLE, PLAY, END
+  year: 2004,
+  age: 0,
+  sex: "M",
+  name: "",
+  pref: "",
+  typeKey: "WAIT",
+  type: STUDENT_TYPES.WAIT,
+  motto: 10,
+  insight: 10,
+  friends: 5,
+  happiness: 50,
+  title: "名もなき乳児",
+  logs: [],
+  decision: null
 };
-const clamp = (v, min = 0, max = 100) => Math.max(min, Math.min(max, v));
 
-// ==========================================
-// 人生シミュレーター状態管理
-// ==========================================
-let L = null;
-let timer = null;
-let isPaused = false;
-let autoSpeed = 1500; // ms
+// 決断イベント辞書
+const EVENTS = {
+  15: {
+    title: "15歳・高校受験：進路が見つからない",
+    desc: "やりたいことが定まらず勉強に身が入らない。父が『地域未来留学』のパンフレットを持ってきた。",
+    choices: [
+      {
+        t: "誰も自分を知らない環境へ！愛媛・小田分校へ留学",
+        sub: "やってみたい指数+25 / 視野+30 / 味方+15",
+        act: () => {
+          S.motto += 25; S.insight += 30; S.friends += 15;
+          S.pref = "愛媛県内子町（小田分校）";
+          addLog("愛媛の小田分校へ進学。自然と町の人々の温かさに触れ、都市と地方のコミュニティの違いに目覚める。", "turning");
+        }
+      },
+      {
+        t: "地元の普通科高校に進学し、部活と勉強を無難にこなす",
+        sub: "幸福度+5 / 現状維持",
+        act: () => {
+          S.happiness += 5;
+          addLog("地元の高校へ進学。周囲と同じレールに乗りながら、どこか物足りなさを感じる。", "");
+        }
+      }
+    ]
+  },
+  18: {
+    title: "18歳・大学進学：何のために大学で学ぶのか？",
+    desc: "高校での探究や経験を経て進路を選ぶ。どの道へ進む？",
+    choices: [
+      {
+        t: "東京都市大学 都市生活学部へ進み、まちづくりを実践的に学ぶ",
+        sub: "やってみたい指数+20 / 視野+25 / 味方+20",
+        act: () => {
+          S.motto += 20; S.insight += 25; S.friends += 20;
+          S.title = "都市生活の探究者";
+          addLog("東京都市大学 都市生活学部に進学。講義だけでなく、街に出て人や空間に関わる学びに触れる。", "turning");
+        }
+      },
+      {
+        t: "就職に有利とされる経済学部で無難に単位を揃える",
+        sub: "視野+10",
+        act: () => {
+          S.insight += 10;
+          S.title = "堅実な大学生";
+          addLog("総合大学の経済学部に進学。授業が単位を取るためのルーティンになり、焦りが生まれる。", "");
+        }
+      }
+    ]
+  },
+  20: {
+    title: "20歳・大学2年の分水嶺：坂倉研のさつま町合宿の案内",
+    desc: "大学生活に慣れたが「何も成し遂げずに終わってしまうのでは」と焦る。鹿児島・さつま町での合宿案内が目に入った。",
+    choices: [
+      {
+        t: "【単身参加】一人で不安だが思い切って応募！農家・松下さんと半日を共にする",
+        sub: "やってみたい指数+35 / 視野+30 / 味方+30",
+        act: () => {
+          S.motto += 35; S.insight += 30; S.friends += 30;
+          S.title = "地域に飛び込む若者";
+          addLog("さつま町で農家の松下さんの暮らしに触れ感動。『さつま人のなんかいい暮らし展』を企画・発表！", "turning");
+        }
+      },
+      {
+        t: "【海外・TAP留学】地方ではなく、語学と異文化を学びにオーストラリアへ！",
+        sub: "視野+35 / やってみたい指数+15 / 味方+15",
+        act: () => {
+          S.insight += 35; S.motto += 15; S.friends += 15;
+          S.title = "TAP留学生";
+          addLog("オーストラリアでのTAP留学を経験。日本とのコンビニの距離や生活環境の違いから視野を広げる。", "growth");
+        }
+      },
+      {
+        t: "【見送り】一人で参加するハードルが高く、気づいたら締切が過ぎていた…",
+        sub: "幸福度+5 / やってみたい指数-5",
+        act: () => {
+          S.motto = Math.max(0, S.motto - 5);
+          S.happiness += 5;
+          addLog("合宿には惹かれたが、ソロ参加の不安と予定の調整がつかず断念。夏休みをバイトで消化する。", "");
+        }
+      }
+    ]
+  },
+  21: {
+    title: "21歳・島根県隠岐島でのインターン：指示待ちの自分を壊す",
+    desc: "島のプロジェクトに参加。チラシ制作で自分の意見が周りと合わず、思うように動けない。",
+    choices: [
+      {
+        t: "相手の意見を聞き、質問を重ねて泥臭く一緒に作り直す",
+        sub: "やってみたい指数+25 / 視野+30 / 味方+35",
+        act: () => {
+          S.motto += 25; S.insight += 30; S.friends += 35;
+          S.title = "共創する仕掛け人";
+          addLog("隠岐で『人と関わる力・自分から動く力』を獲得！感謝を行動で返す大切さを体感する。", "turning");
+        }
+      },
+      {
+        t: "波風を立てず、指示された作業だけを納品して終わらせる",
+        sub: "視野+5",
+        act: () => {
+          S.insight += 5;
+          addLog("指示された範囲でインターンを消化。島の人たちと深く心を通わせることはできなかった。", "");
+        }
+      }
+    ]
+  }
+};
 
-function initNewBorn() {
-  const p = wpick(PREFS, PREFS.map(x => x.b));
-  const sex = R() < 0.512 ? "M" : "F";
-  const ln = pick(SURNAMES);
-  const fn = sex === "M" ? pick(NAMES_M) : pick(NAMES_F);
-  
-  const pjobs = ["会社員", "公務員", "商店・自営業", "農林水産業", "教員", "看護師", "パート・フリーター"];
-  const dadJob = pick(pjobs);
-  const momJob = pick(["専業主婦", "パート", "会社員", "地域コミュニティ運営", "公務員"]);
-  
-  L = {
-    name: `${ln} ${fn}`,
-    sex: sex,
-    pref: p,
-    home: p.full,
-    currentWhere: p.full,
-    age: 0,
-    alive: true,
-    birthYear: 2024,
-    
-    // 6大パラメータ (0〜100)
-    stats: {
-      spark: 8,       // やってみたい指数（初期は未覚醒）
-      horizon: 15,    // 視野・自己理解
-      allies: 15,     // 頼れる味方・地域の精神的支柱
-      study: 48,      // 学力・探究力
-      health: 65,     // 体力・健康
-      joy: 50         // 幸福度
-    },
-    
-    assets: 0,        // 万円
-    income: 0,
-    lifetime: 0,
-    
-    school: "未就学",
-    job: "乳幼児",
-    company: "",
-    married: false,
-    partner: "",
-    kids: [],
-    cause: "",
-    
-    // 家の背景
-    dadName: `${ln} ${pick(NAMES_M)}`,
-    momName: `${ln} ${pick(NAMES_F)}`,
-    dadJob: dadJob,
-    momJob: momJob,
-    
-    // Y7マケリサ連動フラグ
-    flags: {
-      tatataHouse: (dadJob.includes("自営") || momJob.includes("地域")) && R() < 0.4,
-      odaBunko: false,       // 愛媛・小田分校（地域未来留学）
-      satsumaTrip: false,    // 鹿児島さつま町合宿
-      okiIntern: false,      // 隠岐諸島インターン
-      tamaYouth: false,      // 多摩市若者会議・Michi Cafe
-      discoveredSpark: false // 「やってみたい」が開花したか
-    },
-    
-    bonds: [],               // 出会ったキーパーソン
-    events: [],
-    pendingDec: null
-  };
-  
-  addLog(0, `${L.home}で誕生。父・${L.dadName}（${L.dadJob}）、母・${L.momName}（${L.momJob}）。${L.flags.tatataHouse ? '実家が街のコミュニティスペース「タタタハウス」を兼ねており、多様な大人が出入りする。' : ''}`, "big");
+function addLog(text, type = "") {
+  S.logs.unshift({ age: S.age, year: S.year, text, type });
 }
 
-function addLog(age, text, cls = "") {
-  L.events.unshift({
-    age: age,
-    year: L.birthYear + age,
-    text: text,
-    cls: cls
-  });
+function startGame(typeKey) {
+  S.typeKey = typeKey;
+  S.type = STUDENT_TYPES[typeKey];
+  const isM = Math.random() < 0.5;
+  S.sex = isM ? "M" : "F";
+  const ln = pick(LAST_NAMES);
+  const fn = pick(isM ? FIRST_NAMES_M : FIRST_NAMES_F);
+  S.name = `${ln} ${fn}`;
+  S.pref = pick(PREFS).n;
+  S.year = 2004;
+  S.age = 0;
+  S.motto = S.type.mottoInit;
+  S.insight = S.type.insightInit;
+  S.friends = S.type.friendsInit;
+  S.happiness = 60;
+  S.title = "産声をあげた子";
+  S.logs = [];
+  S.decision = null;
+  S.screen = "PLAY";
+  addLog(`${S.pref}にて出生。日本の総人口約1億2700万人、世界約64億人の一人として生まれる。`, "growth");
+  render();
 }
 
-// 死亡判定（人口動態統計ベース）
-function checkMortality(L) {
-  const age = L.age;
-  let q = 0.0002;
-  if (age === 0) q = L.pref.inf / L.pref.b;
-  else if (age < 15) q = 0.00015;
-  else if (age < 30) q = 0.00045;
-  else if (age < 50) q = 0.0018;
-  else if (age < 70) q = 0.0075 + (age - 50) * 0.0008;
-  else if (age < 85) q = 0.028 + (age - 70) * 0.004;
-  else q = 0.12 + (age - 85) * 0.015;
+function stepYear() {
+  if (S.decision) return;
+  S.age++;
+  S.year++;
 
-  if (R() < q) {
-    L.alive = false;
-    let cause = "病気";
-    if (age === 0) cause = "乳幼児突然死症候群";
-    else if (age < 20) cause = pick(["交通事故", "病気", "不慮の事故"]);
-    else if (age < 50) cause = pick(["急性心不全", "交通事故", "がん"]);
-    else if (age < 75) cause = pick(["肺がん", "心筋梗塞", "脳梗塞"]);
-    else cause = pick(["老衰", "肺炎", "心不全", "誤嚥性肺炎"]);
-    
-    L.cause = cause;
-    addLog(age, `${cause}のため息を引き取った。享年${age}歳。`, "red big");
-    return true;
-  }
-  return false;
-}
-
-// ==========================================
-// 決断イベント生成（マケリサの文脈＋人生の選択）
-// ==========================================
-function triggerDecision() {
-  const age = L.age;
-  const F = L.flags;
-  
-  // 15歳：高校受験（進路迷子 vs 地域未来留学）
-  if (age === 15 && !F.hs_decided) {
-    F.hs_decided = true;
-    return {
-      title: "高校受験前。「やりたいことが見つからない…」",
-      desc: "みんな進路に向けて動き始めているのに、受験勉強にも身が入らない。父が『地域未来留学っていうのがあってね、田舎の高校に進学できるみたいだよ』とパンフレットを見せてくれた。",
-      opts: [
-        {
-          t: "「誰も自分を知らない環境で新しい生活をしてみたい」と愛媛・小田分校へ進学する",
-          s: "親元を離れ愛媛県内子町へ。視野+30、やってみたい+25",
-          f: () => {
-            F.odaBunko = true;
-            L.school = "愛媛県立内子高校小田分校";
-            L.currentWhere = "愛媛県内子町（小田）";
-            L.stats.horizon = clamp(L.stats.horizon + 30);
-            L.stats.spark = clamp(L.stats.spark + 25);
-            L.stats.allies = clamp(L.stats.allies + 15);
-            L.bonds.push("小田分校の先生と寮の仲間");
-            addLog(15, "小田分校へ進学！知らなかった里山の世界に触れ、地方と都市のコミュニティの違いに強い関心を持ち始める。", "moss");
-          }
-        },
-        {
-          t: "実家のコミュニティスペースを手伝いながら、地元の公立高校へ通う",
-          s: "地域の味方+20、安心感+15",
-          f: () => {
-            F.tatataHouse = true;
-            L.school = "地元の公立高校";
-            L.stats.allies = clamp(L.stats.allies + 20);
-            L.stats.joy = clamp(L.stats.joy + 10);
-            L.bonds.push("実家のコミュニティスペース常連さん");
-            addLog(15, "地元の高校に通いながら、コミュニティスペースの手伝い。世代を超えた会話に面白さを感じる。", "big");
-          }
-        },
-        {
-          t: "特にこだわりなく、偏差値の合う地元の進学校へ行く",
-          s: "波風を立てない。現状維持",
-          f: () => {
-            L.school = "県立普通科高校";
-            addLog(15, "なんとなく合格した地元の高校へ進学。やりたいことは見つからないまま、毎日は過ぎていく。", "");
-          }
-        }
-      ]
-    };
-  }
-
-  // 18歳：大学進学（都市生活学部・実践系か、通常の学部か）
-  if (age === 18 && !F.univ_decided) {
-    F.univ_decided = true;
-    return {
-      title: "18歳、大学進学。何を学びたいのか？",
-      desc: "受験勉強はこなしてきたが、『本当にやりたいこと』は何だろう。まちづくりやコミュニティ、人を深く学べる学部が目に留まる。",
-      opts: [
-        {
-          t: "コミュニティと都市生活を実践的に学べる大学・学部へ進学する",
-          s: "東京都市大学 都市生活学部など。視野+25、やってみたい+20",
-          f: () => {
-            L.school = "東京都市大学 都市生活学部";
-            L.currentWhere = "東京都世田谷区（等々力）";
-            L.stats.horizon = clamp(L.stats.horizon + 25);
-            L.stats.spark = clamp(L.stats.spark + 20);
-            L.bonds.push("坂倉研究室の仲間");
-            addLog(18, "東京都市大学 都市生活学部に進学！机上の勉強だけでなく、地域に飛び込むプロジェクト型学習が始まった。", "moss");
-          }
-        },
-        {
-          t: "就職に有利と言われる経済学部・商学部へ無難に進む",
-          s: "安定志向。視野+10",
-          f: () => {
-            L.school = "私立大学 経済学部";
-            L.stats.horizon = clamp(L.stats.horizon + 10);
-            addLog(18, "都内の大学に進学。単位を取るための講義とアルバイトを繰り返す日々が続く。", "");
-          }
-        },
-        {
-          t: "大学には行かず、地元で就職して現場で働く",
-          s: "高卒就職。自立して働く",
-          f: () => {
-            L.school = "高校卒";
-            L.job = "地元企業・販売職";
-            L.income = 240;
-            L.assets += 50;
-            addLog(18, "大学には進学せず、地元の企業に就職。早くも社会人としての自立を果たす。", "big");
-          }
-        }
-      ]
-    };
-  }
-
-  // 20歳：大学2年生の焦りと、地域の合宿（さつま町・坂倉研合宿）
-  if (age === 20 && !F.lab_decided && L.school.includes("大学")) {
-    F.lab_decided = true;
-    return {
-      title: "大学2年生の焦り。『このままで何も成し遂げずに終わってしまうのでは…』",
-      desc: "大学生活には慣れたけれど、自分には何もない気がする。そんな中、地域コミュニティの研究合宿（鹿児島県さつま町）の公募が目に入った。",
-      opts: [
-        {
-          t: "鹿児島県さつま町の合宿に飛び込み、農家の松下さんと半日を共にする",
-          s: "さつま町での体験。やってみたい+35、地域の味方+25",
-          f: () => {
-            F.satsumaTrip = true;
-            L.stats.spark = clamp(L.stats.spark + 35);
-            L.stats.allies = clamp(L.stats.allies + 25);
-            L.stats.horizon = clamp(L.stats.horizon + 25);
-            L.bonds.push("さつま町の農家・松下さん");
-            addLog(20, "鹿児島県さつま町合宿に参加！松下さんと過ごし、言葉だけでは説明しきれない暮らしの魅力に感動。『さつま人のなんかいい暮らし展』をポスターにまとめて発表した！", "moss");
-          }
-        },
-        {
-          t: "「二年夏を返上してまで地方に行くのはな…」と都内でバイトに明け暮れる",
-          s: "所持金+15万円、やってみたい指数は停滞",
-          f: () => {
-            L.assets += 15;
-            L.stats.spark = clamp(L.stats.spark - 5);
-            addLog(20, "夏休みは居酒屋バイトで消化。周りが何かに夢中になっている姿を見て、言いようのない焦燥感を覚える。", "red");
-          }
-        }
-      ]
-    };
-  }
-
-  // 21歳：島根・隠岐諸島での短期インターン（杉本晴美のエピソード）
-  if (age === 21 && !F.oki_decided && L.school.includes("大学")) {
-    F.oki_decided = true;
-    return {
-      title: "隠岐諸島インターンシップ。「自分から話しかけるのは苦手だけど…」",
-      desc: "島根県の離島で、商店街や観光、チラシづくりの手伝いをする短期インターンの募集。『仕事を任されるまで待つ自分』を脱却したい。",
-      opts: [
-        {
-          t: "思い切って隠岐の島へ！島民とぶつかりながらチラシを共同制作する",
-          s: "やってみたい+40、行動力と自己肯定感の爆発的向上",
-          f: () => {
-            F.okiIntern = true;
-            F.discoveredSpark = true;
-            L.stats.spark = clamp(L.stats.spark + 40);
-            L.stats.allies = clamp(L.stats.allies + 30);
-            L.stats.horizon = clamp(L.stats.horizon + 30);
-            L.bonds.push("隠岐の世話焼きな島民たち");
-            addLog(21, "隠岐島でインターン。初めての仕事で意見が合わず戸惑うも、相手の話を聞き質問することで協創の喜びを知る！『ありがとう隠岐』の気持ちを胸に東京へ戻る。", "moss");
-          }
-        },
-        {
-          t: "自己分析本を読みあさり、都内のオフィスで短期インターンを済ませる",
-          s: "就活テクニック+15",
-          f: () => {
-            L.stats.horizon = clamp(L.stats.horizon + 10);
-            addLog(21, "都心のビルでグループディスカッション対策。きれいな言葉は並べられるようになったが、胸の高鳴りはなかった。", "");
-          }
-        }
-      ]
-    };
-  }
-
-  // 22歳：新卒の進路選択
-  if (age === 22 && !F.career_decided) {
-    F.career_decided = true;
-    const canDoCommunity = L.stats.spark >= 50 || F.okiIntern || F.satsumaTrip;
-    
-    return {
-      title: "大学卒業。80億人の中で、私はどの道を行くか？",
-      desc: canDoCommunity 
-        ? "地域と出会い、もがきながら見つけた『やってみたい』。肩書ではなく、誰とどう生きるかを問うときが来た。"
-        : "就職活動の季節。内定通知を手に、社会人としての第一歩を踏み出す。",
-      opts: canDoCommunity ? [
-        {
-          t: "地域コーディネーター／まちづくりプロデュース企業へ進む",
-          s: "都市と地方を繋ぐ仕事。やってみたい+25",
-          f: () => {
-            L.job = "地域コーディネーター";
-            L.company = "まちづくり共創機構";
-            L.income = 340;
-            L.stats.spark = clamp(L.stats.spark + 25);
-            L.stats.allies = clamp(L.stats.allies + 25);
-            addLog(22, "大学卒業。都市と地方を繋ぎ、若者の『やってみたい』を形にする地域共創の道へ！", "moss");
-          }
-        },
-        {
-          t: "大手企業に入社しつつ、副業・プロボノで地域のカフェやプロジェクトを動かす",
-          s: "二拠点・パラレルワーク。収入と情熱の両立",
-          f: () => {
-            L.job = "企画開発職（二拠点ワーカー）";
-            L.company = "大手総合生活メーカー";
-            L.income = 460;
-            L.stats.horizon = clamp(L.stats.horizon + 25);
-            addLog(22, "大手企業で働きながら、多摩市若者会議や隠岐の仲間と複業プロジェクトを継続。二拠点ライフが定着。", "big");
-          }
-        },
-        {
-          t: "お世話になった地方の町（愛媛・島根・鹿児島）へ移住する",
-          s: "Iターン移住。頼れる町と人の中で生きる",
-          f: () => {
-            L.job = "集落支援員・地域おこし協力隊";
-            L.company = F.okiIntern ? "隠岐の島町" : "内子町小田";
-            L.currentWhere = L.company;
-            L.income = 300;
-            L.stats.allies = clamp(L.stats.allies + 35);
-            L.stats.joy = clamp(L.stats.joy + 25);
-            addLog(22, `『いつでも戻っておいで』の言葉を胸に、地方へ移住！駅のホームで迎えてくれた人々の笑顔に涙がこぼれた。`, "moss");
-          }
-        }
-      ] : [
-        {
-          t: "都内の中堅企業に就職し、サラリーマン生活を始める",
-          s: "堅実な道。年収320万円",
-          f: () => {
-            L.job = "営業職";
-            L.company = "中堅IT商社";
-            L.income = 320;
-            addLog(22, "大学を卒業し、スーツに身を包んで満員電車へ。堅実な社会人生活が幕を開けた。", "");
-          }
-        }
-      ]
-    };
-  }
-
-  // 28歳：人生の転機（結婚やカフェオープン、独立など）
-  if (age === 28 && !F.m28_decided) {
-    F.m28_decided = true;
-    return {
-      title: "28歳。仕事にも慣れ、次のステップを考える時期。",
-      desc: "地域で出会った仲間との繋がりが、仕事やプライベートで大きな実を結ぼうとしている。",
-      opts: [
-        {
-          t: "地域の人々が自然に集まれるコミュニティカフェを仲間と開業する",
-          s: "実家のタタタハウスやMichi Cafeの精神。資産-150万",
-          f: () => {
-            L.job = "カフェオーナー・場づくり実践者";
-            L.company = "コミュニティカフェ「みちくさ」";
-            L.assets -= 150;
-            L.stats.spark = clamp(L.stats.spark + 30);
-            L.stats.allies = clamp(L.stats.allies + 30);
-            L.bonds.push("カフェに集まる子どもたちと常連さん");
-            addLog(28, "空き家をリノベーションしてコミュニティカフェを開店！世代を超えた笑顔が交差する、温かい居場所をつくった。", "moss");
-          }
-        },
-        {
-          t: "地域活動で知り合ったパートナーと結婚する",
-          s: "家族を持つ。幸福度+25、安心感+30",
-          f: () => {
-            L.married = true;
-            L.partner = pick(L.sex === "M" ? NAMES_F : NAMES_M);
-            L.stats.joy = clamp(L.stats.joy + 25);
-            L.stats.allies = clamp(L.stats.allies + 20);
-            addLog(28, `地域のプロジェクトを共に走ってきた${L.partner}と結婚。手作りの温かい祝宴を挙げた。`, "big");
-          }
-        },
-        {
-          t: "今の仕事に全力を注ぎ、キャリアアップを目指す",
-          s: "昇進。年収+80万円",
-          f: () => {
-            L.income += 80;
-            L.assets += 100;
-            addLog(28, "会社で主任に昇格。後輩の育成にやりがいを見出す。", "");
-          }
-        }
-      ]
-    };
-  }
-
-  return null;
-}
-
-// ==========================================
-// 年齢進行ルーチン（0歳〜終焉）
-// ==========================================
-function stepAge() {
-  if (!L.alive || L.pendingDec) return;
-
-  L.age++;
-  const age = L.age;
-  const F = L.flags;
-
-  // 1. 死亡チェック
-  if (checkMortality(L)) {
+  if (EVENTS[S.age]) {
+    S.decision = EVENTS[S.age];
     render();
     return;
   }
 
-  // 2. 年齢に応じた日常・心境テキスト
-  if (age <= 5) {
-    const kidLogs = [
-      "近所の公園で砂遊び。近所のおばあちゃんに頭を撫でられた。",
-      "熱を出して母が夜通し看病してくれた。翌朝、少し背が伸びた気がした。",
-      "三輪車に乗れるようになった。世界が一気に広がった気がした。"
-    ];
-    addLog(age, pick(kidLogs), "");
-  } else if (age <= 12) {
-    L.school = "地元の小学校";
-    const elemLogs = [
-      "ランドセルを背負って通学路を歩く。道端の草花の名前を覚えた。",
-      "運動会の徒競走で転んだが、最後まで走りきって拍手をもらった。",
-      "夏休み、祖父母の家で縁側に座りスイカを食べた。セミの声が降っていた。",
-      "放課後に友だちと秘密基地をつくった。何でもできる気がしていた。"
-    ];
-    addLog(age, pick(elemLogs), "");
-  } else if (age <= 14) {
-    L.school = "地元の中学校";
-    const jhsLogs = [
-      "定期テストの順位が貼り出される。教科書の勉強が急に退屈に思えてきた。",
-      "部活の練習で泥だらけになった。帰り道に飲む冷たい水がうまかった。",
-      "将来何になりたいのか、聞かれても答えられない自分が少し嫌だった。"
-    ];
-    addLog(age, pick(jhsLogs), "");
-  } else if (age <= 22) {
-    // 青春・模索期（マケリサの核心）
-    if (F.odaBunko && age <= 18) {
-      addLog(age, "小田分校の木造校舎。人数が少ないからこそ、一人ひとりの声が先生にも地域にも届く。", "moss");
-    } else if (F.satsumaTrip && age === 21) {
-      addLog(age, "さつま町の松下さんから採れたてのお米が届いた。『いつでも帰っておいで』の手紙に胸が熱くなる。", "moss");
-    } else {
-      const youthLogs = [
-        "授業の合間に、ふと自分の将来について考える。何を学びたいんだろう…",
-        "バイト先でミスをして落ち込むが、店長が『次頑張ればいい』と笑ってくれた。",
-        "友人と深夜のファミリーレストランで、生き方について朝まで語り明かした。"
-      ];
-      addLog(age, pick(youthLogs), "");
-    }
-  } else if (age <= 60) {
-    // 壮年期・働き盛り
-    if (age === 32 && L.married && L.kids.length === 0) {
-      const kidName = pick(NAMES_M.concat(NAMES_F));
-      L.kids.push(kidName);
-      addLog(age, `第一子（${kidName}）が誕生！小さな手を握り、親としての実感が込み上げる。`, "big");
-      L.stats.joy = clamp(L.stats.joy + 20);
-    } else if (age === 40) {
-      addLog(age, "不惑の40歳。地域での活動や仕事を通じて、たくさんの頼れる仲間ができた。", "moss");
-      L.stats.allies = clamp(L.stats.allies + 10);
-    } else if (age === 50) {
-      addLog(age, "50歳。かつて自分が地域で育てられたように、今度は若い世代の『やってみたい』を応援する側に回っている。", "moss");
-    } else {
-      const midLogs = [
-        "健康診断で少し数値が引っかかり、毎朝のウォーキングを日課にし始めた。",
-        "仕事で大きなプロジェクトを完遂。仲間と乾杯したビールの味が格別だった。",
-        "家族で旅行に出かけ、夕暮れの海岸線を眺めながらこれまでの歩みを振り返った。"
-      ];
-      addLog(age, pick(midLogs), "");
-    }
-  } else {
-    // 高齢期〜晩年
-    if (age === 65) {
-      addLog(age, "65歳。第一線の仕事を後進に譲り、地域のボランティアや喫茶スペースの店番をのんびり楽しむ。", "big");
-    } else if (age === 77) {
-      addLog(age, "喜寿を迎えた。かつて関わった若者たちや地域の仲間がお祝いに駆けつけてくれた。", "moss");
-    } else if (age === 88) {
-      addLog(age, "米寿（88歳）。縁側でお茶をすすりながら、この豊かな一度きりの人生に感謝する。", "big");
-    } else {
-      addLog(age, "穏やかな季節の移ろいを感じながら、今日も一日を大切に過ごした。", "");
-    }
+  // 年齢ごとの日常描写
+  if (S.age === 6) {
+    addLog("小学校に入学。大きなランドセルを背負って通学路を歩き始める。");
+  } else if (S.age === 12) {
+    addLog("小学校を卒業。部活や将来のことが少しずつリアルになり始める。");
+  } else if (S.age === 16) {
+    addLog("高校生活の日常。探究の授業で地域の課題を調べる機会があり、少し興味が湧く。");
+  } else if (S.age === 22) {
+    S.title = S.motto >= 70 ? "やってみたいを形にする人" : "社会人1年目";
+    addLog("大学を卒業し社会へ。学生時代の出会いと葛藤が確かな心の支えになっている。", "turning");
+  } else if (S.age === 25) {
+    addLog("多摩市若者会議や地域のプロジェクトに関わりながら、自分らしい働き方を模索中。");
+  } else if (S.age === 30) {
+    addLog("30歳を迎える。かつて地方や地域で出会った人たちと今も連絡を取り合い、人生の支柱になっている。");
+  } else if (S.age > 30 && S.age % 5 === 0) {
+    addLog(`${S.age}歳。地域やコミュニティのつながりを大切に、充実した日々を重ねている。`);
   }
 
-  // 経済・資産計算
-  if (L.income > 0) {
-    L.lifetime += L.income;
-    L.assets += Math.round(L.income * 0.15); // 15%貯蓄
-  }
-
-  // 時事ニュースの反映
-  const curY = L.birthYear + age;
-  if (NEWS_EVENTS[curY] && R() < 0.6) {
-    addLog(age, `【時代】${NEWS_EVENTS[curY]}`, "note");
-  }
-
-  // 決断イベントの発生チェック
-  const dec = triggerDecision();
-  if (dec) {
-    L.pendingDec = dec;
+  if (S.age >= 40) {
+    S.screen = "END";
   }
 
   render();
 }
 
-// 決断処理
-function chooseOption(idx) {
-  if (!L.pendingDec) return;
-  const opt = L.pendingDec.opts[idx];
-  opt.f();
-  L.pendingDec = null;
+function choose(index) {
+  if (!S.decision) return;
+  const c = S.decision.choices[index];
+  c.act();
+  S.decision = null;
   render();
 }
 
-// 人生タイトルとエピタフ決定
-function getLifeSummary() {
-  const F = L.flags;
-  const s = L.stats.spark;
-  
-  let title = "「ふつうの、一度きりの人」";
-  let epitaph = "大きな波風は立てず、静かに日常を積み重ねた。それでも誰かにとって、代わりのきかない大切な存在だった。";
-  
-  if (s >= 80 || (F.okiIntern && F.satsumaTrip)) {
-    title = "「偶然の出会いから『やってみたい』を咲かせた人」";
-    epitaph = "かつては何一つやりたいことが見つからなかった。けれど、知らない土地へ足を踏み入れ、泥臭く人と交わる中で、心の中に確かな灯火が灯った。頼れる町と人が、生涯の精神的支柱だった。";
-  } else if (F.odaBunko || F.tatataHouse) {
-    title = "「温かな居場所を見つけ、人を繋いだ人」";
-    epitaph = "一歩踏み出すのは怖かった。けれど飛び込んだあの町が、世界に色をつけてくれた。人を知ることで自分を深め、誰かの安心できる居場所を守り続けた。";
-  } else if (L.stats.allies >= 50) {
-    title = "「町と人に愛され、頼れる支柱となった人」";
-    epitaph = "どこへ行っても笑顔で迎えられ、誰かの背中をそっと押し続けた。この人が遺した温もりは、地域の記憶の中にいつまでも生き続ける。";
-  } else if (L.age >= 90) {
-    title = "「長い年月を穏やかに見届けた人」";
-    epitaph = "一世紀近い時間を歩み、数えきれない季節を見送った。すべての出会いに感謝しながら、安らかに眠りについた。";
-  }
-
-  return { title, epitaph };
-}
-
-// ==========================================
-// ドット絵ピクセルキャンバス描画
-// ==========================================
-function drawSceneCanvas(cv) {
-  if (!cv) return;
-  const ctx = cv.getContext("2d");
-  const W = 96, H = 36;
-  cv.width = W; cv.height = H;
-  ctx.imageSmoothingEnabled = false;
-
-  // 背景色（空と大地）
-  const isNight = L.age >= 75;
-  const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.6);
-  if (isNight) {
-    skyGrad.addColorStop(0, "#1c2536");
-    skyGrad.addColorStop(1, "#2e3b52");
-  } else {
-    skyGrad.addColorStop(0, "#98c9e8");
-    skyGrad.addColorStop(1, "#cce6f4");
-  }
-  ctx.fillStyle = skyGrad;
-  ctx.fillRect(0, 0, W, H * 0.65);
-
-  // 大地
-  const groundColor = L.flags.odaBunko ? "#4a7846" : L.flags.okiIntern ? "#40798c" : "#729b59";
-  ctx.fillStyle = groundColor;
-  ctx.fillRect(0, H * 0.65, W, H * 0.35);
-
-  // 山や家並み
-  ctx.fillStyle = "#335c3d";
-  ctx.fillRect(8, H * 0.52, 22, H * 0.15);
-  ctx.fillRect(58, H * 0.48, 28, H * 0.2);
-
-  // 家（タタタハウスやカフェ）
-  ctx.fillStyle = "#e5dfd3";
-  ctx.fillRect(38, H * 0.48, 18, 10);
-  ctx.fillStyle = "#a84334";
-  ctx.fillRect(36, H * 0.44, 22, 4); // 屋根
-
-  // 主人公ピクセル
-  const px = 46, py = H * 0.66;
-  ctx.fillStyle = L.sex === "M" ? "#22427a" : "#9b3d4a"; // 服
-  ctx.fillRect(px, py, 4, 6);
-  ctx.fillStyle = "#f3cb9b"; // 顔
-  ctx.fillRect(px, py - 4, 4, 4);
-  ctx.fillStyle = "#2c221e"; // 髪
-  ctx.fillRect(px - 1, py - 5, 6, 2);
-
-  // 仲間たち（やってみたい指数が高いと人が増える）
-  if (L.stats.allies >= 30) {
-    ctx.fillStyle = "#3e6b48";
-    ctx.fillRect(px - 7, py + 1, 4, 5);
-    ctx.fillStyle = "#f3cb9b";
-    ctx.fillRect(px - 7, py - 3, 4, 4);
-
-    ctx.fillStyle = "#b46b1d";
-    ctx.fillRect(px + 7, py + 1, 4, 5);
-    ctx.fillStyle = "#f3cb9b";
-    ctx.fillRect(px + 7, py - 3, 4, 4);
-  }
-}
-
-// ==========================================
-// メインUIレンダリング
-// ==========================================
 function render() {
   const app = document.getElementById("app");
-  if (!L) return;
 
-  // 1. 0歳：出生届の画面
-  if (L.age === 0 && L.events.length <= 1) {
-    const p = L.pref;
-    const pct = ((p.b / TOTAL_BIRTHS) * 100).toFixed(1);
-    
+  // 1. タイトル画面
+  if (S.screen === "TITLE") {
     app.innerHTML = `
-      <section class="cert">
-        <div class="hanko">出生<br>届出</div>
-        <span class="label">第八十億分の一の命の記録</span>
-        <h2>出生届</h2>
-        <dl class="cert-dl">
-          <dt>氏名</dt><dd><b style="font-size:22px; font-family:var(--display);">${L.name}</b></dd>
-          <dt>性別</dt><dd>${L.sex === "M" ? "男" : "女"}</dd>
-          <dt>出生地</dt><dd>${L.home} <span class="muted">（人口 約${(p.pop/10).toFixed(0)}万人）</span></dd>
-          <dt>生年</dt><dd class="num">${L.birthYear}年</dd>
-          <dt>父</dt><dd>${L.dadName}（${L.dadJob}）</dd>
-          <dt>母</dt><dd>${L.momName}（${L.momJob}）</dd>
-          <dt>この県に生まれる確率</dt><dd class="num"><b>${pct}%</b>（年間 ${p.b.toLocaleString()}人中）</dd>
-          <dt>この県の平均寿命</dt><dd class="num">${L.sex === "M" ? p.leM : p.leF}歳</dd>
-        </dl>
-
-        <div style="background:var(--ai-soft); padding:12px 14px; border-radius:4px; font-size:13.5px; margin-top:18px; line-height:1.75;">
-          あなたは日本の約68万人の新生児のひとりとして産声を上げました。<br>
-          どこで生まれ、誰の子として育つかは選べません。ここから、あなただけの一生が始まります。
+      <div class="sheet" style="text-align:center; padding: 26px 16px;">
+        <span style="font-size:11px; letter-spacing:0.15em; color:var(--sub); font-weight:700;">大学生インタビュー・実話ベース</span>
+        <h1 style="margin: 8px 0; font-size: 24px;">80億分の1の、<br>やってみたい。</h1>
+        <p class="lead">知らない地域・人・活動との偶然の出会いから、<br>自分でも気づいていなかった「やりたいこと」を見つける人生の旅。</p>
+        
+        <div style="text-align:left; font-size:12px; color:var(--sub); margin-bottom:12px;">
+          ▼ スタート時の大学生タイプを選択してください：
         </div>
 
-        <button class="btn big shu" style="margin-top:20px;" onclick="startJourney()">あゆみはじめる（0歳から開始） »</button>
-      </section>
+        <div class="type-select-grid">
+          <button class="type-card" onclick="startGame('WAIT')">
+            <b>受動・様子見タイプ（④⑤男子など）</b>
+            <small>「非日常は好きだけど、一人で参加するのは不安…」「気づいたら締切が過ぎてた」</small>
+          </button>
+          <button class="type-card" onclick="startGame('ACTION')">
+            <b>内気打破・課題意識先行タイプ（③女子など）</b>
+            <small>「内気な自分を変えたい」「最初から地域活動や政策の実践がしたかった」</small>
+          </button>
+          <button class="type-card" onclick="startGame('TAP')">
+            <b>グローバル・ビジネス志向タイプ（①②⑥TAP生）</b>
+            <small>「海外で車を売りたい」「日本の過疎地にはあんまり惹かれない」</small>
+          </button>
+        </div>
+      </div>
     `;
     return;
   }
 
-  // 2. 死亡・結末画面
-  if (!L.alive) {
-    const summary = getLifeSummary();
-    const gradeLetter = (v) => v >= 80 ? "S" : v >= 60 ? "A" : v >= 40 ? "B" : "C";
+  // 2. エンディング画面
+  if (S.screen === "END") {
     app.innerHTML = `
-      <section class="sheet cert" style="border-color:var(--shu);">
-        <div class="hanko" style="border-color:var(--shu); color:var(--shu);">死亡<br>届出</div>
-        <span class="label">最期の記録</span>
-        <h2>${L.name} <small style="font-size:17px; color:var(--sub);">${L.age}歳</small></h2>
-        <p class="muted" style="margin:2px 0 0; font-size:13px;">${L.home}生まれ・${L.currentWhere}にて永眠 ｜ 死因：${L.cause}</p>
+      <div class="sheet" style="text-align:center; padding: 24px 18px;">
+        <h2 style="color:var(--ai); margin-bottom:4px;">人生の軌跡：40年の記録</h2>
+        <p style="font-size:12px; color:var(--sub);">あなたが歩んだ「やってみたい」の道</p>
 
-        <div class="lifetitle">${summary.title}</div>
-        <div class="epitaph">${summary.epitaph}</div>
-
-        <div class="grades-grid">
-          <div><span>やってみたい</span><b style="color:var(--shu);">${gradeLetter(L.stats.spark)}</b></div>
-          <div><span>視野・理解</span><b>${gradeLetter(L.stats.horizon)}</b></div>
-          <div><span>頼れる味方</span><b>${gradeLetter(L.stats.allies)}</b></div>
-          <div><span>人生の幸福</span><b>${gradeLetter(L.stats.joy)}</b></div>
+        <div style="background:var(--paper); padding:16px; border-radius:6px; margin:16px 0; text-align:left;">
+          <span style="font-size:11px; color:var(--sub);">到達した生き方</span>
+          <h3 style="color:var(--shu); margin:4px 0 10px; font-size:18px;">${S.title}</h3>
+          <p style="font-size:13px; line-height:1.7;">
+            ${S.motto >= 70 
+              ? "「やりたいことが何もない」と悩んでいた日々から、地方への飛び込み、人との泥臭い共創を経て、自分だけの『やってみたい』を形にしてきました。あなたの周りには、いつでも頼れるまちと人たちがいます。"
+              : "無難で穏やかな道を選択しながらも、折々の出会いを通して自分なりの価値観を深めていきました。"}
+          </p>
         </div>
 
-        <div class="facts-grid">
-          <div><span class="label">やってみたい指数</span><b class="num" style="color:var(--shu);">${L.stats.spark}%</b></div>
-          <div><span class="label">視野・自己理解</span><b class="num">${L.stats.horizon}%</b></div>
-          <div><span class="label">頼れる味方</span><b class="num">${L.stats.allies}%</b></div>
-          <div><span class="label">最終職業</span><b>${L.job}</b></div>
-          <div><span class="label">生涯稼いだお金</span><b class="num">${L.lifetime >= 10000 ? (L.lifetime/10000).toFixed(1)+"億円" : L.lifetime+"万円"}</b></div>
-          <div><span class="label">遺した資産</span><b class="num">${L.assets}万円</b></div>
+        <div style="font-size:13px; color:var(--sub); margin-bottom:16px; text-align:left;">
+          ・やってみたい指数：<b>${Math.min(100, S.motto)}%</b><br>
+          ・視野と自己理解：<b>${Math.min(100, S.insight)}pt</b><br>
+          ・頼れる味方と仲間：<b>${Math.min(100, S.friends)}人</b>
         </div>
 
-        ${L.bonds.length ? `
-          <div style="margin-top:16px;">
-            <span class="label">人生の旅路で出会った人々</span>
-            <div class="bonds-list">
-              ${L.bonds.map(b => `<span class="bond-tag">${b}</span>`).join("")}
-            </div>
-          </div>
-        ` : ""}
-
-        <div style="margin-top:24px; display:grid; gap:10px;">
-          <button class="btn big shu" onclick="restart()">もう一度、別の命として生まれる</button>
-        </div>
-      </section>
-
-      <section class="sheet">
-        <h3 style="font-size:17px; margin-bottom:10px;">全生涯の年表（${L.events.length}件）</h3>
-        <div class="log-box">
-          ${L.events.map(e => `
-            <div class="ev-row ${e.cls}">
-              <span class="age-col">${e.age}歳</span>
-              <p>${e.text}</p>
-            </div>
-          `).join("")}
-        </div>
-      </section>
+        <button class="btn" onclick="S.screen='TITLE'; render();">もう一度人生を生きる</button>
+      </div>
     `;
     return;
   }
 
-  // 3. 通常プレイ中画面
+  // 3. プレイ画面
   app.innerHTML = `
-    <!-- トップ固定ステータス -->
-    <div class="sticky-top">
-      <div class="top-row">
-        <div>
-          <span class="age-num num">${L.age}</span><span style="font-size:14px; font-weight:700; margin-left:2px;">歳</span>
-          <span class="muted" style="font-size:12px; margin-left:6px;">(${L.birthYear + L.age}年)</span>
-        </div>
-        <div class="who-box">
-          <span class="who-name">${L.name}</span>
-          <span class="who-tag">📍 ${L.currentWhere}</span>
-        </div>
-      </div>
+    <!-- 出生届／基本情報 -->
+    <div class="cert">
+      <div class="hanko">出生届</div>
+      <h2>出 生 証 明</h2>
+      <div class="cert-row"><span>氏名</span><b>${S.name} (${S.sex === "M" ? "男" : "女"})</b></div>
+      <div class="cert-row"><span>出生地</span><b>${S.pref}</b></div>
+      <div class="cert-row"><span>初期特性</span><b>${S.type.name}</b></div>
+    </div>
 
-      <div class="stat-bars">
-        <div class="s-col">
-          <span>やってみたい<b class="num">${L.stats.spark}%</b></span>
-          <div class="bar-wrap"><i style="width:${L.stats.spark}%; background:var(--shu);"></i></div>
-        </div>
-        <div class="s-col">
-          <span>視野・理解<b class="num">${L.stats.horizon}%</b></span>
-          <div class="bar-wrap"><i style="width:${L.stats.horizon}%; background:var(--ai);"></i></div>
-        </div>
-        <div class="s-col">
-          <span>頼れる味方<b class="num">${L.stats.allies}%</b></span>
-          <div class="bar-wrap"><i style="width:${L.stats.allies}%; background:var(--moss);"></i></div>
-        </div>
-        <div class="s-col">
-          <span>学力・探究<b class="num">${L.stats.study}%</b></span>
-          <div class="bar-wrap"><i style="width:${L.stats.study}%; background:#556b8d;"></i></div>
-        </div>
-        <div class="s-col">
-          <span>健康・体力<b class="num">${L.stats.health}%</b></span>
-          <div class="bar-wrap"><i style="width:${L.stats.health}%; background:#2e7d32;"></i></div>
-        </div>
-        <div class="s-col">
-          <span>幸福度<b class="num">${L.stats.joy}%</b></span>
-          <div class="bar-wrap"><i style="width:${L.stats.joy}%; background:var(--amber);"></i></div>
-        </div>
+    <!-- ステータスバー -->
+    <div class="sheet">
+      <div class="topline">
+        <span class="age-display">${S.age} <small style="font-size:13px; font-weight:normal; color:var(--sub);">歳 (${S.year}年)</small></span>
+        <span class="type-badge">${S.title}</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box"><span>やってみたい</span><b>${Math.min(100, S.motto)}%</b></div>
+        <div class="stat-box"><span>視野・自己理解</span><b>${Math.min(100, S.insight)}</b></div>
+        <div class="stat-box"><span>頼れる味方</span><b>${Math.min(100, S.friends)}</b></div>
+        <div class="stat-box"><span>幸福度</span><b>${Math.min(100, S.happiness)}</b></div>
       </div>
     </div>
 
-    <!-- 場面ドット絵キャンバス -->
-    <div class="sheet" style="padding:12px 14px;">
-      <canvas class="pixel-scene" id="sceneCanvas"></canvas>
-      <div class="scene-caption">${L.school} ｜ ${L.job}${L.company ? ' (' + L.company + ')' : ''}</div>
-    </div>
-
-    <!-- 決断ボックス（選択肢がある場合） -->
-    ${L.pendingDec ? `
-      <div class="decision-wrap">
-        <span class="label" style="color:var(--shu);">人生の岐路・決断</span>
-        <h3>${L.pendingDec.title}</h3>
-        <p class="muted" style="margin:0; font-size:13.5px;">${L.pendingDec.desc}</p>
-        <div class="choice-list">
-          ${L.pendingDec.opts.map((opt, i) => `
-            <button class="choice-btn" onclick="chooseOption(${i})">
-              <b>${opt.t}</b>
-              <small>${opt.s}</small>
+    <!-- 決断カード（イベント時のみ） -->
+    ${S.decision ? `
+      <div class="decision-box">
+        <span class="decision-badge">人生の分岐点</span>
+        <div class="decision-title">${S.decision.title}</div>
+        <p style="font-size:12px; color:var(--sub);">${S.decision.desc}</p>
+        <div style="display:grid; gap:8px;">
+          ${S.decision.choices.map((c, i) => `
+            <button class="choice-btn" onclick="choose(${i})">
+              <b>${c.t}</b>
+              <small>${c.sub}</small>
             </button>
           `).join("")}
         </div>
       </div>
     ` : `
-      <div class="ctrl-row">
-        <button class="btn" style="flex:1;" onclick="stepAge()">歳をひとつ重ねる (1年進める) »</button>
-        <button class="chip" onclick="togglePause()">${isPaused ? "自動送り 再開 ▶" : "自動送り 停止 ❚❚"}</button>
+      <div class="btn-group">
+        <button class="btn" onclick="stepYear()">1年進める（時を進める）</button>
       </div>
     `}
 
-    <!-- 人生の足跡ログ -->
+    <!-- 年表ログ -->
     <div class="sheet">
-      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
-        <h3 style="font-size:17px;">人生の記録</h3>
-        <span class="muted" style="font-size:11.5px;">新しい順</span>
-      </div>
-      <div class="log-box">
-        ${L.events.map(e => `
-          <div class="ev-row ${e.cls}">
-            <span class="age-col">${e.age}歳</span>
-            <p>${e.text}</p>
+      <h3 style="font-size:13px; color:var(--sub); margin-bottom:8px;">人生の手帳・記憶の記録</h3>
+      <div class="log-container">
+        ${S.logs.map(l => `
+          <div class="log-row ${l.type}">
+            <span class="yr">${l.age}歳</span>
+            <span>${l.text}</span>
           </div>
         `).join("")}
       </div>
     </div>
   `;
-
-  // キャンバス描画
-  drawSceneCanvas(document.getElementById("sceneCanvas"));
-}
-
-function startJourney() {
-  L.age = 0;
-  isPaused = false;
-  // 1歳進めてプレイ開始
-  stepAge();
-  startTimer();
-}
-
-function startTimer() {
-  clearInterval(timer);
-  timer = setInterval(() => {
-    if (!isPaused && L && L.alive && !L.pendingDec && L.age > 0) {
-      stepAge();
-    }
-  }, autoSpeed);
-}
-
-function togglePause() {
-  isPaused = !isPaused;
-  render();
-}
-
-function restart() {
-  clearInterval(timer);
-  isPaused = false;
-  initNewBorn();
-  render();
 }
 
 // 起動
-initNewBorn();
 render();
 </script>
-</body>
-</html>
 </body>
 </html>
