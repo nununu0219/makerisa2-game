@@ -3,20 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>80億分の1の、やってみたい。</title>
+<title>80億分の1の、やってみたい。- 季節進行＆出会い深化版 -</title>
 <style>
   :root {
-    --paper: #f0f2f5;
+    --paper: #f1f5f9;
     --sheet: #ffffff;
-    --ink: #1e293b;
-    --sub: #64748b;
+    --ink: #0f172a;
+    --sub: #475569;
     --rule: #cbd5e1;
     --ai: #1d4ed8;
     --ai-soft: #eff6ff;
-    --shu: #dc2626;
+    --shu: #b91c1c;
     --shu-soft: #fef2f2;
     --moss: #15803d;
     --moss-soft: #f0fdf4;
+    --amber: #b45309;
+    --amber-soft: #fffbeb;
+    --purple: #6b21a8;
+    --purple-soft: #faf5ff;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -24,9 +28,9 @@
     color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Yu Gothic", sans-serif;
     line-height: 1.6;
-    padding: 16px 10px 80px;
+    padding: 16px 10px 90px;
   }
-  .wrap { max-width: 660px; margin: 0 auto; display: grid; gap: 12px; }
+  .wrap { max-width: 680px; margin: 0 auto; display: grid; gap: 12px; }
   .sheet {
     background: var(--sheet);
     border: 1px solid var(--rule);
@@ -37,7 +41,7 @@
   h1 { font-size: 24px; color: var(--ai); line-height: 1.3; margin-bottom: 6px; }
   .lead { font-size: 13px; color: var(--sub); margin-bottom: 14px; }
 
-  /* 出生届カード */
+  /* 出生届 */
   .cert {
     position: relative;
     border: 2px solid var(--ai);
@@ -69,7 +73,17 @@
 
   /* ステータスバー */
   .topline { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
-  .age-display { font-size: 28px; font-weight: 800; color: var(--ai); }
+  .age-display { font-size: 26px; font-weight: 900; color: var(--ai); }
+  .season-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--amber-soft);
+    color: var(--amber);
+    border: 1px solid var(--amber);
+  }
   .title-tag {
     display: inline-block;
     padding: 2px 8px;
@@ -91,18 +105,66 @@
   .stat-box span { font-size: 10px; color: var(--sub); display: block; }
   .stat-box b { font-size: 14px; }
 
-  /* 決断カード */
-  .decision-box {
-    border: 2px solid var(--shu);
-    background: var(--shu-soft);
+  /* コントロール（自動送り） */
+  .control-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .auto-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* 決断・出会い・問いかけカード */
+  .event-card {
     border-radius: 6px;
     padding: 14px;
     display: grid;
     gap: 10px;
   }
-  .decision-badge { font-size: 10px; font-weight: 800; color: var(--shu); letter-spacing: 0.1em; }
-  .decision-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: var(--ink); }
-  .decision-desc { font-size: 12px; color: var(--sub); line-height: 1.5; }
+  .event-card.decision {
+    border: 2px solid var(--shu);
+    background: var(--shu-soft);
+  }
+  .event-card.encounter {
+    border: 2px solid var(--moss);
+    background: var(--moss-soft);
+  }
+  .event-card.reflection {
+    border: 2px solid var(--purple);
+    background: var(--purple-soft);
+  }
+  .event-badge {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    display: inline-block;
+  }
+  .decision .event-badge { color: var(--shu); }
+  .encounter .event-badge { color: var(--moss); }
+  .reflection .event-badge { color: var(--purple); }
+
+  .event-title { font-size: 15px; font-weight: 700; line-height: 1.4; color: var(--ink); }
+  .event-profile {
+    background: #fff;
+    border-left: 3px solid var(--moss);
+    padding: 8px 10px;
+    font-size: 12px;
+    color: var(--sub);
+    border-radius: 0 4px 4px 0;
+  }
+  .event-desc { font-size: 12px; color: var(--sub); line-height: 1.5; }
+  
   .choice-btn {
     text-align: left;
     background: #fff;
@@ -130,11 +192,11 @@
     padding: 6px 4px;
     border-bottom: 1px dashed var(--rule);
     display: grid;
-    grid-template-columns: 3.5em 1fr;
+    grid-template-columns: 5em 1fr;
     gap: 8px;
     line-height: 1.5;
   }
-  .log-row .yr { color: var(--sub); font-size: 12px; font-family: monospace; }
+  .log-row .yr { color: var(--sub); font-size: 11px; font-family: monospace; }
   .log-row.turning {
     color: var(--shu);
     font-weight: 700;
@@ -142,19 +204,19 @@
     border-radius: 4px;
     border-bottom: none;
   }
-  .log-row.growth {
+  .log-row.encounter-log {
     color: var(--moss);
     font-weight: 600;
     background: var(--moss-soft);
     border-radius: 4px;
     border-bottom: none;
   }
-  .log-row.news {
-    color: var(--sub);
-    font-size: 12px;
-    background: var(--paper);
-    padding-left: 6px;
+  .log-row.reflect-log {
+    color: var(--purple);
+    font-weight: 600;
+    background: var(--purple-soft);
     border-radius: 4px;
+    border-bottom: none;
   }
 
   /* 操作ボタン */
@@ -163,14 +225,14 @@
     color: #fff;
     border: 0;
     border-radius: 4px;
-    padding: 12px 18px;
+    padding: 10px 16px;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    width: 100%;
     text-align: center;
   }
   .btn:hover { filter: brightness(1.1); }
+  .btn.secondary { background: #fff; color: var(--ai); border: 1px solid var(--ai); }
   .btn-group { display: flex; gap: 8px; }
   .btn-group .btn { flex: 1; }
 </style>
@@ -189,247 +251,264 @@ const LAST_NAMES = ["佐藤","鈴木","高橋","田中","渡辺","伊藤","山�
 const FIRST_M = ["蓮","湊","樹","悠真","大翔","朝陽","陽翔","律","颯","拓海","翔太","慎之介"];
 const FIRST_F = ["陽葵","凛","詩","結菜","芽依","紬","澪","咲良","莉子","花","晴美","美咲"];
 const JOBS = ["会社員","公務員","教員","看護師","自営業","エンジニア","保育士","医師","銀行員"];
+const SEASONS = ["春", "夏", "秋", "冬"];
 
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-// --- 重複防止用のイベントプール（年齢帯別） ---
+// 重複防止のイベントプール
 const UNIQUE_EVENTS = {
-  // 1〜2歳
-  toddler: [
-    "初めて自分の足で立ち上がった。両親が拍手して大騒ぎした。",
-    "「まんま」と初めて言葉を発した。母が嬉しそうに抱きしめてくれた。",
-    "熱を出して母が夜通し看病してくれた。翌朝、少し背が伸びた気がした。",
-    "スプーンを持って自分でご飯を食べようとしたが、床が米粒だらけになった。"
-  ],
-  // 3〜5歳（幼少期）
   infant: [
+    "初めて自分の足で立ち上がり、両親が拍手して大騒ぎした。",
     "三輪車に乗れるようになった。世界が一気に広がった気がした。",
     "近所の公園の砂場で泥だらけになって遊んだ。泥団子を上手に丸められた。",
-    "スーパーで迷子になり、サービスカウンターで泣きじゃくった。",
     "保育園の発表会で動物の役をやった。客席の親を見つけて手を振った。",
-    "初めて自分で靴を左右正しく履けた。親にたくさん褒められた。",
-    "飼っていた金魚が動かなくなり、庭の隅に埋めて手を合わせた。"
+    "スーパーで迷子になり、サービスカウンターで泣きじゃくった。"
   ],
-  // 6〜8歳（小学校低学年）
-  elem_low: [
-    "小学校に入学。自分より大きな黄色い帽子とランドセルを背負って登校した。",
-    "初めて一人で留守番をした。インターホンが鳴るたびに押し入れに隠れた。",
-    "補助輪なしで自転車に乗れた。後ろで親が手を離した瞬間の浮遊感を覚えている。",
-    "夏休みの朝、眠い目をこすりながら公園のラジオ体操に皆勤賞で通った。",
-    "給食の牛乳を友達が吹き出し、机の周りが大惨事になって大笑いした。",
-    "親に勧められて公文式と水泳教室に通い始めた。"
+  elem_spring: [
+    "新学期。新しいクラスの席替えで、誰の隣になるかドキドキした。",
+    "学校の健康診断。去年より背が3センチ伸びていて嬉しかった。",
+    "通学路の桜並木の下を友達と鬼ごっこしながら帰った。"
   ],
-  // 9〜11歳（小学校高学年）
-  elem_high: [
-    "親に『みんな行ってるから』と進学塾（SAPIX）に通わされ始めた。クラス分けテストのたびに胃が痛い。",
-    "放課後、みんなが公園でゲームやドッジボールをしている声を、塾の自習室の窓から眺めていた。",
-    "塾の小テストの順位が廊下に貼り出され、友人と偏差値を比べ合う空気に息が詰まった。",
-    "四谷大塚の合宿に参加。夜中まで過去問を解かされ、勉強が何のためにあるのか分からなくなる。",
-    "テストの点数が悪くてランドセルの底に隠したが、洗濯の時にバレて大喧嘩になった。",
-    "図書室で分厚い冒険小説を見つけ、時間を忘れて読み耽った。"
+  elem_summer: [
+    "夏休みのプール開放。冷たいシャワーを浴びて友達と歓声をあげた。",
+    "ラジオ体操のスタンプカードを首から下げて毎朝公園へ通った。",
+    "祖父母の田舎へ行き、夜に庭で線香花火を静かに見つめた。"
   ],
-  // 12〜14歳（中学）
-  junior: [
-    "中学校に入学。部活動の厳しい上下関係に戸惑いながらも練習に通った。",
-    "志望校判定模試でD判定が出て、三者面談で担任に現実を見ろと言われた。",
-    "深夜ラジオの深夜番組をこっそりイヤホンで聴くのが唯一の逃避場所になった。",
-    "クラスのグループ分けから溢れるのが怖くて、本当は好きでもない話題に無理やり合わせた。"
+  elem_autumn: [
+    "運動会の徒競走。全力でコーナーを回ったが、惜しくも2位だった。",
+    "図工の時間に作った紙粘土の作品が廊下に展示された。",
+    "放課後、涼しくなった風を感じながら公園でゲームの通信対戦をした。"
   ],
-  // 16〜17歳（高校）
-  high: [
-    "高校生活。テストと部活の反復横跳び。周りは進路を決め始めるが、自分が何をしたいのか分からない。",
-    "休日に予備校の自習室に行ったが、参考書を開いたままスマホを3時間眺めて自己嫌悪に陥った。",
-    "文化祭の準備で遅くまで残り、教室の窓から見た夕焼けに『このまま時間が止まればいいのに』と思った。",
-    "模試の志望校欄に書く大学の名前が思い浮かばず、適当にパンフレットで見た名前を埋めた。"
+  elem_winter: [
+    "校庭にうっすら積もった雪を集めて、友達と小さな雪だるまを作った。",
+    "冬休み前、大掃除で机と椅子の脚に詰まった埃を一生懸命取った。",
+    "寒さに震えながら息を白く吐いて登校した。"
   ],
-  // 19歳（大学1年）
-  college_early: [
-    "大学に入ったものの、講義は出席カードと楽単集めの作業と化している。何のために進学したのか見失う。",
-    "サークルの飲み会のノリに馴染めず、終電前に一人で駅へ向かった。夜風がやけに冷たかった。",
-    "バイト先のファミレスで深夜シフトに入り、朝方帰宅して昼まで眠る。虚無感だけが積もっていく。",
-    "就活対策ガイダンスで『ガクチカ（学生時代に力を入れたこと）』の例を聞き、自分には何一つ語れるものがないと気づく。"
+  high_seasonal: [
+    "定期テスト前の放課後、ファミレスに集まってノートを写し合った。",
+    "文化祭の準備。買い出しと称して夕暮れの街を自転車で抜けた。",
+    "模試の偏差値グラフを見つめながら、ため息を漏らした。",
+    "部活の遠征の帰りのバス。みんな疲れ果てて眠っていた。"
   ],
-  // 社会人 (23歳以降)
-  adult: [
-    "満員電車に揺られながら、ふと学生時代に出会ったあの地域の景色や人々の顔を思い出す。",
-    "仕事で理不尽なトラブルに巻き込まれたが、あの時地域で培った泥臭い対話力で乗り切った。",
-    "休日にふと思い立って昔お世話になったあの町へ車を走らせた。駅前の商店街の人が笑顔で迎えてくれた。",
-    "東京の友人たちと集まった。『お前、あの地域に行ってから本当に顔つき変わったよな』と言われた。"
+  college_seasonal: [
+    "4月の履修登録。シラバスを眺めながら『どれが楽単か』を先輩に聞いた。",
+    "期末レポートの提出締切直前、学食でパソコンを叩き続けた。",
+    "夏休み、特に予定もなくバイトのシフトばかりが埋まっていく。",
+    "冬のキャンパス。スーツを着て就活ガイダンスに向かう先輩たちを見かけた。"
   ]
-};
-
-// 時代背景ニュース
-const WORLD_NEWS = {
-  2026: "自動運転バスの実証実験が全国の過疎地域で本格化。",
-  2028: "空き家再生法が強化。全国のシャッター商店街で若者によるカフェやシェアオフィスの開業が急増。",
-  2030: "関係人口創出プログラムが全国の大学で単位認定される動きが広がる。",
-  2035: "地方への二拠点生活（デュアルライフ）が20代〜30代の標準的な働き方として定着。"
 };
 
 let S = {
   screen: "TITLE",
   year: 2024,
   age: 0,
+  seasonIdx: 0, // 0:春, 1:夏, 2:秋, 3:冬
   sex: "M",
   name: "",
   pref: "",
   dad: "",
   mom: "",
-  motto: 10,
+  motto: 8,
   insight: 10,
   friends: 5,
-  happiness: 50,
+  happiness: 55,
   title: "産声をあげた子",
   logs: [],
-  decision: null,
-  usedEvents: new Set() // ★一度発生したイベントを記録して重複を防ぐ
+  activeEvent: null,
+  autoPlay: false,
+  autoTimer: null,
+  speed: 1800, // 1.8秒に1季節
+  usedEvents: new Set()
 };
 
 function addLog(text, type = "") {
-  S.logs.unshift({ age: S.age, year: S.year, text, type });
+  const termStr = S.age < 6 ? `${S.age}歳` : `${S.age}歳・${SEASONS[S.seasonIdx]}`;
+  S.logs.unshift({ term: termStr, year: S.year, text, type });
 }
 
-// 決断イベント
-function checkDecision(age) {
-  if (age === 11) {
+// 決断・出会い・問いかけのイベントトリガー
+function getSpecialEvent(age, seasonIdx) {
+  // --- 小学校時代：内省と感情の問いかけ ---
+  if (age === 9 && seasonIdx === 1) { // 小4・夏
     return {
-      badge: "中学受験の分岐点",
-      title: "11歳・小5の冬：SAPIXの夜間特訓と親の過熱",
-      desc: "成績が伸び悩み、親から『私立に行かないと将来困るのよ』と詰め寄られる。机の前で涙が止まらない。",
+      type: "reflection",
+      badge: "心の内省",
+      title: "小4の夏：周りが一斉に塾へ行き始めた",
+      desc: "放課後、仲の良かった友達が『今日SAPIXあるから遊べない』と去っていく。親からも『あなたもそろそろ塾考えようね』と言われた。",
+      question: "この時、あなたはどう感じましたか？",
       choices: [
         {
-          t: "反発して受験をやめ、公立中で部活や自分の好きなことを探す道を選ぶ",
-          sub: "幸福度+25 / 視野+15 / 親との一時的な摩擦",
+          t: "『みんなが行くなら自分も行かなきゃ取り残される』と焦りを感じた",
+          sub: "視野+10 / 幸福度-10 / 塾通いへ",
           act: () => {
-            S.happiness += 25; S.insight += 15;
-            addLog("親と大激突の末、塾を辞める。夕方の公園の広さと自由な空気に心の底からホッとした。", "turning");
+            S.insight += 10; S.happiness -= 10;
+            addLog("焦りに背中を押され入塾テストを受ける。周りの顔色を窺う癖がつき始める。", "reflect-log");
           }
         },
         {
-          t: "歯を食いしばって親の期待に応え、難関私立を目指して塾に通い詰める",
-          sub: "幸福度-20 / やってみたい指数低下",
+          t: "『なんでみんな同じ方向に走るんだろう？』と違和感を覚えた",
+          sub: "視野+20 / やってみたい指数+10",
           act: () => {
-            S.motto = Math.max(0, S.motto - 10); S.happiness -= 20;
-            addLog("感情を殺して机に向かい続ける。テストの偏差値だけが自分の価値のように思えていた。", "");
+            S.insight += 20; S.motto += 10;
+            addLog("周囲の過熱ぶりに疑問を抱き、自分の好きな読書や外遊びに没頭することを選んだ。", "reflect-log");
           }
         }
       ]
     };
   }
 
-  if (age === 15) {
+  if (age === 11 && seasonIdx === 3) { // 小6・冬
     return {
-      badge: "進路の選択",
-      title: "15歳・中学3年：レールに乗るか、誰も自分を知らない場所へ飛び込むか",
-      desc: "やりたいことも見つからず進路に悩む中、父が『地域未来留学』という地方公立高校への越境進学の案内をくれた。",
+      type: "reflection",
+      badge: "心の内省",
+      title: "小6の冬：中学進学を前にした自分自身の輪郭",
+      desc: "ランドセルを背負うのもあと数ヶ月。机に向かいながら、ふと自分の将来を考える時間が増えた。",
+      question: "今のあなたは、自分のことをどう捉えていますか？",
       choices: [
         {
-          t: "【地域未来留学】誰も自分を知らない環境へ！島根や愛媛の小さな分校へ越境進学",
+          t: "『特に目立つ特技もないし、指示待ちで内気な性格だな』と思う",
+          sub: "自己理解+15 / 内気自覚",
+          act: () => {
+            S.insight += 15;
+            addLog("『自分は自分から動くのが苦手な受け身の人間だ』と静かに自覚する。", "reflect-log");
+          }
+        },
+        {
+          t: "『まだ何も始まってない。誰も自分を知らない遠くに行ってみたい』と思う",
+          sub: "やってみたい指数+20 / 冒険心+15",
+          act: () => {
+            S.motto += 20; S.insight += 10;
+            addLog("窮屈な日常を飛び出し、未知の場所へ行ってみたいという漠然とした憧れを抱く。", "reflect-log");
+          }
+        }
+      ]
+    };
+  }
+
+  // --- 中学・高校：地域未来留学の決断 ---
+  if (age === 15 && seasonIdx === 2) { // 中3・秋
+    return {
+      type: "decision",
+      badge: "進路の選択",
+      title: "中3の秋：レールに乗るか、誰も自分を知らない町へ行くか",
+      desc: "進路希望調査の紙は白紙のまま。父が『地域未来留学っていうのがあってね、島や田舎の高校に行けるみたいだよ』とパンフレットをくれた。",
+      choices: [
+        {
+          t: "【地域未来留学】誰も自分を知らない環境へ！愛媛・小田分校へ進学する",
           sub: "やってみたい指数+35 / 視野+35 / 味方+20",
           act: () => {
             S.motto += 35; S.insight += 35; S.friends += 20;
-            S.pref = pick(["愛媛県内子町（小田分校）", "島根県隠岐島前高校", "長野県木曽青峰高校"]);
-            S.title = "越境する高校生";
-            addLog(`${S.pref}へ進学決定！大自然と温かい島民・町民に囲まれ、自分の固定観念が崩れ去っていく。`, "turning");
+            S.pref = "愛媛県内子町（小田分校）";
+            S.title = "小田分校の留学生";
+            addLog("愛媛の山あいの町・小田分校へ進学！地域の人々と密に関わる生活が幕を開ける。", "turning");
           }
         },
         {
-          t: "地元の進学校へ進み、大学受験に向けて手堅く勉強する",
-          sub: "幸福度+5 / 安定",
+          t: "地元の進学校へ進み、波風を立てずに大学受験を目指す",
+          sub: "幸福度+5 / 現状維持",
           act: () => {
             S.happiness += 5;
-            addLog("地元の高校へ進学。周囲と同じレールに乗りながらも、胸の奥にある漠然とした焦りは消えない。", "");
+            addLog("地元の高校へ進学。周囲と同じレールに乗りながら、どこか物足りなさを感じる。", "");
           }
         }
       ]
     };
   }
 
-  if (age === 18) {
+  // --- 大学2年・春：熱い人物との遭遇①（鹿児島さつま町・農家） ---
+  if (age === 20 && seasonIdx === 0) { // 大2・春
     return {
-      badge: "大学進学",
-      title: "18歳・高校卒業：何のために大学で学ぶのか？",
-      desc: "机の上の勉強だけでなく、現場に出て人や町と関わりながら学びたい気持ちが芽生えている。",
+      type: "encounter",
+      badge: "濃烈な出会い",
+      title: "20歳・春：鹿児島県さつま町・農家の松下さんとの半日",
+      desc: "研究室の合宿で訪れたさつま町。半日作業を共にした地元農家・松下さんは、日に焼けた笑顔で語りかけてきた。",
+      profile: "【松下さん（68歳・専業農家）】\n『都会の人は数字や肩書きばっかり追うけどな、朝採れたての野菜を家族と食うて、夕焼け見て酒飲む以上の贅沢がどこにある？ワシはこの暮らしに誇りを持っとるんじゃ』",
+      question: "この人の熱意と暮らし哲学に触れて、あなたはどう感じましたか？",
       choices: [
         {
-          t: "地域やコミュニティ政策・都市生活を実践的に学べる学部を選ぶ",
-          sub: "やってみたい指数+25 / 視野+25 / 味方+20",
+          t: "『言葉では説明しきれない圧倒的な豊かさがある…！』と衝撃を受けた",
+          sub: "やってみたい指数+35 / 視野+30 / 味方+25",
           act: () => {
-            S.motto += 25; S.insight += 25; S.friends += 20;
-            S.title = "都市・地域生活の探究者";
-            addLog("大学で地域共創・まちづくりを専攻。教室を飛び出して地域に入り込む実践的な講義に惹きつけられる。", "growth");
+            S.motto += 35; S.insight += 30; S.friends += 25;
+            S.title = "さつま人の暮らしを伝える者";
+            addLog("松下さんの生き方に心を打たれ、仲間と『さつま人のなんかいい暮らし展』を企画・発表！", "encounter-log");
           }
         },
         {
-          t: "就活で無難と言われる経済・経営系学部に進学する",
-          sub: "視野+10 / 現状維持",
+          t: "『素敵な暮らしだけど、自分には田舎暮らしの覚悟は持てない』と距離を置いた",
+          sub: "視野+10 / 客観的視点",
           act: () => {
-            S.insight += 10; S.title = "普通の大学生";
-            addLog("総合大学へ進学。講義は単位を取るためのルーティンになり、次第に空虚さを感じるようになる。", "");
+            S.insight += 10;
+            addLog("松下さんの温かさに感謝しつつも、自分自身の生活とは切り離して受け止めた。", "");
           }
         }
       ]
     };
   }
 
-  if (age === 20) {
+  // --- 大学3年・夏：熱い人物との遭遇②（島根県海士町・元ITの醸造家） ---
+  if (age === 21 && seasonIdx === 1) { // 大3・夏
     return {
-      badge: "大学2年の分水嶺",
-      title: "20歳・大学2年：『このまま何も成し遂げずに終わるのか？』",
-      desc: "講義やバイトに慣れたが成長実感がゼロ。研究室の地方滞在合宿（鹿児島・島根など）の募集チラシを見かける。",
+      type: "encounter",
+      badge: "濃烈な出会い",
+      title: "21歳・夏：離島のクラフトビール醸造家・神田さん",
+      desc: "隠岐諸島でのインターン中、東京のメガベンチャーを捨てて島に移住し、ビール醸造所を立ち上げた神田さんと出会う。",
+      profile: "【神田さん（34歳・元ITベンチャー／現クラフトビール醸造家）】\n『行政が動かない？予算がない？知るかよ！若者が自分の手で稼いで失敗できる場所を俺たちが作らなきゃ、この町は死ぬんだよ。失敗したって死にはしない、お前は何が怖くて縮こまってんだ？』",
+      question: "怒声に近いその圧倒的な熱量にぶつけられて、あなたはどう思った？",
       choices: [
         {
-          t: "【単身飛び込み】一人で参加するのは不安だが応募！農家や町民の家に泊まり込む",
-          sub: "やってみたい指数+40 / 視野+35 / 頼れる味方+35",
+          t: "『言われたことだけやってる自分が情けない…泥臭く一緒にチラシを作り直させてください！』と食らいついた",
+          sub: "やってみたい指数+40 / 視野+35 / 味方+35 / 覚醒",
           act: () => {
             S.motto += 40; S.insight += 35; S.friends += 35;
-            S.title = "地域に飛び込んだ若者";
-            const loc = pick(["鹿児島県さつま町", "島根県海士町", "山形県金山町"]);
-            addLog(`${loc}の合宿に単身参加！地元農家の方と泥だらけで作業し、暮らしの温かさに触れて涙が出る。`, "turning");
-          }
-        },
-        {
-          t: "【海外・TAP留学】日本の地方ではなく、オーストラリア等へ語学・異文化留学へ行く",
-          sub: "視野+40 / やってみたい指数+15 / 味方+15",
-          act: () => {
-            S.insight += 40; S.motto += 15; S.friends += 15;
-            S.title = "海外留学生";
-            addLog("オーストラリアでの留学を経験。生活環境や文化の違いから大きな刺激を受ける。", "growth");
-          }
-        },
-        {
-          t: "【見送り】一人で参加する勇気が出ず、予定を調整しているうちに締切を逃す…",
-          sub: "幸福度+5 / やってみたい指数-5",
-          act: () => {
-            S.motto = Math.max(0, S.motto - 5);
-            addLog("合宿に惹かれつつもソロ参加の不安に負けて断念。夏休みをバイトとだらだらした日常で終える。", "");
-          }
-        }
-      ]
-    };
-  }
-
-  if (age === 21) {
-    return {
-      badge: "実践と覚醒",
-      title: "21歳・大学3年：離島・農村インターンでの手痛い挫折",
-      desc: "意気揚々と参加した地域インターン。自分の提案が地元の人に響かず、『君は町のために何をしに来たの？』と問われる。",
-      choices: [
-        {
-          t: "プライドを捨てて相手の話に耳を傾け、泥臭く一緒にチラシやイベントを作り直す",
-          sub: "やってみたい指数+35 / 視野+35 / 味方+40",
-          act: () => {
-            S.motto += 35; S.insight += 35; S.friends += 40;
             S.title = "共創する仕掛け人";
-            addLog("相手の目線に立ち、泥臭く対話を重ねて企画を成功させる。『自分から動く力・人と関わる力』が身体に刻まれた！", "turning");
+            addLog("神田さんと夜通しチラシを議論し直す。『自分から動く力・人と関わる覚悟』を体得した！", "encounter-log");
           }
         },
         {
-          t: "意見が合わないと割り切り、大学のレポートに必要な体裁だけ整えて帰る",
+          t: "『思想が強すぎてついていけない…』と一歩引いて、指定された作業だけをこなした",
           sub: "視野+5",
           act: () => {
             S.insight += 5;
-            addLog("無難にインターンを終了。町の人々と深く心を通わせることはできず、消化不良に終わる。", "");
+            addLog("熱量の差に気圧され、指示された範囲の作業を淡々と納品して島を後にした。", "");
+          }
+        }
+      ]
+    };
+  }
+
+  // --- 社会人・26歳・秋：キャリアの問いかけ ---
+  if (age === 26 && seasonIdx === 2) {
+    return {
+      type: "decision",
+      badge: "人生の岐路",
+      title: "26歳・秋：東京のオフィス街と、あの町からの『助けてくれ』",
+      desc: "企業で忙しい日々を送る中、かつてお世話になったあの町の仲間から『新プロジェクトの企画を一緒に手伝ってほしい』と連絡が入る。",
+      choices: [
+        {
+          t: "二拠点生活を始め、平日は東京の仕事、週末は地域の現場で仕掛ける",
+          sub: "やってみたい指数+30 / 味方+30 / 幸福度+25",
+          act: () => {
+            S.motto += 30; S.friends += 30; S.happiness += 25;
+            S.title = "関係人口のフロントランナー";
+            addLog("平日は都市、週末は地域に関わる二拠点生活を開始。頼れるまちと人が人生の確固たる支柱になる。", "turning");
+          }
+        },
+        {
+          t: "思い切って会社を退職し、地域へ完全移住してコミュニティビジネスを起業する",
+          sub: "やってみたい指数+45 / 味方+35 / 激変",
+          act: () => {
+            S.motto += 45; S.friends += 35; S.happiness += 30;
+            S.title = "地域共創プロデューサー";
+            addLog("地域へ完全移住！空き家を改装したカフェ＆交流拠点を立ち上げ、町のプレイヤーの中心になる。", "turning");
+          }
+        },
+        {
+          t: "今は社内での昇進に集中し、地域には一人の観光客として遊びに行く",
+          sub: "収入安定 / 幸福度+10",
+          act: () => {
+            S.happiness += 10;
+            addLog("社内キャリアを着実に進める。忙しい日々の中、あの町で買った器が心を休めてくれる。", "");
           }
         }
       ]
@@ -451,59 +530,79 @@ function startGame() {
 
   S.year = 2024;
   S.age = 0;
+  S.seasonIdx = 0;
   S.motto = 8;
-  S.insight = 12;
-  S.friends = 10;
-  S.happiness = 60;
+  S.insight = 10;
+  S.friends = 5;
+  S.happiness = 55;
   S.title = "産声をあげた子";
   S.logs = [];
-  S.decision = null;
+  S.activeEvent = null;
+  S.autoPlay = false;
+  clearInterval(S.autoTimer);
   S.usedEvents = new Set();
   S.screen = "PLAY";
 
-  addLog(`${S.pref}で誕生。父・${S.dad}、母・${S.mom}。`, "growth");
+  addLog(`${S.pref}で誕生。父・${S.dad}、母・${S.mom}。`, "encounter-log");
   render();
 }
 
-function stepYear() {
-  if (S.decision) return;
-  S.age++;
-  S.year++;
-
-  // 時代ニュース（重複なし）
-  if (WORLD_NEWS[S.year] && !S.usedEvents.has(WORLD_NEWS[S.year])) {
-    addLog(`【時代】${WORLD_NEWS[S.year]}`, "news");
-    S.usedEvents.add(WORLD_NEWS[S.year]);
-  }
-
-  // 決断イベントの判定
-  const d = checkDecision(S.age);
-  if (d) {
-    S.decision = d;
-    render();
+// 季節・年を進める
+function stepForward() {
+  if (S.activeEvent) {
+    pauseAuto();
     return;
   }
 
-  // 年齢帯ごとのプールから「未発生のイベント」を1つだけ選出
-  let pool = [];
-  if (S.age >= 1 && S.age <= 2) pool = UNIQUE_EVENTS.toddler;
-  else if (S.age >= 3 && S.age <= 5) pool = UNIQUE_EVENTS.infant;
-  else if (S.age >= 6 && S.age <= 8) pool = UNIQUE_EVENTS.elem_low;
-  else if (S.age >= 9 && S.age <= 11) pool = UNIQUE_EVENTS.elem_high;
-  else if (S.age >= 12 && S.age <= 14) pool = UNIQUE_EVENTS.junior;
-  else if (S.age >= 16 && S.age <= 17) pool = UNIQUE_EVENTS.high;
-  else if (S.age === 19) pool = UNIQUE_EVENTS.college_early;
-  else if (S.age >= 23 && S.age <= 38 && S.age % 3 === 0) pool = UNIQUE_EVENTS.adult;
+  if (S.age < 6) {
+    // 0〜5歳は1年単位
+    S.age++;
+    S.year++;
+    const pool = UNIQUE_EVENTS.infant.filter(e => !S.usedEvents.has(e));
+    if (pool.length > 0) {
+      const chosen = pick(pool);
+      addLog(chosen);
+      S.usedEvents.add(chosen);
+    }
+  } else {
+    // 6歳以降は3ヶ月（春→夏→秋→冬）
+    S.seasonIdx++;
+    if (S.seasonIdx >= 4) {
+      S.seasonIdx = 0;
+      S.age++;
+      S.year++;
+    }
 
-  // 未使用のものだけをフィルタリング
-  const available = pool.filter(e => !S.usedEvents.has(e));
-  if (available.length > 0) {
-    const chosen = pick(available);
-    addLog(chosen);
-    S.usedEvents.add(chosen); // ★既読フラグに登録
+    // 特別イベント判定
+    const ev = getSpecialEvent(S.age, S.seasonIdx);
+    if (ev) {
+      S.activeEvent = ev;
+      pauseAuto(); // イベント時は自動停止
+      render();
+      return;
+    }
+
+    // 季節ごとのランダムイベント
+    let pool = [];
+    if (S.age >= 6 && S.age <= 12) {
+      const sKeys = ["elem_spring", "elem_summer", "elem_autumn", "elem_winter"];
+      pool = UNIQUE_EVENTS[sKeys[S.seasonIdx]];
+    } else if (S.age >= 15 && S.age <= 18) {
+      pool = UNIQUE_EVENTS.high_seasonal;
+    } else if (S.age >= 19 && S.age <= 22) {
+      pool = UNIQUE_EVENTS.college_seasonal;
+    }
+
+    const available = pool ? pool.filter(e => !S.usedEvents.has(e)) : [];
+    if (available.length > 0 && Math.random() < 0.65) {
+      const chosen = pick(available);
+      addLog(chosen);
+      S.usedEvents.add(chosen);
+    }
   }
 
-  if (S.age >= 40) {
+  if (S.age >= 35) {
+    pauseAuto();
     S.screen = "END";
   }
 
@@ -511,10 +610,29 @@ function stepYear() {
 }
 
 function choose(idx) {
-  if (!S.decision) return;
-  const c = S.decision.choices[idx];
+  if (!S.activeEvent) return;
+  const c = S.activeEvent.choices[idx];
   c.act();
-  S.decision = null;
+  S.activeEvent = null;
+  render();
+}
+
+// 自動送りのトグル
+function toggleAuto() {
+  if (S.autoPlay) {
+    pauseAuto();
+  } else {
+    S.autoPlay = true;
+    S.autoTimer = setInterval(() => {
+      stepForward();
+    }, S.speed);
+    render();
+  }
+}
+
+function pauseAuto() {
+  S.autoPlay = false;
+  if (S.autoTimer) clearInterval(S.autoTimer);
   render();
 }
 
@@ -527,12 +645,20 @@ function render() {
         <span style="font-size:11px; letter-spacing:0.18em; color:var(--sub); font-weight:800;">人生シミュレーション</span>
         <h1 style="margin: 8px 0; font-size: 26px;">80億分の1の、<br>やってみたい。</h1>
         <p class="lead">
-          親に決められた塾通い、模試の重圧、大学での虚無感――。<br>
-          何者でもなかったあなたが、知らない地域・人・活動との出会いを通して<br>
-          自分でも気づかなかった「やってみたい」を見つける人生の記録。
+          親に決められた塾通い、小学生・中学生でのリアルな葛藤――。<br>
+          地域に飛び出し、思想も熱量も規格外な大人たちと出会うことで、<br>
+          自分でも気づかなかった「やってみたい」を見つける人生の旅。
         </p>
 
-        <button class="btn" style="margin-top:16px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
+        <div style="background:var(--paper); padding:14px; border-radius:6px; font-size:12px; color:var(--sub); text-align:left; margin:20px 0; line-height:1.7;">
+          <b>【アップデート内容】</b><br>
+          ・0〜5歳は1年刻み、<b>小学校入学（6歳）からは3ヶ月ごと（春夏秋冬）</b>に進行<br>
+          ・「自動送り」ボタンでゆっくり人生を眺めることが可能（イベント時は自動停止）<br>
+          ・途中で<b>「この時あなたはどう感じた？」</b>という内省・心理選択が発生<br>
+          ・さつま町の農家・松下さんや離島の熱血醸造家など、<b>濃烈な人々との出会い</b>を収録
+        </div>
+
+        <button class="btn" style="width:100%; padding:14px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
       </div>
     `;
     return;
@@ -541,24 +667,34 @@ function render() {
   if (S.screen === "END") {
     app.innerHTML = `
       <div class="sheet" style="text-align:center; padding: 24px 16px;">
-        <h2 style="color:var(--ai); margin-bottom:4px;">人生の軌跡：40年の結実</h2>
-        <p style="font-size:12px; color:var(--sub);">あなたが歩み、出会ってきた人々と場所</p>
+        <h2 style="color:var(--ai); margin-bottom:4px;">人生の軌跡：35年の結実</h2>
+        <p style="font-size:12px; color:var(--sub);">出会った人々の言葉が、あなたの血肉になった</p>
 
         <div style="background:var(--paper); padding:16px; border-radius:6px; margin:16px 0; text-align:left;">
           <span style="font-size:11px; color:var(--sub);">到達した生き方</span>
           <h3 style="color:var(--shu); margin:4px 0 10px; font-size:19px;">${S.title}</h3>
           <p style="font-size:13px; line-height:1.7;">
             ${S.motto >= 70
-              ? "かつて親に言われるがまま塾に通い、やりたいことも分からず空虚さを抱えていたあなたが、偶然飛び込んだ地域での泥臭い出会いを経て、自らの手で『やってみたい』を形にし続けています。あなたには今、頼れる仲間といつでも帰れる温かい町があります。"
-              : "無難で安全な選択を重ねながらも、要所での人との出会いを経て自分らしい落ち着いた日常を築き上げました。"}
+              ? "かつて受け身で『自分には何もない』と縮こまっていたあなたが、地域で出会った泥臭く熱い大人たちに刺激を受け、自らの手で人と場を動かすリーダーへ成長しました。あなたの周りには、いつでも頼れるかけがえのない仲間たちがいます。"
+              : "無難で安全な道を選びながらも、要所での人との出会いを糧にして、自分らしい落ち着いた日常を築き上げました。"}
           </p>
         </div>
 
-        <button class="btn" onclick="S.screen='TITLE'; render();">もう一度人生を生きる</button>
+        <div style="font-size:13px; color:var(--sub); margin-bottom:16px; text-align:left;">
+          ・やってみたい指数：<b>${Math.min(100, S.motto)}%</b><br>
+          ・視野と自己理解：<b>${Math.min(100, S.insight)}pt</b><br>
+          ・頼れる味方と仲間：<b>${Math.min(100, S.friends)}人</b><br>
+          ・幸福度：<b>${Math.min(100, S.happiness)}pt</b>
+        </div>
+
+        <button class="btn" style="width:100%;" onclick="S.screen='TITLE'; render();">もう一度人生を生きる</button>
       </div>
     `;
     return;
   }
+
+  // プレイ画面
+  const timeLabel = S.age < 6 ? `${S.age}歳 (${S.year}年)` : `${S.age}歳・${SEASONS[S.seasonIdx]} (${S.year}年)`;
 
   app.innerHTML = `
     <!-- 出生届 -->
@@ -567,7 +703,7 @@ function render() {
       <h2>出 生 証 明 書</h2>
       <div class="cert-grid">
         <div class="cert-row"><span>氏名</span><b>${S.name} (${S.sex === "M" ? "男" : "女"})</b></div>
-        <div class="cert-row"><span>出生地</span><b>${S.pref}</b></div>
+        <div class="cert-row"><span>現在地</span><b>${S.pref}</b></div>
         <div class="cert-row"><span>生年</span><b>${S.year - S.age}年</b></div>
         <div class="cert-row"><span>称号</span><b>${S.title}</b></div>
       </div>
@@ -576,7 +712,10 @@ function render() {
     <!-- ステータスバー -->
     <div class="sheet">
       <div class="topline">
-        <span class="age-display">${S.age} <small style="font-size:13px; font-weight:normal; color:var(--sub);">歳 (${S.year}年)</small></span>
+        <div>
+          <span class="age-display">${timeLabel}</span>
+          ${S.age >= 6 ? `<span class="season-badge">${SEASONS[S.seasonIdx]}</span>` : ""}
+        </div>
         <span class="title-tag">${S.title}</span>
       </div>
       <div class="stats-grid">
@@ -587,14 +726,31 @@ function render() {
       </div>
     </div>
 
-    <!-- 決断カード（発生時のみ） -->
-    ${S.decision ? `
-      <div class="decision-box">
-        <span class="decision-badge">【${S.decision.badge}】</span>
-        <div class="decision-title">${S.decision.title}</div>
-        <p class="decision-desc">${S.decision.desc}</p>
+    <!-- コントロールバー（自動送り・手動送り） -->
+    <div class="control-bar">
+      <button class="btn ${S.autoPlay ? "secondary" : ""}" style="padding: 6px 14px; font-size: 13px;" onclick="toggleAuto()">
+        ${S.autoPlay ? "一時停止 ⏸" : "自動で進める（ゆっくり） ▶"}
+      </button>
+      <button class="btn secondary" style="padding: 6px 14px; font-size: 13px;" onclick="stepForward()" ${S.activeEvent ? "disabled" : ""}>
+        1つ進める »
+      </button>
+    </div>
+
+    <!-- 特別イベント（決断／濃烈な出会い／問いかけ） -->
+    ${S.activeEvent ? `
+      <div class="event-card ${S.activeEvent.type}">
+        <span class="event-badge">【${S.activeEvent.badge}】</span>
+        <div class="event-title">${S.activeEvent.title}</div>
+        <p class="event-desc">${S.activeEvent.desc}</p>${S.activeEvent.profile ? `
+          <div class="event-profile">${S.activeEvent.profile.replace(/\n/g, "<br>")}</div>
+        ` : ""}
+        ${S.activeEvent.question ? `
+          <p style="font-size:13px; font-weight:700; color:var(--ink); margin-top:2px;">
+            Q. ${S.activeEvent.question}
+          </p>
+        ` : ""}
         <div style="display:grid; gap:8px;">
-          ${S.decision.choices.map((c, i) => `
+          ${S.activeEvent.choices.map((c, i) => `
             <button class="choice-btn" onclick="choose(${i})">
               <b>${c.t}</b>
               <small>${c.sub}</small>
@@ -602,19 +758,15 @@ function render() {
           `).join("")}
         </div>
       </div>
-    ` : `
-      <div class="btn-group">
-        <button class="btn" onclick="stepYear()">1年進める（時を進める）</button>
-      </div>
-    `}
+    ` : ""}
 
-    <!-- 年表ログ -->
+    <!-- 人生の記録ログ -->
     <div class="sheet">
       <h3 style="font-size:13px; color:var(--sub); margin-bottom:8px;">人生の手帳・記憶の記録</h3>
       <div class="log-container">
         ${S.logs.map(l => `
           <div class="log-row ${l.type}">
-            <span class="yr">${l.age}歳</span>
+            <span class="yr">${l.term}</span>
             <span>${l.text}</span>
           </div>
         `).join("")}
