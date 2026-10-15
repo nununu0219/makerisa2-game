@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>80億分の1の、やってみたい。</title>
+<title>84,600分の1の、やってみたい。</title>
 <style>
   :root {
     --paper: #f1f5f9;
@@ -545,7 +545,7 @@ function getStoryEvent(age, seasonIdx) {
         type: "decision",
         badge: "魂の揺さぶり：型破り教師の一喝",
         title: "高2の春：『お前ら勉強なんかしてると、ろくな大人になんねえぞ！』",
-        desc: "受験失敗の燃え尽きのまま高校に内部進学。新学期の探究の授業で、新任の陣内先生が黒板を叩いて吠えた。\n『偏差値のレールから落ちたくらいで腐るな！机の上で教科書開いてるだけの奴は社会じゃ何の役にも立たん！<span class='kw-green'>外に出ろ！地域のイベントでも何でもいいから飛び込め！大人と混ざれ！</span>』",
+        desc: "受験失敗の燃え尽きのまま高校に内部進学。新学期の探究の授業で、新任の陣内先生が黒板を叩いて吠えた。\n『偏差値のレールから落ちたくらいで腐るな！机の上で教科書開いてるだけの奴は社会じゃ何の役にも立たん！<span class='kw-green'>外に出ろ！地域のイベントでも何でもいいから飛び込め！大人と混ざれ！自分の旗（やりたいこと）を持たない奴はAIに使われて終わるぞ！</span>』",
         choices: [
           {
             t: "先生の怒声に雷を打たれ、教科書を放り出して地域のイベントやまちづくりに飛び込みまくる！",
@@ -572,7 +572,7 @@ function getStoryEvent(age, seasonIdx) {
         badge: "修学旅行での遭遇",
         title: "高2の秋：修学旅行先で出会った、限界集落の元商社マン",
         desc: "名門校の修学旅行で訪れた長野の山奥。そこで廃校を改修して世界中からIT起業家を集める元商社マン・伊達さんと出会う。",
-        profile: "【伊達さん（38歳・元総合商社／地域プロデューサー）】\n『東大出て大企業入るのもいいけどさ、<span class='kw-green'>何もない場所に人が集まる仕組みをゼロから創る方が100倍面白くない？</span>教科書に答えなんて載ってないよ』",
+        profile: "【伊達さん（38歳・元総合商社／地域プロデューサー）】\n『東大出て大企業入るのもいいけどさ、<span class='kw-green'>何もない場所に人が集まる仕組みをゼロから創る方が100倍面白くない？自分のやりたいことを自分で決めて動かせる人間が一番強いよ。</span>教科書に答えなんて載ってないよ』",
         question: "その生き生きとした瞳を見て、あなたはどう感じましたか？",
         choices: [
           {
@@ -599,7 +599,7 @@ function getStoryEvent(age, seasonIdx) {
         type: "decision",
         badge: "高校の選択：探究と越境",
         title: "高2の春：『総合的な探究』で地域に出るか、部活と一般入試か",
-        desc: "高校2年。新しく始まった探究学習で、地元の商店街と連携したプロジェクトが立ち上がった。",
+        desc: "高校2年。新しく始まった探究学習で、地元の商店街と連携したプロジェクトが立ち上がった。『高校生のうちに一度外に出て、自分のやりたいことの種を見つけるべきだ』と担当の先生が熱く語る。",
         choices: [
           {
             t: "地域の商店街プロジェクトに名乗りを上げ、大人たちと協創する",
@@ -675,7 +675,7 @@ function getStoryEvent(age, seasonIdx) {
       type: "decision",
       badge: "18歳・人生の分岐点③：進路の選択",
       title: "18歳・春：高校卒業。あなたの選ぶ次のステージ",
-      desc: "高校での経験を経て迎えた進路選択。あなたが本当に学びたいこと、身を置きたい環境はどこか？",
+      desc: "高校での経験を経て迎えた進路選択。大学は就職予備校ではなく研究機関。あなたが本当に学びたいこと、身を置きたい環境はどこか？",
       choices: choices
     };
   }
@@ -711,7 +711,7 @@ function getStoryEvent(age, seasonIdx) {
           sub: "社会人基礎力全開 / 頼れる味方+30 / 関係性成立！",
           act: () => {
             S.action += 35; S.teamwork += 35; S.thinking += 25; S.motto += 40; S.friends += 30;
-            S.hasLocalBond = true; // ★関係性成立
+            S.hasLocalBond = true;
             S.title = "現場に飛び込んだ実践者";
             addLog(`${r.name}で${r.person}たちと泥だらけになって作業し、朝まで語り合う。<span class='kw-green'>『いつでも帰ってこい』</span>と言われる深い関係性ができた！`, "encounter-log");
           }
@@ -778,48 +778,48 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 24歳・春：物語の完全結実（どんな大人になったか） ---
+  // --- 24歳・春：物語の完全結実（どんな大人になったか・その先にあるゴール） ---
   if (age === 24 && seasonIdx === 0) {
     const choices = [];
 
     if (S.hasLocalBond) {
       choices.push({
-        t: "平日は都市の会社で働きつつ、週末はあの地域に関わる『二拠点・副業プロデューサー』になる",
-        sub: "チーム力+35 / やってみたい+35 / ハイブリッドキャリア",
+        t: "都市の会社に勤めつつ、週末はあの地域で若者の居場所づくりを伴走する『二拠点プロデューサー』へ",
+        sub: "チーム力+35 / やってみたい+35 / 人を繋ぐゴール",
         act: () => {
           S.teamwork += 35; S.motto += 35; S.friends += 30;
           S.title = "都市と地域を繋ぐ越境プロデューサー";
-          addLog("二拠点生活を開始！都市の資金とノウハウを地域に流し込み、現場の仲間と共にプロジェクトを動かす大人になった！", "turning");
+          addLog("二拠点生活を開始！かつての自分が救われたように、悩める大学生や若者を地域に繋ぎ、新たな一歩を応援する大人になった！", "turning");
         }
       });
       choices.push({
-        t: "会社を辞めてあの地域へ完全移住！空き家を活用した拠点を開業し『ローカル起業家』になる",
-        sub: "主体性MAX / やってみたい指数100% / 人生完全ダイブ",
+        t: "会社を辞めて地域へ移住！空き家を活用した拠点を開き、誰もが挑戦できる『場づくりのローカル起業家』へ",
+        sub: "主体性MAX / やってみたい指数100% / 人生完全ダイブのゴール",
         act: () => {
           S.action += 45; S.motto = 100; S.friends += 40;
           S.title = "地域を切り拓くローカル起業家";
-          addLog("会社を辞めて地域へ移住！空き家を活用したシェアオフィスとコミュニティカフェを開業し、町の中心人物になった！", "turning");
+          addLog("地域へ完全移住！若者や住民が失敗を恐れず『やってみたい』を試せる拠点をオープン。町の精神的支柱となるリーダーになった！", "turning");
         }
       });
     }
 
     if (S.univRoute === "TODAI") {
       choices.push({
-        t: "中央省庁／大手シンクタンクで、制度側から国と地域の未来を動かす『政策プロフェッショナル』へ",
+        t: "中央省庁／シンクタンクで、制度と政策から全国の現場を支える『政策プロフェッショナル』へ",
         sub: "考え抜く力MAX / エリートキャリアの結実",
         act: () => {
           S.thinking += 45; S.title = "未来を構想する政策プロフェッショナル";
-          addLog("現場の肌感覚を忘れないエリートとして、制度の最前線で国と地域を支える大人になった！", "turning");
+          addLog("現場の血の通った感覚を忘れないエリートとして、全国の地域が挑戦できる法制度や予算を設計する大人になった！", "turning");
         }
       });
     }
 
     choices.push({
-      t: "会社の主力メンバーとして実績を積み、地に足のついた『信頼されるビジネスパーソン』へ",
-      sub: "社内評価+30 / 安定した人生基盤",
+      t: "会社の主力として着実に実績を上げ、後輩や仲間から厚く信頼される『誠実なビジネスパーソン』へ",
+      sub: "社内評価+30 / 地に足のついたゴール",
       act: () => {
         S.thinking += 25; S.teamwork += 25; S.title = "信頼されるビジネスパーソン";
-        addLog("会社の中で着実に実績を上げ、周囲から頼りにされる立派な大人へと成長した！", "turning");
+        addLog("会社の中で着実に実績を上げ、周囲から頼りにされる立派な大人へと成長。確固たる人生の基盤を築き上げた！", "turning");
       }
     });
 
@@ -827,7 +827,7 @@ function getStoryEvent(age, seasonIdx) {
       type: "decision",
       badge: "24歳・青春の集大成：あなたが選んだ生き方",
       title: "24歳・春：社会人2年目。あなたは、どんな大人になりましたか？",
-      desc: "幼少期の選択、中学受験の成否、高校での出会い、そして現場での泥臭い摩擦。すべての経験が一本の線として繋がり、今、あなたの生き方が定まる。",
+      desc: "やりたいことを見つけるとは、単に職を決めることではない。自分が何を面白いと感じ、誰と生きていきたいのかを知ること。すべての経験が一本の線として繋がり、今、あなたの生き方が定まる。",
       choices: choices
     };
   }
@@ -933,7 +933,6 @@ function choose(idx) {
   const c = S.activeEvent.choices[idx];
   c.act();
   
-  // 24歳の決断を選んだら即座にエンディングへ
   if (S.age === 24 && S.seasonIdx === 0) {
     S.activeEvent = null;
     pauseAuto();
@@ -973,24 +972,28 @@ function render() {
 
   if (S.screen === "TITLE") {
     app.innerHTML = `
-      <div class="sheet" style="text-align:center; padding: 30px 16px;">
-        <span style="font-size:11px; letter-spacing:0.18em; color:var(--sub); font-weight:800;">人生シミュレーション</span>
-        <h1 style="margin: 8px 0; font-size: 24px;">80億分の1の、<br>やってみたい。</h1>
-        <p class="lead">
-          机の上だけでは、人は変われない――。<br>
-          地域に出ることで出会う、教科書にはいない規格外のおもしろい大人たち。<br>
+      <div class="sheet" style="text-align:center; padding: 32px 18px;">
+        <span style="font-size:11px; letter-spacing:0.18em; color:var(--sub); font-weight:800; display:block; margin-bottom:4px;">
+          マケリサ2 Y7班
+        </span>
+        <h1 style="margin: 6px 0 8px; font-size: 25px; line-height:1.35;">
+          あなたの84,600分の1の人生。<br>
+          <span style="color:var(--shu); font-size:21px;">やりたいことを見つけるとは。</span>
+        </h1>
+        <p class="lead" style="font-size:13px; line-height:1.7; margin-bottom:18px;">
+          机の上で教科書を解くだけでは、人は変われない。<br>
+          興味ある安全地帯から飛び出し、地域で出会う規格外におもしろい大人たち。<br>
           泥臭い摩擦と関係性を通して、あなたが24歳でどんな大人になったかを辿る物語。
         </p>
 
-        <div style="background:var(--paper); padding:14px; border-radius:6px; font-size:12px; color:var(--sub); text-align:left; margin:20px 0; line-height:1.7;">
-          <b>【リアルなストーリー連鎖のルール】</b><br>
-          ・最初は誰もが地域に興味ゼロ。少しずつ外の世界に近づき、20歳で初めて現場に接触します。<br>
-          ・地域にはさつま町の農家や隠岐の醸造家など、<b>規格外におもしろい大人たち</b>が待っています。<br>
-          ・現場で<b>「関係性を築いた人」だけが、21歳で「再訪したい」という感情を持ちます。</b><br>
-          ・24歳の春で物語は完結し、歩んできた道に応じた大人の姿へと結実します。
+        <div style="background:var(--paper); padding:16px; border-radius:6px; font-size:12px; color:var(--sub); text-align:left; margin:18px 0; line-height:1.8;">
+          <b style="color:var(--ink); font-size:13px;">【人生シミュレーションの設計思想】</b><br>
+          ・<b>やりたいことを見つける重要さ</b>：解のある勉強はAIができる時代。自分の旗がないままでは他人のレールを生きることになる。<br>
+          ・<b>偶然の出会い</b>：最初は誰もが地域に興味ゼロ。少しずつ外の世界に近づき、20歳で初めて現場に接触する。<br>
+          ・<b>見つけた先にあるゴール</b>：自分が「やってみたい」を見つけた人間は、今度は次の誰かのきっかけ（精神的支柱）になり、まちと人を動かす存在へ結実する。
         </div>
 
-        <button class="btn" style="width:100%; padding:14px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
+        <button class="btn" style="width:100%; padding:14px; font-size:15px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
       </div>
     `;
     return;
@@ -999,7 +1002,8 @@ function render() {
   if (S.screen === "END") {
     app.innerHTML = `
       <div class="sheet" style="text-align:center; padding: 24px 16px;">
-        <h2 style="color:var(--ai); margin-bottom:4px;">人生の軌跡：24歳の結実</h2>
+        <span style="font-size:11px; letter-spacing:0.15em; color:var(--sub); font-weight:800;">マケリサ2 Y7班 プロトタイプ</span>
+        <h2 style="color:var(--ai); margin: 6px 0 4px;">人生の軌跡：24歳の結実</h2>
         <p style="font-size:12px; color:var(--sub);">あなたが選び、歩み、出会ってきたすべてが今の姿をつくった</p>
 
         <div style="background:var(--paper); padding:16px; border-radius:6px; margin:16px 0; text-align:left;">
@@ -1007,8 +1011,8 @@ function render() {
           <h3 style="color:var(--shu); margin:4px 0 10px; font-size:20px;">${S.title}</h3>
           <p style="font-size:13px; line-height:1.8;">
             ${S.hasLocalBond
-              ? "机の上で偏差値や目の前のことだけに追われていたあなたが、安全な場所から飛び出し、地域で熱くおもしろい大人たちと関係性を築き上げました。居酒屋での悔しさから始まった学び直しは確かな武器となり、自分の頭で考え、人を巻き込みながら新たな価値を創り出す大人へと成長を遂げました。"
-              : "無難で安全な選択を重ねながらも、社会の中で着実に自分の足で立ち、周囲から信頼される大人へと成長しました。激しい波乱は選ばなかったものの、地に足のついた確固たる生活基盤を築いています。"}
+              ? "机の上で偏差値や目の前のことだけに追われていたあなたが、安全な場所から飛び出し、地域で熱くおもしろい大人たちと関係性を築き上げました。居酒屋での悔しさから始まった学び直しは確かな武器となり、自分の頭で考え、人を巻き込みながら新たな価値を創り出す大人へと成長を遂げました。今度はあなたが、誰かの『やってみたい』を照らす精神的支柱となっています。"
+              : "無難で安全な選択を重ねながらも、社会の中で着実に自分の足で立ち、周囲から信頼される大人へと成長しました。激しい波乱は選ばなかったものの、地に足のついた確固たる生活基盤を築き、着実に社会を支える一員となっています。"}
           </p>
         </div>
 
