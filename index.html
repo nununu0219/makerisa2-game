@@ -40,6 +40,14 @@
   }
   h1 { font-size: 24px; color: var(--ai); line-height: 1.3; margin-bottom: 6px; }
   .lead { font-size: 13px; color: var(--sub); margin-bottom: 14px; }
+  .theme-grid { display:grid; grid-template-columns:1fr; gap:10px; text-align:left; margin:18px 0; }
+  .theme-card { width:100%; border:2px solid var(--rule); border-radius:8px; background:#fff; color:var(--ink); padding:13px 14px; text-align:left; cursor:pointer; transition:transform .15s,border-color .15s,box-shadow .15s; }
+  .theme-card:hover { transform:translateY(-2px); border-color:var(--ai); }
+  .theme-card.selected { border-color:var(--ai); background:var(--ai-soft); box-shadow:0 0 0 2px rgba(29,78,216,.12); }
+  .theme-card .theme-name { display:block; font-weight:850; font-size:15px; margin-bottom:4px; }
+  .theme-card .theme-desc { display:block; font-size:12px; color:var(--sub); line-height:1.65; }
+  .theme-card .theme-tag { display:inline-block; font-size:10px; font-weight:800; color:var(--ai); letter-spacing:.08em; margin-bottom:3px; }
+  .theme-note { font-size:11px; color:var(--sub); text-align:left; line-height:1.7; margin-top:8px; }
 
   /* 出生届 */
   .cert {
@@ -230,6 +238,120 @@
   }
   .btn:hover { filter: brightness(1.1); }
   .btn.secondary { background: #fff; color: var(--ai); border: 1px solid var(--ai); }
+
+  /* GAME FEEL OVERRIDES: neon field-notes / life RPG */
+  :root {
+    --paper:#090d1a; --sheet:#11182b; --ink:#f1f5ff; --sub:#aab6d3; --rule:#2b3858;
+    --ai:#8b9cff; --ai-soft:#1b2444; --shu:#ff7a9d; --shu-soft:#351c35;
+    --moss:#54e0bd; --moss-soft:#12352f; --amber:#ffd166; --amber-soft:#332d1b;
+    --purple:#c6a0ff; --purple-soft:#2b2142;
+  }
+  body {
+    background: radial-gradient(ellipse at 20% 0%, #202858 0%, #0b1020 42%, #070a13 100%);
+    color:var(--ink); padding:18px 12px 90px;
+  }
+  .wrap { max-width:760px; gap:16px; }
+  .sheet,.control-bar,.cert {
+    background:linear-gradient(145deg,rgba(20,29,52,.97),rgba(13,19,36,.98));
+    border:1px solid #344365; border-radius:16px; padding:18px;
+    box-shadow:0 14px 35px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.035);
+  }
+  h1 { color:#a9b7ff; text-shadow:0 0 28px rgba(139,156,255,.25); }
+  .lead { color:#b7c4df; }
+  .cert { border:1px solid #596a9c; background:linear-gradient(135deg,#182342,#10182b); }
+  .cert h2 { color:#b8c4ff; letter-spacing:.25em; }
+  .cert-row { border-color:#344365; }
+  .cert-row span,.log-row .yr { color:#93a3c8; }
+  .hanko { border-color:#ff7a9d; color:#ff7a9d; }
+  .age-display { color:#c3ccff; text-shadow:0 0 18px rgba(139,156,255,.2); }
+  .season-badge,.title-tag { border-radius:999px; }
+  .stats-grid { gap:8px; }
+  .stat-box { background:linear-gradient(145deg,#202b49,#141d34); border:1px solid #2d3b5e; border-radius:12px; padding:10px 5px; }
+  .stat-box span { color:#a9b7d8; }
+  .stat-box b { color:#f6f7ff; font-size:15px; }
+  .control-bar { gap:12px; }
+  .btn { border-radius:11px; background:linear-gradient(135deg,#778cff,#8e6bff); box-shadow:0 5px 18px rgba(110,119,255,.2); }
+  .btn.secondary { background:#17213a; color:#c9d2ff; border:1px solid #52618a; box-shadow:none; }
+  .speed-btn { background:#17213a; color:#c5d0eb; border-color:#344365; border-radius:9px; padding:5px 10px; }
+  .speed-btn.active { background:#778cff; color:#080d1c; border-color:#9eabff; }
+  .event-card { border-radius:18px; padding:20px; gap:14px; box-shadow:0 18px 45px rgba(0,0,0,.22); position:relative; overflow:hidden; }
+  .event-card:before { content:""; position:absolute; width:180px; height:180px; right:-80px; top:-95px; border-radius:50%; background:rgba(255,255,255,.035); pointer-events:none; }
+  .event-card.decision { border:1px solid #8e4567; border-left:5px solid #ff7a9d; background:linear-gradient(145deg,#2c1c36,#17172d); }
+  .event-card.encounter { border:1px solid #2c8277; border-left:5px solid #54e0bd; background:linear-gradient(145deg,#12332f,#121e2b); }
+  .event-card.reflection { border:1px solid #6f5596; border-left:5px solid #c6a0ff; background:linear-gradient(145deg,#29203e,#17172d); }
+  .event-badge { font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
+  .event-title { font-size:21px; line-height:1.4; color:#f5f6ff; }
+  .event-profile { background:rgba(7,12,25,.48); color:#e1e8ff; border-left-color:#54e0bd; border-radius:0 10px 10px 0; box-shadow:none; }
+  .event-desc { color:#c1cce4; font-size:14px; line-height:1.85; }
+  .choice-btn { background:linear-gradient(145deg,#1b2744,#141d33); color:#f1f4ff; border:1px solid #344365; border-radius:12px; padding:14px 15px; box-shadow:0 3px 0 rgba(0,0,0,.12); }
+  .choice-btn:hover { background:linear-gradient(145deg,#26365c,#1c2947); border-color:#8798ff; transform:translateY(-2px); }
+  .choice-btn small { color:#aab8d8; }
+  .log-container { max-height:340px; }
+  .log-row { border-color:#2a3652; }
+  .log-row.turning { color:#ffb4c6; background:#301d32; }
+  .log-row.encounter-log { color:#8cebd4; background:#12312d; }
+  .log-row.reflect-log { color:#d7baff; background:#2b2142; }
+  .log-row.risk-log { color:#ffd58a; background:#332b1d; border-radius:9px; padding:10px; }
+  .life-progress { height:7px; background:#252f4a; border-radius:999px; overflow:hidden; margin-top:12px; }
+  .life-progress > span { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#54e0bd,#8b9cff,#c6a0ff); transition:width .35s ease; }
+  .run-label { display:flex; justify-content:space-between; gap:8px; font-size:11px; color:#aab6d3; margin-top:5px; }
+  .origin-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border:1px solid #45547c; border-radius:999px; background:#18233f; color:#cbd4ff; font-size:11px; font-weight:800; }
+  .roll-tag { display:inline-block; margin-top:7px; font-size:10px; letter-spacing:.03em; color:#ffd58a; border:1px solid #745c36; background:#332a1b; padding:3px 7px; border-radius:999px; }
+  .dice-flash { animation: diceFlash .55s ease; }
+  @keyframes diceFlash { 0%{transform:scale(1)} 35%{transform:scale(1.015);filter:brightness(1.25)} 100%{transform:scale(1)} }
+  @media (max-width:480px) { .event-title{font-size:19px} .sheet,.cert{padding:15px} .stats-grid{grid-template-columns:repeat(2,1fr)} .age-display{font-size:23px} }
+
+
+  /* IMMERSION UPDATE: life RPG / event presence */
+  .event-card {
+    animation: event-arrive .32s ease-out both;
+    background-image: linear-gradient(145deg, rgba(29,42,76,.96), rgba(13,19,36,.98));
+  }
+  .event-title { letter-spacing: .01em; line-height: 1.45; }
+  .event-desc { line-height: 1.95; }
+  .choice-btn {
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(32,44,75,.96), rgba(18,27,48,.98));
+    border: 1px solid #3a4a70;
+    color: #f2f5ff;
+    box-shadow: 0 5px 15px rgba(0,0,0,.12);
+  }
+  .choice-btn:hover, .choice-btn:focus-visible {
+    transform: translateY(-2px);
+    border-color: #aab7ff;
+    box-shadow: 0 8px 22px rgba(112,132,255,.18);
+    outline: none;
+  }
+  .choice-btn small { color: #aebddd; }
+  .roll-tag {
+    display: inline-block;
+    margin-top: 7px;
+    border: 1px solid #725e9b;
+    border-radius: 999px;
+    background: rgba(129,91,196,.14);
+    color: #d8c7ff;
+    padding: 3px 8px;
+  }
+  .origin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #3d4e78;
+    background: rgba(126,146,255,.08);
+    border-radius: 999px;
+    padding: 5px 10px;
+    color: #dce4ff;
+  }
+  .log-row { border-radius: 9px; }
+  @keyframes event-arrive {
+    from { opacity: 0; transform: translateY(8px) scale(.99); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .event-card { animation: none; }
+    .choice-btn { transition: none; }
+  }
+
 </style>
 </head>
 <body>
@@ -288,6 +410,56 @@ const REGIONS = [
 ];
 
 const PREFS = ["東京都", "神奈川県", "大阪府", "愛知県", "埼玉県", "千葉県", "福岡県", "北海道"];
+// 生まれた場所によって、日常で出会う風景や人との距離が少し変わる。
+const BIRTH_ORIGINS = [
+  {id:"metro",pref:"東京都",label:"人も情報も多い都市部",icon:"🌃",intro:"駅前には店も人も多く、知らない世界の情報がすぐ目に入る。一方、近所の人の顔を知らないまま過ごすこともある。",age8:"駅前の再開発現場",age14:"知らない人が多い街のイベント",age17:"選択肢が多すぎる進路説明会"},
+  {id:"suburb",pref:"神奈川県",label:"住宅地と大きな街のあいだ",icon:"🚉",intro:"住宅街の公園、駅前の商業施設、少し電車に乗れば大きな街。身近な生活圏と、外の世界がつながっている。",age8:"駅前で開かれる地域のお祭り",age14:"地元の友達と外の世界のあいだ",age17:"通学時間と進路選び"},
+  {id:"regional",pref:"福岡県",label:"地域の中心になる街",icon:"🏙️",intro:"商店街や学校、地域の行事が生活の近くにある。顔見知りのつながりと、新しく来た人の流れが混ざっている。",age8:"商店街で頼まれた小さな仕事",age14:"地域の大人に名前を覚えられる",age17:"街に残るか、外へ出るか"},
+  {id:"rural",pref:"北海道",label:"自然と距離の近い地域",icon:"🌲",intro:"自然が身近で、移動には時間がかかる。行ける場所は限られるけれど、地域の人や風景との関わりが濃くなることもある。",age8:"近所の人と季節の作業",age14:"地域の行事を支える側に",age17:"地元を出るか、残るか"}
+];
+function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
+function riskChanceForChoice(choice){
+  const t = (choice && choice.t) || "";
+  const risky = /挑戦|発表|提案|頼ん|聞いてみ|話しかけ|作る|手伝|行ってみ|相談|応募|企画|声をかけ|飛び込|試す|交渉|伝える|始める|参加する|自分から|紹介する|立ち上げ|やってみる|意見を言う|誘う/.test(t);
+  if(!risky) return null;
+  const capability = ((S.action||10)+(S.thinking||10)+(S.teamwork||10))/3;
+  return clamp(Math.round(28 - (capability-10)*0.35 + (S.fatigue||0)*0.45),12,38);
+}
+function applyRandomOutcome(choice){
+  S.lastOutcome = "NONE";
+  const failChance = riskChanceForChoice(choice);
+  if(failChance === null) return;
+  const roll = Math.random()*100;
+  if(roll < failChance){
+    S.lastOutcome = "FAIL";
+    const field = S.age >= 15 && /地域|現場|イベント|企画|参加|提案|人に|相談|紹介|手伝|話しかけ/.test(choice.t||"");
+    const setbacks = field ? [
+      "準備したつもりだったが、相手が求めていたことと少しずれていた。思った反応は返ってこない。",
+      "連絡が行き違い、予定していた人が来られなくなった。段取りを見直す必要がある。",
+      "勇気を出して声をかけたが、今は忙しいと断られた。タイミングも大切らしい。",
+      "自分の説明がうまく伝わらず、場の空気が少し止まった。何を伝えたいのか考え直すことになった。"
+    ] : [
+      "思ったような結果にはならなかった。準備した時間まで無駄になった気がして、少し落ち込む。",
+      "やってみたものの、思っていたより難しかった。自分の見通しの甘さに気づく。",
+      "勇気を出したのに、反応は薄かった。すぐに次へ進む気にはなれない。"
+    ];
+    S.action = Math.max(0,(S.action||0)-1);
+    S.selfTrust = Math.max(0,(S.selfTrust||0)-1);
+    S.fatigue = Math.max(0,(S.fatigue||0)+2);
+    S.unresolvedQuestion = Math.max(0,(S.unresolvedQuestion||0)+2);
+    if(field){ S.fieldExperience=(S.fieldExperience||0)+1; S.thinking=(S.thinking||0)+1; }
+    S.failedAttempts=(S.failedAttempts||0)+1;
+    addLog(`【想定外】${pick(setbacks)} 失敗はしたが、何がずれていたのかという問いが残った。`,`risk-log`);
+  } else {
+    S.lastOutcome = "SUCCESS";
+    if (Math.random() < 0.18) {
+    // 成功しても、予想外の小さな助けや縁が生まれることがある。
+    S.friends = Math.min(100,(S.friends||0)+1);
+    addLog("【思いがけない追い風】声をかけた人が別の人を紹介してくれた。予定にはなかったつながりが生まれた。","encounter-log");
+    }
+  }
+}
+
 const LAST_NAMES = ["佐藤","鈴木","高橋","田中","渡辺","伊藤","山本","中村","小林","加藤","高野","杉本","松下","神田"];
 const FIRST_M = ["蓮","湊","樹","悠真","大翔","朝陽","陽翔","律","颯","拓海","翔太","慎之介"];
 const FIRST_F = ["陽葵","凛","詩","結菜","芽依","紬","澪","咲良","莉子","花","晴美","美咲"];
@@ -297,16 +469,29 @@ const SEASONS = ["春", "夏", "秋", "冬"];
 const BASE_SPEED = 8000;
 const SPEED_MULTIPLIERS = [1, 2, 4, 8, 16];
 
+// 最初に選ぶ「人生のテーマ」。将来を固定するルートではなく、序盤の傾向と振り返りに影響する。
+const LIFE_THEMES = {
+  EXPLORE: {name:"まず、外に出て試す", tag:"行動から始める", desc:"知らない場所や人、経験に飛び込んでみる。やってみた先で、自分の興味が見つかるかもしれない。", endingTitle:"経験を重ねながら、自分の道をつくる人", endingDesc:"最初から明確な目標があったわけではない。まず現場に行き、人に会い、うまくいかないことも経験しながら、自分に合うものを探してきた。すべての挑戦が成功したわけではないが、試した経験が次の選択肢を増やしている。"},
+  RELATE: {name:"身近な人と、深く関わる", tag:"関係から始める", desc:"身近な人や好きなことを大切にし、関係を育てる。日常を深める中で、やりたいことが見えてくるかもしれない。", endingTitle:"人とのつながりから、道をひらく人", endingDesc:"遠くへ飛び出すことだけが変化ではなかった。身近な人と関わり続け、頼ったり頼られたりするなかで、自分にできることが少しずつ見えてきた。関係を育てることが、次の機会や新しい役割につながっている。"},
+  LEARN: {name:"問いを持ち、学び続ける", tag:"問いから始める", desc:"すぐに動けなくても、気になったことを調べ、考えてみる。学びが次の一歩をつくるかもしれない。", endingTitle:"問いを持ち、学び続ける人", endingDesc:"一つの経験ですぐに人生が変わったわけではない。それでも、違和感や疑問を放置せず、調べ、考え、人に聞くことを続けてきた。学びは正解を覚えるだけではなく、自分が向き合いたい問題を見つけ、次に試すことを考えるための道具になっている。"}
+};
+let selectedLifeTheme = "EXPLORE";
+function selectLifeTheme(key) { if (LIFE_THEMES[key]) { selectedLifeTheme = key; render(); } }
+
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 let S = {
   screen: "TITLE",
+  lifeTheme: "EXPLORE",
   year: 2024,
   age: 0,
   seasonIdx: 0,
   sex: "M",
   name: "",
   pref: "",
+  birthplace: "",
+  birthProfile: "suburb",
+  failedAttempts: 0,
   dad: "",
   mom: "",
   
@@ -330,6 +515,19 @@ let S = {
   title: "産声をあげた子",
   finalEndingDesc: "",      // 自動判定された最終結末テキスト
   logs: [],
+  choiceHistory: [],          // 選択とその時点の自分を振り返るための記録
+  reflection: "",             // 結末を見た後の自己理解
+  curiosity: 10,                // 知らないものに近づく姿勢
+  fatigue: 0,                   // 無理や抱え込みの蓄積
+  fieldExperience: 0,           // 現場で試した経験
+  selfTrust: 10,                // 自分の判断への信頼
+  unresolvedQuestion: 0,        // 心に残った問い・違和感
+  relationshipFlags: {},        // 出会い・約束・関係性の伏線
+  localInteractionScore: 0,     // 地域の人と実際に関わった深さ
+  regionChoice: "UNDECIDED",    // 大学時代に地域へ出る選択
+  isAutoResolving: false,
+  failedAttempts: 0,
+  lastOutcome: "",
   activeEvent: null,
   autoPlay: false,
   autoTimer: null,
@@ -462,6 +660,52 @@ function getNarrative(age, seasonIdx) {
 
 // 決断・出会い・問いかけのイベント生成エンジン
 function getStoryEvent(age, seasonIdx) {
+  // 出生地ごとの物語。能力差を固定せず、最初に出会う風景や人を変える。
+  if(age===8 && seasonIdx===1){
+    const o = BIRTH_ORIGINS.find(x=>x.id===S.birthProfile) || BIRTH_ORIGINS[1];
+    const profiles = {
+      metro:{title:"8歳・夏：工事中の駅前で",desc:"駅前は工事中で、毎週のように景色が変わる。大人は『便利になるよ』と言うけれど、いつも遊んでいた小さな広場はなくなってしまった。",choices:[
+        {t:"工事の人に、何ができるのか聞いてみる",sub:"知らない大人に聞く",d:{curiosity:3,action:2,thinking:1}},
+        {t:"友達と新しい遊び場所を探す",sub:"身近な仲間と工夫する",d:{teamwork:2,action:2}},
+        {t:"変わってしまうのは仕方ないと思う",sub:"変化を受け止める",d:{thinking:1,unresolvedQuestion:1}}
+      ]},
+      suburb:{title:"8歳・夏：駅前のお祭りで",desc:"駅前のお祭り。いつも通る道に知らない店が並び、近所の人が忙しそうに動いている。手伝ってみたい気もするけれど、子どもにできることはあるだろうか。",choices:[
+        {t:"店の人に、何か手伝えるか聞いてみる",sub:"地域の大人との小さな接点",d:{action:2,curiosity:2,friends:1}},
+        {t:"友達と屋台を回り、楽しむことにする",sub:"仲間との時間も大切",d:{teamwork:2,friends:1}},
+        {t:"少し離れて、準備している様子を眺める",sub:"まず観察する",d:{thinking:2,curiosity:1}}
+      ]},
+      regional:{title:"8歳・夏：商店街の人に名前を呼ばれる",desc:"買い物に行くと、店のおばちゃんが名前を覚えていてくれた。『今度のお祭り、見においで』と言われる。知らない大人と話すのは、少し照れくさい。",choices:[
+        {t:"お祭りの準備を少し手伝ってみる",sub:"顔見知りから役割へ",d:{action:2,teamwork:2,friends:2}},
+        {t:"家族と一緒に見に行く",sub:"安心できる人と参加する",d:{curiosity:1,friends:1}},
+        {t:"友達と遊ぶ約束を優先する",sub:"いつもの関係を選ぶ",d:{teamwork:1}}
+      ]},
+      rural:{title:"8歳・夏：近所の畑で",desc:"近所の人が畑で作業をしている。『手伝うかい？』と声をかけられた。何をするのかよくわからないし、土で服が汚れそうだ。",choices:[
+        {t:"やり方を教えてもらい、一緒に作業する",sub:"手を動かして知る",d:{action:2,curiosity:2,fieldExperience:1}},
+        {t:"何を育てているのか、話を聞く",sub:"知ることから始める",d:{thinking:2,curiosity:2}},
+        {t:"汚れそうなので、今日はやめておく",sub:"慣れた日常を選ぶ",d:{fatigue:-1}}
+      ]}
+    };
+    const p=profiles[S.birthProfile]||profiles.suburb;
+    return {type:"encounter",badge:"生まれた場所の記憶",title:p.title,desc:p.desc,profile:`【生まれた環境】${o.label}\n${o.intro}`,choices:p.choices.map(c=>({t:c.t,sub:c.sub,act:()=>{Object.entries(c.d).forEach(([k,v])=>S[k]=(Number(S[k])||0)+v);S.relationshipFlags.originMemory=true;addLog(`${p.title}——${c.t}。生まれた場所での経験が、最初の記憶のひとつになった。`,`encounter-log`);}}))};
+  }
+  if(age===14 && seasonIdx===1){
+    const map={
+      metro:{title:"14歳・夏：知らない人ばかりのイベント",desc:"街のイベントで、同年代の人が自分たちで企画を運営している。普段の学校では見ない姿に、少し驚く。",choices:[["何をしているのか話しかける",{curiosity:3,action:2}],["友達と一緒に企画を見て回る",{friends:2,curiosity:1}],["自分には関係ないと通り過ぎる",{unresolvedQuestion:1}]]},
+      suburb:{title:"14歳・夏：地元の外にある居場所",desc:"電車で数駅先に、学生が集まって何かをつくる場所があると知った。近所の友達は興味がなさそうだ。ひとりで行くのは少し不安。",choices:[["ひとりでも見学に行ってみる",{curiosity:3,action:3}],["友達を誘ってから考える",{teamwork:2,action:1}],["今の友達との時間を優先する",{friends:2}]]},
+      regional:{title:"14歳・夏：地域の人からの頼まれごと",desc:"地域のお祭りで、去年より少し大きな役割を頼まれた。大人たちは当たり前のように期待しているが、自分にできるかはわからない。",choices:[["わからないことを聞きながら引き受ける",{action:2,teamwork:3}],["友達と一緒ならできると伝える",{teamwork:2,selfTrust:1}],["部活が忙しいと断る",{fatigue:-1,unresolvedQuestion:1}]]},
+      rural:{title:"14歳・夏：地域の行事を支える側に",desc:"毎年参加していた地域の行事で、準備を手伝う中学生が足りないと聞いた。大人たちは続けたいと思っているが、同級生はあまり関心がない。",choices:[["同級生に声をかけてみる",{action:2,teamwork:3}],["自分ひとりでできる作業を引き受ける",{action:2,fieldExperience:1}],["行事は大人がやるものだと思う",{unresolvedQuestion:1}]]}
+    };
+    const p=map[S.birthProfile]||map.suburb;
+    return {type:"decision",badge:"環境によって違う経験",title:p.title,desc:p.desc,choices:p.choices.map(([t,d])=>({t,sub:"生まれ育った場所から生まれた選択",act:()=>{Object.entries(d).forEach(([k,v])=>S[k]=(Number(S[k])||0)+v);S.relationshipFlags.originTeen=true;addLog(`${p.title}——${t}。`,`turning`);}}))};
+  }
+  if(age===17 && seasonIdx===1 && !S.relationshipFlags.originFuture){
+    const prompts={metro:"情報も選択肢も多い街。外に出なくても何でも見つかる気がする。でも、画面で見た世界と実際に会う人は同じだろうか。",suburb:"地元から通える進学先も、遠くの街も選べる。家族は通いやすさを気にしているが、自分がどこで何を学びたいのかはまだ曖昧だ。",regional:"地元には顔を知っている人が多い。安心感もあるが、外に出なければ出会えない人や経験もある気がする。",rural:"地元を出るには、移動やお金のことも考えなければならない。残ることも出ることも、簡単には決められない。"};
+    return {type:"reflection",badge:"生まれた場所と進路",title:`17歳・夏：${(BIRTH_ORIGINS.find(x=>x.id===S.birthProfile)||BIRTH_ORIGINS[1]).age17}`,desc:prompts[S.birthProfile]||prompts.suburb,question:"自分の生まれ育った場所は、進路の選び方に影響しているだろうか？",choices:[
+      {t:"外に出て、知らない環境に身を置いてみたい",sub:"環境を変える可能性を探る",act:()=>{S.curiosity+=3;S.action+=2;S.relationshipFlags.originFuture="out";addLog("生まれた場所の外に、まだ知らない暮らしや学び方があると考え始めた。","reflect-log");}},
+      {t:"地元にある人や機会を、もう少し知りたい",sub:"身近な環境を掘り下げる",act:()=>{S.curiosity+=2;S.thinking+=2;S.relationshipFlags.originFuture="local";addLog("遠くへ行くことだけが挑戦ではない。身近な場所にも、まだ知らない面があると気づいた。","reflect-log");}},
+      {t:"まだ決めず、いくつかの選択肢を残しておく",sub:"決めきれなさも含めて考える",act:()=>{S.selfTrust+=1;S.unresolvedQuestion+=2;S.relationshipFlags.originFuture="open";addLog("すぐに答えを決めず、迷いを持ったまま選択肢を探すことにした。","reflect-log");}}
+    ]};
+  }
   // --- 6歳・春：教育方針（3分岐） ---
   if (age === 6 && seasonIdx === 0) {
     return {
@@ -926,8 +1170,24 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
+  // 大学生活の大きな分岐：慣れた生活圏の外へ出るかどうか。
+  if (age === 19 && seasonIdx === 3) {
+    return {
+      type: "decision",
+      badge: "人生の大きな決断：いつもの生活圏の外へ",
+      title: "19歳・冬：知らない地域に行ってみる？",
+      desc: "大学生活にも慣れ、授業やアルバイト、友人との時間が日常になった。そんなとき、少し遠い地域で活動する短期プログラムの案内が届いた。知らない場所に行く理由は、まだ特にない。行ったからといって、何かが変わる保証もない。",
+      profile: "【届いた案内】地域の人と一緒に、町の小さな困りごとや面白いことに取り組む数日間。経験者でなくても参加できる。",
+      question: "今の生活を続ける？ それとも、少しだけ外へ出てみる？",
+      choices: [
+        {t:"参加してみる。まずは現地に行ってみよう",sub:"知らない場所に身を置く。ただし、行くだけで関係が生まれるとは限らない",act:()=>{S.regionChoice="GO";S.action+=5;S.curiosity+=4;S.fieldExperience+=1;S.motto+=4;addLog("地域プログラムへの参加を決めた。まだ、そこで何に出会うかはわからない。","turning");}},
+        {t:"今回は行かず、大学やアルバイトを優先する",sub:"慣れた日常を続ける。地域との接点は自然には生まれにくい",act:()=>{S.regionChoice="STAY";S.friends+=2;S.fatigue=Math.max(0,S.fatigue-1);addLog("今回は地域へ行かず、いつもの生活を続けることにした。悪い選択ではないが、知らない人や現場に触れる機会は生まれなかった。","reflect-log");}}
+      ]
+    };
+  }
+
   // --- 20歳・夏：地方・地域への接触（全国8箇所のおもしろい大人たち） ---
-  if (age === 20 && seasonIdx === 1) {
+  if (age === 20 && seasonIdx === 1 && S.regionChoice === "GO") {
     if (!S.assignedRegion) {
       S.assignedRegion = pick(REGIONS);
     }
@@ -950,35 +1210,41 @@ function getStoryEvent(age, seasonIdx) {
       type: "encounter",
       badge: "地方の現場での遭遇：おもしろい大人",
       title: `20歳・夏：${r.name}での出会い`,
-      desc: `${descText}そこで出会ったのは、常識にとらわれず規格外の熱量で町を動かしている${r.person}だった。`,
+      desc: `${descText}ただ、地域に来ただけで何かが変わるわけではない。景色を見て帰ることもできるし、そこに暮らす人の話を聞き、一緒に手を動かすこともできる。そこで出会ったのは、常識にとらわれず町を動かそうとしている${r.person}だった。`,
       profile: `【${r.person}】\n『<span class='kw-red'>${r.quote}</span>』`,
       question: `手伝いを命じられ、${r.work}を目の当たりにした時、あなたはどう行動した？`,
       choices: [
         {
-          t: "『悔しいけど、この人の熱意は本物だ…！』と泥だらけになって夜中まで作業し、酒を酌み交わした",
-          sub: "社会人基礎力全開 / 頼れる味方+30 / 関係性成立！",
+          t: "作業を一緒にしながら、なぜこの町で活動するのか本人に聞いてみる",
+          sub: "地域の人との対話・共同作業。親しくなれるとは限らない",
           act: () => {
             S.action += 35; S.teamwork += 35; S.thinking += 25; S.motto += 40; S.friends += 30;
             S.localReaction = "BOND_DEEP";
+            S.localInteractionScore = (S.localInteractionScore||0) + 1;
+            S.relationshipFlags.localPersonMet = true;
+            S.relationshipFlags.localInteractionAttempt = true;
+            S.relationshipFlags.localBondAttempted = true;
             S.title = "現場に飛び込んだ実践者";
             addLog(`${r.name}で${r.person}たちと泥だらけになって作業し、朝まで語り合う。<span class='kw-green'>『いつでも帰ってこい』</span>と言われる深い関係性ができた！`, "encounter-log");
           }
         },
         {
-          t: "『面白い生き方だな』と刺激は受けたが、自分とは住む世界が違うと冷静に距離を置いた",
-          sub: "視野+20 / ゆるい繋がり / 客観的視点",
+          t: "活動を見学し、学生同士で感想を話す。地域の人とは挨拶程度にする",
+          sub: "知らない土地の刺激は得るが、暮らす人の思いや背景はまだ知らない",
           act: () => {
             S.insight += 20;
             S.localReaction = "BOND_SHALLOW";
-            addLog(`${r.name}での体験を客観的に観察。刺激はもらったが、自分は自分の都市の生活を大切にしようと冷静に受け止めた。`, "reflect-log");
+            S.relationshipFlags.localPersonMet = true;
+            addLog(`${r.name}を訪れ、景色や活動の雰囲気には刺激を受けた。ただ、地域の人と話す時間は少なく、暮らしや活動の背景まではまだ知らない。`, "reflect-log");
           }
         },
         {
-          t: "『思想が強すぎてついていけない、虫や古民家のノリも無理…』と早々に離脱して都市へ戻った",
-          sub: "適応断念 / 都市への帰還",
+          t: "自分には合わないと感じ、見学だけで切り上げて帰る",
+          sub: "訪問した経験は残るが、地域の人との接点は生まれにくい",
           act: () => {
             S.localReaction = "BOND_NONE";
-            addLog("地域の強烈な熱量と過酷な生活環境に拒絶感を覚え、指定された最低限の作業だけを終えて早々に帰りの新幹線に乗った。", "");
+            S.relationshipFlags.localVisitOnly = true;
+            addLog("地域を訪れたが、地域の人と深く話す機会はほとんどなかった。土地を見た経験は残ったものの、自分の関心や学び方が変わるほどの接点はまだ生まれていない。", "");
           }
         }
       ]
@@ -986,7 +1252,7 @@ function getStoryEvent(age, seasonIdx) {
   }
 
   // --- 21歳・夏：再訪の条件分岐 ---
-  if (age === 21 && seasonIdx === 1) {
+  if (age === 21 && seasonIdx === 1 && S.regionChoice === "GO") {
     const r = S.assignedRegion || REGIONS[0];
 
     if (S.localReaction === "BOND_DEEP") {
@@ -1069,6 +1335,216 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
+
+  // --- 20歳・秋：訪問しただけでは終わらない。地域の人との関係が次を変える ---
+  if (age === 20 && seasonIdx === 2 && S.regionChoice === "GO") {
+    const r = S.assignedRegion || REGIONS[0];
+    if (S.localReaction === "BOND_DEEP") {
+      return {
+        type: "encounter",
+        badge: "関係が続いたから生まれた機会",
+        title: `20歳・秋：${r.name}の人から届いた「次も一緒にやらない？」`,
+        desc: `夏に出会った${r.person}から連絡が来た。今度は見学ではなく、地域の人たちと一緒に小さな企画を考えるという。何年も続く地域の事情を、短い滞在の学生が理解できるとは限らない。それでも、もう一度話を聞き、一緒に手を動かす機会ができた。`,
+        question: "出会いを一度きりで終わらせず、どう関わる？",
+        choices: [
+          {t:"地域の人と相談しながら、小さな企画を一緒につくる",sub:"共同作業。うまくいくとは限らない",act:()=>{S.localInteractionScore=(S.localInteractionScore||0)+2;S.fieldExperience+=2;S.action+=2;S.relationshipFlags.coCreationAttempted=true;addLog("地域の人と相談しながら企画づくりを始めた。自分のアイデアを出すだけでなく、相手の事情や積み重ねを聞く時間も必要だった。","encounter-log");}},
+          {t:"地域の人に話を聞き、まずは活動の背景を知る",sub:"すぐに解決策を出さず、相手の話から学ぶ",act:()=>{S.localInteractionScore=(S.localInteractionScore||0)+1;S.thinking+=3;S.curiosity+=2;S.relationshipFlags.localConversationAttempt=true;addLog("地域の人の話を聞き、活動を始めた理由や続ける難しさを知った。見学だけでは気づかなかった背景が見えてきた。","reflect-log");}},
+          {t:"今回は学生同士でまとめ役を担い、地域の人とは必要な連絡だけにする",sub:"自分ができる範囲を選ぶ",act:()=>{S.teamwork+=2;S.relationshipFlags.studentSideOnly=true;addLog("学生同士の作業を中心に進めた。企画は形になったが、地域の人が本当に大切にしていることは、まだ十分に理解できていない。","");}}
+        ]
+      };
+    } else if (S.localReaction === "BOND_SHALLOW") {
+      return {
+        type: "encounter",
+        badge: "もう一歩近づくか、見学で終えるか",
+        title: `20歳・秋：${r.name}で、地域の人と話す時間`,
+        desc: "夏の訪問は楽しかった。景色も違ったし、普段と違う刺激もあった。でも、地域の人と深く話したわけではない。今回、活動を続けている人が片づけをしながら話しかけてきた。ここで初めて、訪問を「交流」に変えることもできる。",
+        question: "この人の話を聞く？ それとも、今回も見学者のままでいる？",
+        choices: [
+          {t:"なぜこの活動を続けているのか、本人に聞いてみる",sub:"対話から、土地の背景や人の思いに触れる",act:()=>{S.relationshipFlags.localConversationAttempt=true;S.localInteractionScore=(S.localInteractionScore||0)+1;S.curiosity+=2;addLog("地域の人に活動を続ける理由を聞いてみた。思っていたより個人的な経験や、長年の関係が活動を支えていた。","encounter-log");}},
+          {t:"学生同士で写真や感想を共有し、交流は挨拶程度にする",sub:"非日常の刺激はあるが、関係は深まりにくい",act:()=>{S.insight+=2;S.relationshipFlags.studentSideOnly=true;addLog("学生同士では盛り上がったが、地域の人の思いや日常には触れないまま帰ることになった。","");}},
+          {t:"疲れているので、無理に話さず帰る",sub:"自分の余力を守る。関係はまだ始まらない",act:()=>{S.fatigue=Math.max(0,S.fatigue-1);S.relationshipFlags.localVisitOnly=true;addLog("無理をせず帰ることにした。地域に行くこと自体が悪かったわけではないが、人との関係はまだ生まれていない。","reflect-log");}}
+        ]
+      };
+    } else {
+      return {
+        type: "reflection",
+        badge: "訪問のあとに残ったもの",
+        title: `20歳・秋：${r.name}から帰ってきて`,
+        desc: "知らない場所を訪れた経験は残った。でも、地域の人とほとんど話さなかったため、そこで暮らす人が何を大切にしているのか、自分に何ができるのかはわからないままだ。地域に行くことと、地域の人と関わることは同じではなかった。",
+        question: "この経験を、ここで終わらせる？ それとも接点をつくり直す？",
+        choices: [
+          {t:"お礼と一緒に、活動についてもう少し聞きたいと連絡する",sub:"訪問を対話の入口に変える",act:()=>{S.localReaction="BOND_SHALLOW";S.relationshipFlags.localConversationAttempt=true;S.relationshipFlags.followUp=true;S.localInteractionScore=(S.localInteractionScore||0)+1;S.action+=2;addLog("帰宅後、地域の人にお礼を送り、活動について質問した。訪問のときには生まれなかった接点が、少し遅れて始まった。","encounter-log");}},
+          {t:"学生同士で感想を話し、地域の人には連絡しない",sub:"経験を自分たちの中で振り返る",act:()=>{S.thinking+=2;S.relationshipFlags.studentSideOnly=true;addLog("訪問の感想を学生同士で共有した。新しい場所に行く楽しさは残ったが、地域の人との関係は続かなかった。","reflect-log");}},
+          {t:"特に振り返らず、次の予定に進む",sub:"経験が次の行動につながるとは限らない",act:()=>{S.relationshipFlags.localVisitOnly=true;addLog("今回の訪問は、ひとつの思い出として日常の中にしまわれた。","");}}
+        ]
+      };
+    }
+  }
+
+  // --- 追加イベント群：日常の小さな選択が後の分岐につながる ---
+  // 既存の大きな分岐イベントを優先し、それ以外の季節に小さな転機を配置する。
+  const beats = {
+    "6-1": {badge:"小さな好奇心",title:"6歳・夏：帰り道に見つけた工事現場",desc:"通学路の工事現場で、重機が土をすくい上げていた。大人は早く帰ろうと言うけれど、どうしても仕組みが気になる。",choices:[
+      {t:"家に帰って図鑑で調べる",sub:"考える力・学習意欲",d:{thinking:4,studyDrive:3,curiosity:3}},
+      {t:"現場の人に質問してみる",sub:"行動・人との接点",d:{action:4,teamwork:2,curiosity:5},flag:{askedWorker:true}},
+      {t:"友達と別の遊びを始める",sub:"仲間との時間",d:{friends:2,teamwork:2}}
+    ]},
+    "7-2": {badge:"友達とのすれ違い",title:"7歳・秋：秘密基地の場所をめぐるけんか",desc:"みんなで作った秘密基地を、ひとりが勝手に壊してしまった。理由を聞く前に、腹が立って言い返してしまう。",choices:[
+      {t:"怒った理由を伝え、相手の話も聞く",sub:"対話と関係修復",d:{teamwork:4,friends:2,selfTrust:2}},
+      {t:"もう一緒に遊ばないと距離を置く",sub:"自分を守るが、関係は遠のく",d:{selfTrust:1,friends:-1,unresolvedQuestion:2}},
+      {t:"何も言わず、別の遊びを探す",sub:"その場は収まるが、もやもやが残る",d:{action:1,unresolvedQuestion:3}}
+    ]},
+    "8-0": {badge:"得意と苦手",title:"8歳・春：みんなの前で発表する日",desc:"調べたことをクラスで発表する日。前に出るのは緊張する。準備した内容には自信があるけれど、質問されたら答えられるだろうか。",choices:[
+      {t:"緊張しても、自分の言葉で発表する",sub:"実行と自信",d:{action:4,selfTrust:3,thinking:2}},
+      {t:"得意な友達に発表を任せる",sub:"協力するが、挑戦は先送り",d:{teamwork:2,friends:1,fatigue:-1}},
+      {t:"質問されそうなことを調べ直す",sub:"準備と学び",d:{studyDrive:3,thinking:3,fatigue:1}}
+    ]},
+    "8-3": {badge:"地域との接点",title:"8歳・冬：商店街のお祭りで頼まれたこと",desc:"商店街のお祭りで、店のおじさんに『ちょっと手伝ってくれない？』と声をかけられた。知らない大人と話すのは少し気まずい。",choices:[
+      {t:"呼び込みや片づけを手伝ってみる",sub:"地域との小さな接点",d:{action:3,teamwork:3,friends:2,fieldExperience:1},flag:{festivalHelper:true}},
+      {t:"親や友達のそばから様子を見る",sub:"まずは観察する",d:{curiosity:2,thinking:1}},
+      {t:"恥ずかしいので、その場を離れる",sub:"今回は見送る",d:{selfTrust:-1}}
+    ]},
+    "9-1": {badge:"偶然の出会い",title:"9歳・夏：図書館で隣に座った人",desc:"自由研究の本を探していると、隣の席の大学生が地域の川の生き物を調べていると教えてくれた。自分の知らない世界が少しだけ見えた。",choices:[
+      {t:"おすすめの本を聞いてみる",sub:"好奇心が次の行動へ",d:{curiosity:4,studyDrive:2,friends:1},flag:{libraryContact:true}},
+      {t:"話を聞くだけ聞いて、自分の課題に戻る",sub:"情報を持ち帰る",d:{thinking:2,curiosity:1}},
+      {t:"知らない人とは話さず、席を移る",sub:"安心できる範囲を選ぶ",d:{selfTrust:1}}
+    ]},
+    "9-3": {badge:"初めての失敗",title:"9歳・冬：一生懸命作ったものが壊れた",desc:"何日もかけて作った工作が、発表の直前に壊れてしまった。悔しい。時間をかけたことまで無駄になった気がする。",choices:[
+      {t:"原因を調べて、直せるところまで直す",sub:"失敗を次の工夫に変える",d:{thinking:3,action:3,selfTrust:2}},
+      {t:"先生や友達に助けを求める",sub:"人に頼る経験",d:{teamwork:4,friends:1}},
+      {t:"もう無理だと諦め、提出だけする",sub:"悔しさが残る",d:{fatigue:2,unresolvedQuestion:2}}
+    ]},
+    "11-1": {badge:"知らない世界",title:"11歳・夏：短期キャンプの誘い",desc:"学校の外で行われる自然体験キャンプに誘われた。知っている友達は少ないし、家でゲームをしている方が楽そうだ。",choices:[
+      {t:"知らない子ばかりでも参加する",sub:"慣れない環境へ一歩",d:{action:4,curiosity:4,teamwork:2}},
+      {t:"仲のいい友達を誘って参加する",sub:"安心できる人と挑戦",d:{action:2,friends:2,curiosity:2}},
+      {t:"今回は参加せず、いつもの夏休みを過ごす",sub:"安心を選ぶ",d:{fatigue:-1}}
+    ]},
+    "12-0": {badge:"新しい環境",title:"12歳・春：中学の自己紹介",desc:"教室には、これまで知らなかった人がたくさんいる。部活も趣味も、話したことのない相手もいる。自分から話しかけるか、誰かが来るのを待つか。",choices:[
+      {t:"気になる人に自分から話しかける",sub:"関係のきっかけをつくる",d:{action:3,friends:3,selfTrust:2}},
+      {t:"共通の話題が見つかるまで様子を見る",sub:"観察してから動く",d:{thinking:2,curiosity:1}},
+      {t:"前からの友達と一緒に過ごす",sub:"安心できる関係を大切にする",d:{friends:2,teamwork:1}}
+    ]},
+    "13-1": {badge:"役割と責任",title:"13歳・夏：部活で任された仕事",desc:"大会前、顧問から備品管理や後輩の練習を任された。自分の練習時間は減る。断ることもできるが、チームは困りそうだ。",choices:[
+      {t:"引き受け、周りと分担を相談する",sub:"協働と調整",d:{teamwork:4,action:2,fatigue:1}},
+      {t:"自分の練習を優先すると正直に伝える",sub:"自分の優先順位を言語化",d:{selfTrust:3,teamwork:-1}},
+      {t:"断れずに全部抱え込む",sub:"責任感と疲れが同時に残る",d:{teamwork:2,fatigue:4,unresolvedQuestion:1}}
+    ]},
+    "13-3": {badge:"進路の圧力",title:"13歳・冬：『将来の夢を書きましょう』",desc:"進路学習で将来の夢を書くことになった。周りは医者や教師と書いている。自分には、まだそんなにはっきりしたものがない。",choices:[
+      {t:"今の興味や疑問を、仮の答えとして書く",sub:"問いを持ったまま進む",d:{curiosity:3,selfTrust:2,thinking:2}},
+      {t:"周囲に合わせて、無難な職業を書く",sub:"安心を優先する",d:{fatigue:1,unresolvedQuestion:2}},
+      {t:"先生に『まだわからない』と相談する",sub:"わからなさを言葉にする",d:{action:2,teamwork:2,selfTrust:2}}
+    ]},
+    "14-0": {badge:"居場所の選択",title:"14歳・春：部活を続けるか、新しいことをするか",desc:"部活には慣れた仲間がいる。でも最近、別の分野にも少し興味が出てきた。両方やるには時間が足りない。",choices:[
+      {t:"部活を続け、仲間との関係を深める",sub:"継続と信頼",d:{teamwork:3,friends:2}},
+      {t:"地域のワークショップに一度参加してみる",sub:"未知の活動を試す",d:{curiosity:4,action:3,fieldExperience:1}},
+      {t:"どちらも決めず、しばらく考える",sub:"迷いを保留する",d:{thinking:2,unresolvedQuestion:2}}
+    ]},
+    "15-0": {badge:"高校生活の始まり",title:"15歳・春：最初の放課後",desc:"高校生活が始まった。周囲は部活や勉強の話で盛り上がっている。ここで何を選ぶかは、まだ大きな決断に思えない。",choices:[
+      {t:"興味のある部活や委員会を見学する",sub:"まず現場を見てみる",d:{curiosity:3,action:2,friends:1}},
+      {t:"勉強の習慣を整え、選択肢を広げる",sub:"基礎をつくる",d:{studyDrive:4,thinking:2}},
+      {t:"気の合う友達と過ごす時間を優先する",sub:"人間関係を育てる",d:{friends:3,teamwork:2}}
+    ]},
+    "15-2": {badge:"初めての違和感",title:"15歳・秋：大人の言葉に引っかかる",desc:"進路説明会で『いい大学に入れば安心』と何度も言われた。大事なのはわかる。でも、それだけで自分の将来を決めていいのだろうか。",choices:[
+      {t:"なぜそう言えるのか、先生に質問する",sub:"自分の問いを外に出す",d:{thinking:3,action:2,unresolvedQuestion:2}},
+      {t:"まず成績を上げ、選べる道を増やす",sub:"現実的な準備",d:{studyDrive:4,thinking:2}},
+      {t:"違和感はあるが、今は考えないことにする",sub:"問いをいったんしまう",d:{unresolvedQuestion:2,fatigue:1}}
+    ]},
+    "16-1": {badge:"頼まれごとから始まる",title:"16歳・夏：イベントの手伝いを頼まれる",desc:"知人から地域イベントの手伝いに誘われた。企画会議は大人ばかりで、何を話せばいいかわからない。それでも、当日の運営だけならできそうだ。",choices:[
+      {t:"まず当日の受付や準備を手伝う",sub:"小さく現場に入る",d:{fieldExperience:2,action:3,teamwork:2},flag:{firstEvent:true}},
+      {t:"企画会議から参加し、意見も出す",sub:"場づくりの側に立つ",d:{fieldExperience:3,action:4,teamwork:2,selfTrust:2},flag:{firstEvent:true,planningExperience:true}},
+      {t:"興味はあるが、今回は見送る",sub:"関心を持ちながら距離を置く",d:{curiosity:1,unresolvedQuestion:2}}
+    ]},
+    "16-2": {badge:"思いどおりにいかない",title:"16歳・秋：準備した企画に人が来ない",desc:"時間をかけて準備した企画なのに、当日になっても参加者が少ない。『面白いはず』と思っていたのに、何がずれていたのだろう。",choices:[
+      {t:"来てくれた人に理由や感想を聞く",sub:"相手の視点から考え直す",d:{thinking:4,teamwork:3,fieldExperience:1},flag:{learnedFromAudience:true}},
+      {t:"SNSで告知を増やし、次回に賭ける",sub:"実行を続ける",d:{action:3,thinking:1,fatigue:2}},
+      {t:"自分には向いていないと感じ、距離を置く",sub:"失敗を引きずる",d:{selfTrust:-2,unresolvedQuestion:3}}
+    ]},
+    "17-0": {badge:"進路を自分の言葉にする",title:"17歳・春：志望理由書に書けることがない",desc:"進学先を考える時期。成績や資格は書ける。でも、自分が何を学びたいのかを問われると、言葉が止まってしまう。",choices:[
+      {t:"これまでの経験を振り返り、問いを探す",sub:"経験を学びにつなげる",d:{thinking:4,curiosity:3,studyDrive:2}},
+      {t:"大学の偏差値や就職実績から候補を絞る",sub:"比較できる基準を使う",d:{thinking:2,studyDrive:2}},
+      {t:"先輩や先生に話を聞き、自分の考えを整理する",sub:"対話で言葉を見つける",d:{friends:2,teamwork:2,selfTrust:2}}
+    ]},
+    "17-2": {badge:"選択の揺らぎ",title:"17歳・秋：友達の進路が決まっていく",desc:"推薦で進路が決まった友達が増え、焦りが募る。自分の選択が遅れているように感じる。周囲に合わせるか、自分の納得を優先するか。",choices:[
+      {t:"周囲と比べず、自分の基準を言葉にする",sub:"納得できる選択を探す",d:{selfTrust:3,thinking:2}},
+      {t:"安心できる進路を優先して決める",sub:"不安を減らす選択",d:{fatigue:-1,unresolvedQuestion:1}},
+      {t:"いろいろな大人や学生の話を聞きに行く",sub:"選択肢を広げる",d:{curiosity:4,action:2,friends:2}}
+    ]},
+    "18-1": {badge:"大学の外へ",title:"18歳・夏：授業では出会わない人たち",desc: S.relationshipFlags.firstEvent ? "高校時代にイベントを手伝った経験がある。今度は大学生として、学生と地域の人が一緒に活動するプロジェクトを見つけた。あのときの経験があるからこそ、もう一歩踏み込める気もする。" : "大学生活にも慣れ始めた夏。SNSで、学生と地域の人が一緒に活動するプロジェクトを見つけた。専門知識はないし、場違いかもしれない。",choices:[
+      {t:"説明会だけでも参加してみる",sub:"接点をつくる",d:{curiosity:3,action:2}},
+      {t:"友達を誘って一緒に参加する",sub:"仲間と未知へ",d:{curiosity:2,action:2,friends:2}},
+      {t:"自分にはまだ早いと考え、授業を優先する",sub:"学内で準備する",d:{studyDrive:3,unresolvedQuestion:1}}
+    ]},
+    "18-2": {badge:"学びの意味",title:"18歳・秋：授業で学んだ理論が現場とつながる",desc:"授業で扱った地域課題の話が、ニュースや身近な街の風景と重なった。知識がテストのためだけではないと、少しだけ感じる。",choices:[
+      {t:"気になったことを調べ、現場の事例を探す",sub:"知識から問いへ",d:{studyDrive:3,thinking:3,curiosity:2}},
+      {t:"レポートにまとめ、授業の課題として深める",sub:"学問として掘り下げる",d:{studyDrive:3,thinking:3}},
+      {t:"面白いと思うが、忙しさに流される",sub:"関心はまだ行動にならない",d:{unresolvedQuestion:2,fatigue:1}}
+    ]},
+    "19-1": {badge:"誘いと優先順位",title:"19歳・夏：友達からの旅行と、初めての現場体験",desc: S.relationshipFlags.firstEvent ? "高校時代に手伝ったイベントの縁から、地域プロジェクトの短期参加に誘われた。友達との旅行も同じ時期。慣れた仲間との時間と、前に会った人たちとの次の経験が重なった。" : "友達との旅行の予定と、地域プロジェクトの短期参加が重なった。どちらも楽しそうで、どちらかを選ぶともう一方はできない。",choices:[
+      {t:"地域プロジェクトに参加する",sub:"新しい人・場所との接点",d:{fieldExperience:3,action:3,curiosity:3},flag:{fieldTrip:true}},
+      {t:"旅行を選び、友達との時間を大切にする",sub:"身近な関係を育てる",d:{friends:3,teamwork:1}},
+      {t:"日程調整を相談し、両方の可能性を探る",sub:"交渉と調整",d:{action:2,teamwork:3,selfTrust:2}}
+    ]},
+    "19-3": {badge:"続ける理由",title:"19歳・冬：一度きりで終わらせるか",desc:"イベントは終わった。楽しかったけれど、準備は大変だったし、知らない人に気を遣った。もう一度関わる理由はあるだろうか。",choices:[
+      {t:"次にできることを自分から聞いてみる",sub:"関係を継続につなげる",d:{fieldExperience:2,action:3,friends:2},flag:{followUp:true}},
+      {t:"少し休み、興味が残るか考える",sub:"距離をとって振り返る",d:{thinking:2,fatigue:-2}},
+      {t:"楽しかった思い出として区切りをつける",sub:"経験を一度の体験として持ち帰る",d:{curiosity:1}}
+    ]},
+    "20-0": {badge:"偶然が入口になる",title:"20歳・春：知人から届いた一通のメッセージ",desc: (S.relationshipFlags.followUp || S.relationshipFlags.firstEvent || S.relationshipFlags.libraryContact) ? "以前の活動や出会いで知り合った人から『今度、面白い人が集まるから来ない？』と連絡が来た。あのとき一度きりで終わらせなかったことが、次の機会につながっている。何をするのかはまだよくわからない。" : "以前会った人から『今度、面白い人が集まるから来ない？』と連絡が来た。何をするのかはよくわからない。でも、断る理由もはっきりしない。",choices:[
+      {t:"よくわからないまま、まず行ってみる",sub:"偶然を受け取る",d:{action:3,curiosity:4,friends:2},flag:{acceptedInvitation:true}},
+      {t:"何をする場なのか、先に詳しく聞く",sub:"納得してから動く",d:{thinking:2,action:2,curiosity:2}},
+      {t:"予定が合わないと断る",sub:"今回は機会を見送る",d:{unresolvedQuestion:1}}
+    ]},
+    "20-2": {badge:"現場との距離",title:"20歳・秋：地域の人と学生の温度差",desc:"地域の人は何年も続く問題を話している。一方、自分は短い滞在で何かを変えられる気がしない。熱意だけで踏み込むのも違う気がした。",choices:[
+      {t:"まず相手の話を聞き、背景を知ろうとする",sub:"すぐに解決せず、理解する",d:{thinking:3,teamwork:3,fieldExperience:1}},
+      {t:"学生だからできる小さな提案をしてみる",sub:"実践から学ぶ",d:{action:4,fieldExperience:2,selfTrust:1}},
+      {t:"自分には関係ないと感じ、距離を置く",sub:"違和感を抱えたまま離れる",d:{unresolvedQuestion:3,selfTrust:-1}}
+    ]},
+    "21-0": {badge:"再訪する理由",title:"21歳・春：また来てほしいと言われた",desc:"前に訪れた町の人から『また来てよ』と連絡があった。観光客として歓迎されているのか、何か一緒にやる仲間として見られているのか、まだわからない。",choices:[
+      {t:"日程を決め、再訪の約束をする",sub:"関係を続ける",d:{fieldExperience:3,friends:3,action:2},flag:{promisedReturn:true}},
+      {t:"何ができるか相談してから決める",sub:"期待をすり合わせる",d:{thinking:3,teamwork:2}},
+      {t:"うれしいけれど、今は約束しない",sub:"無理に背負わない",d:{selfTrust:1,unresolvedQuestion:1}}
+    ]},
+    "21-2": {badge:"悔しさから学びへ",title:"21歳・秋：話し合いで言葉が出てこない",desc:"地域の人たちの議論に参加したが、制度や産業の話についていけない。知っているつもりだったのに、現実の複雑さを前に何も言えなくなった。",choices:[
+      {t:"悔しさを持ち帰り、必要な知識を学び直す",sub:"現場の問いが学習を動かす",d:{studyDrive:5,thinking:3,unresolvedQuestion:2},flag:{fieldQuestion:true}},
+      {t:"知っている人に教えてほしいと頼む",sub:"他者と学ぶ",d:{teamwork:3,friends:2,studyDrive:2}},
+      {t:"自分は向いていないと思い、議論から離れる",sub:"自信を失う",d:{selfTrust:-3,unresolvedQuestion:3}}
+    ]},
+    "22-0": {badge:"社会に出る",title:"22歳・春：最初の職場での戸惑い",desc: S.relationshipFlags.fieldQuestion ? "現場で言葉が出なかった悔しさから、必要なことを学び直した経験がある。社会人になっても、わからないことは次々に出てくる。今度はその問いを、仕事の中でどう扱うだろう。" : "仕事を覚えるだけで精一杯。学生時代にやっていたことは役に立つのか、周囲に合わせるだけでいいのか、まだわからない。",choices:[
+      {t:"わからないことを質問し、少しずつ任せてもらう",sub:"学び続ける姿勢",d:{studyDrive:2,teamwork:3,selfTrust:2}},
+      {t:"期待に応えようと、一人で抱え込む",sub:"成果と疲労の両方",d:{action:2,fatigue:4}},
+      {t:"社外の活動や昔の仲間とのつながりを保つ",sub:"仕事以外の視点を持つ",d:{friends:3,curiosity:2}}
+    ]},
+    "22-2": {badge:"価値観の衝突",title:"22歳・秋：効率と、目の前の人の事情",desc:"仕事では効率が求められる。でも、相手の事情を聞くと簡単には割り切れない。時間をかけるべきか、決められた手順を守るべきか。",choices:[
+      {t:"事情を聞いたうえで、できる範囲を提案する",sub:"現実と人への配慮をつなぐ",d:{thinking:3,teamwork:3,action:1}},
+      {t:"ルールを優先し、決められた手順で進める",sub:"安定と公平性を守る",d:{thinking:2,selfTrust:1}},
+      {t:"疑問を抱えつつ、上司の判断に従う",sub:"問いが残る",d:{unresolvedQuestion:2,fatigue:1}}
+    ]},
+    "23-0": {badge:"自分の軸",title:"23歳・春：後輩から相談された",desc:"後輩が『やりたいことがない』と相談してきた。自分も同じように悩んだ時期がある。正解を教えることはできないが、何か伝えられることはあるだろうか。",choices:[
+      {t:"自分の失敗や迷いも含めて話す",sub:"経験を誰かの次の一歩に渡す",d:{teamwork:3,friends:2,selfTrust:2}},
+      {t:"小さく試せる機会や人を紹介する",sub:"行動の入口をつくる",d:{action:3,teamwork:3,fieldExperience:1}},
+      {t:"本人が決めることだと思い、答えを急がない",sub:"相手のペースを尊重する",d:{thinking:2,teamwork:1}}
+    ]},
+    "23-2": {badge:"選び続ける人生",title:"23歳・秋：この先も続けたいこと",desc:"仕事にも少し慣れ、生活のリズムができてきた。かつて心が動いた経験は、今も自分の中に残っているだろうか。続けることも、形を変えることもできる。",choices:[
+      {t:"小さくても、自分の関心に時間を使い続ける",sub:"日常の中で試行錯誤する",d:{action:3,curiosity:2,selfTrust:2}},
+      {t:"今の仕事を深め、できることを増やす",sub:"足元を固める",d:{studyDrive:3,thinking:2}},
+      {t:"一度立ち止まり、何に違和感があるか書き出す",sub:"問いを更新する",d:{thinking:3,unresolvedQuestion:1}}
+    ]}
+  };
+  const beat = beats[`${age}-${seasonIdx}`];
+  if (beat) {
+    return {
+      type: "decision", badge: beat.badge, title: beat.title, desc: beat.desc,
+      choices: beat.choices.map(option => ({
+        t: option.t, sub: option.sub,
+        act: () => {
+          Object.entries(option.d || {}).forEach(([key, value]) => { S[key] = (Number(S[key]) || 0) + value; });
+          if (option.flag) Object.assign(S.relationshipFlags, option.flag);
+          addLog(`${beat.title}——${option.t}。${option.sub}。`, "turning");
+        }
+      }))
+    };
+  }
+
   return null;
 }
 
@@ -1116,16 +1592,61 @@ function determineEnding() {
     return;
   }
 
-  // 7. やりたいことが定まらなかった場合の結末（拒絶・受動的）
-  if (S.localReaction === "BOND_NONE" || S.motto <= 35) {
-    S.title = "自分の旗を探し続ける会社員（モヤモヤ）";
-    S.finalEndingDesc = "無難な選択を重ね、安全なレールに乗って都内の会社員となったあなた。毎月決まった給料は振り込まれますが、満員電車に揺られながら『本当にこの仕事がやりたかったことなんだろうか…』という晴れないモヤモヤを抱え続けています。あの日、地域の熱量から目を背けた記憶が時折蘇り、自分の旗（やってみたいこと）を必死に探し続けています。";
+  // 7. 最初に選んだテーマが、経験や行動と結びついた場合の結末。
+  // 地域との深い関係による結末は上で優先し、ここでは地域以外の人生も肯定的に描く。
+  if (S.lifeTheme === "EXPLORE" && (S.fieldExperience >= 3 || S.action >= 45)) {
+    S.title = LIFE_THEMES.EXPLORE.endingTitle;
+    S.finalEndingDesc = LIFE_THEMES.EXPLORE.endingDesc;
+    return;
+  }
+  if (S.lifeTheme === "RELATE" && (S.friends >= 25 || S.teamwork >= 35)) {
+    S.title = LIFE_THEMES.RELATE.endingTitle;
+    S.finalEndingDesc = LIFE_THEMES.RELATE.endingDesc;
+    return;
+  }
+  if (S.lifeTheme === "LEARN" && (S.studyDrive >= 30 || S.thinking >= 35 || S.relationshipFlags.fieldQuestion)) {
+    S.title = LIFE_THEMES.LEARN.endingTitle;
+    S.finalEndingDesc = LIFE_THEMES.LEARN.endingDesc;
     return;
   }
 
-  // 8. 誠実で信頼されるビジネスパーソン（標準的な堅実ルート）
+  // 8. やりたいことがまだ定まらなかった場合。失敗した人生ではなく、探索の途中として描く。
+  if (S.localReaction === "BOND_NONE" || S.motto <= 35) {
+    S.title = "身近な日常から、自分の問いを探す人";
+    S.finalEndingDesc = "地域での大きな出会いはなかったが、それだけで人生が決まったわけではない。仕事や身近な人との時間を重ねるなかで、何が心地よく、何に違和感を覚えるのかを少しずつ考え始めている。今の生活を大切にしながら、新しい関心や人との出会いを探すこともできる。人生は24歳で完成するものではなく、ここからも選び直せる。";
+    return;
+  }
+
+  // 8. 周囲に応え続けて自分の問いを見失うルート
+  if (S.fatigue >= 8 && S.unresolvedQuestion >= 5 && S.selfTrust <= 12) {
+    S.title = "期待に応え続け、自分の問いを見失った人";
+    S.finalEndingDesc = "頼まれたことには真面目に応え、目の前の役割を投げ出さずにやってきた。周囲からは責任感があると思われている。一方で、無理をしていることや、自分が本当は何を望んでいるのかを後回しにしてきたことに、ようやく気づき始めた。人生が失敗だったわけではない。ただ、これからは期待に応えるだけでなく、自分の問いを確かめる時間も必要なのかもしれない。";
+    return;
+  }
+
+  // 9. 誠実で信頼されるビジネスパーソン（標準的な堅実ルート）
   S.title = "信頼されるビジネスパーソン";
   S.finalEndingDesc = "派手な冒険や波乱は選ばなかったものの、置かれた場所で誠実に努力を積み重ね、会社やチームから厚い信頼を寄せられる中核メンバーへと成長しました。地に足のついた生活基盤を築き、周囲の人々を温かく支える立派な大人として歩んでいます。";
+}
+
+function getTurningPoints() {
+  // 選択履歴から、人生の分岐点を最大3つ表示する。履歴が少ない場合も自然な説明を出す。
+  const history = S.choiceHistory || [];
+  if (!history.length) return [{ term: "人生の記録", title: "まだ大きな決断は記録されていない", detail: "日々の経験も、これからの選択も、人生を形づくる材料になる。" }];
+  const indexes = [];
+  if (history.length <= 3) {
+    for (let i = 0; i < history.length; i++) indexes.push(i);
+  } else {
+    indexes.push(0);
+    indexes.push(Math.floor((history.length - 1) / 2));
+    indexes.push(history.length - 1);
+  }
+  return [...new Set(indexes)].map(i => history[i]);
+}
+
+function setReflection(value) {
+  S.reflection = value;
+  render();
 }
 
 function startGame() {
@@ -1134,7 +1655,13 @@ function startGame() {
   const ln = pick(LAST_NAMES);
   const fn = pick(isM ? FIRST_M : FIRST_F);
   S.name = `${ln} ${fn}`;
-  S.pref = pick(PREFS);
+  const origin = pick(BIRTH_ORIGINS);
+  S.birthProfile = origin.id;
+  S.birthplace = origin.pref;
+  S.pref = origin.pref;
+  S.failedAttempts = 0;
+  S.regionChoice = "UNDECIDED";
+  S.isAutoResolving = false;
   S.dad = `${ln} ${pick(FIRST_M)}（${pick(JOBS)}）`;
   S.mom = `${pick(LAST_NAMES)} ${pick(FIRST_F)}（${pick(JOBS)}）`;
 
@@ -1151,6 +1678,8 @@ function startGame() {
   S.title = "産声をあげた子";
   S.finalEndingDesc = "";
   S.logs = [];
+  S.choiceHistory = [];
+  S.reflection = "";
   S.activeEvent = null;
   S.autoPlay = false;
   clearInterval(S.autoTimer);
@@ -1160,14 +1689,57 @@ function startGame() {
   S.highRoute = "NONE";
   S.univRoute = "NONE";
   S.joinedYumeCan = false;
+  S.curiosity = 10; S.fatigue = 0; S.fieldExperience = 0; S.selfTrust = 10; S.unresolvedQuestion = 0; S.relationshipFlags = {}; S.localInteractionScore = 0; S.failedAttempts = 0;
   S.localReaction = "NONE";
+  S.lifeTheme = selectedLifeTheme;
+  // 選んだテーマは初期傾向に少しだけ反映。後の選択で変わる余地を残す。
+  if (S.lifeTheme === "EXPLORE") { S.action += 4; S.curiosity += 4; S.fieldExperience += 1; }
+  if (S.lifeTheme === "RELATE") { S.friends += 4; S.teamwork += 3; S.selfTrust += 2; }
+  if (S.lifeTheme === "LEARN") { S.studyDrive += 4; S.thinking += 4; S.curiosity += 2; }
   S.assignedRegion = null;
   S.schoolLabel = "未就学";
   S.currentMultiplier = 1;
   S.screen = "PLAY";
 
-  addLog(`${S.pref}で誕生。父・${S.dad}、母・${S.mom}。`, "encounter-log");
+  addLog(`人生のテーマは「${LIFE_THEMES[S.lifeTheme].name}」。ただし、このテーマは未来を決めるものではなく、これからの経験で変わっていく。`, "turning");
+  addLog(`${S.birthplace}で誕生。${origin.label}で育つ人生が始まった。父・${S.dad}、母・${S.mom}。`, "encounter-log");
   render();
+}
+
+// すべてを選ばせず、人生の方向を変える場面だけプレイヤーに委ねる。
+function isMajorDecisionEvent(ev, age, seasonIdx) {
+  if (!ev) return false;
+  // 年齢・時期で定義する大きな決断。日常の小さな出来事は自動で進む。
+  const key = `${age}-${seasonIdx}`;
+  const majorKeys = new Set([
+    "6-0", "10-2", "12-3", "14-2", "15-3", "16-0", "18-0",
+    "19-3", "20-1", "20-2", "21-1"
+  ]);
+  // 出生地による景色・出会いは人生の背景として自動進行させる。
+  if (["8-1", "14-1", "17-1"].includes(key)) return false;
+  return majorKeys.has(key) || /人生の大きな決断/.test(ev.badge || "");
+}
+
+function resolveEverydayEvent(ev) {
+  if (!ev || !ev.choices || !ev.choices.length) return;
+  // 日常イベントは確率で自動選択。特定の能力が高い場合は、その人らしい選択が少し出やすくなる。
+  const weights = ev.choices.map(c => {
+    let w = 1;
+    const t = c.t || "";
+    if (/聞|質問|調べ|考え|理由/.test(t)) w += Math.max(0, (S.curiosity || 0) + (S.thinking || 0) - 20) / 80;
+    if (/手伝|参加|挑戦|一緒|話しかけ|やってみ/.test(t)) w += Math.max(0, (S.action || 0) + (S.teamwork || 0) - 20) / 100;
+    if (/友達|友人|家族|遊び/.test(t)) w += Math.max(0, S.friends || 0) / 100;
+    return w;
+  });
+  const total = weights.reduce((a,b)=>a+b,0);
+  let roll = Math.random() * total;
+  let index = 0;
+  for (let i=0;i<weights.length;i++) { roll -= weights[i]; if (roll <= 0) { index=i; break; } }
+  S.activeEvent = ev;
+  S.isAutoResolving = true;
+  addLog(`【日常・自動進行】「${ev.title || ev.badge || "小さな出来事"}」は、日々の流れの中で自然にこうなった。`, "auto-log");
+  choose(index);
+  S.isAutoResolving = false;
 }
 
 function stepForward() {
@@ -1187,10 +1759,10 @@ function stepForward() {
     S.year++;
     const ev = getStoryEvent(6, 0);
     if (ev) {
-      S.activeEvent = ev;
-      pauseAuto();
-      render();
-      return;
+      if (isMajorDecisionEvent(ev, 6, 0)) {
+        S.activeEvent = ev; pauseAuto(); render(); return;
+      }
+      resolveEverydayEvent(ev); return;
     }
   } else {
     S.seasonIdx++;
@@ -1211,9 +1783,13 @@ function stepForward() {
 
     const ev = getStoryEvent(S.age, S.seasonIdx);
     if (ev) {
-      S.activeEvent = ev;
-      pauseAuto();
-      render();
+      if (isMajorDecisionEvent(ev, S.age, S.seasonIdx)) {
+        S.activeEvent = ev;
+        pauseAuto();
+        render();
+        return;
+      }
+      resolveEverydayEvent(ev);
       return;
     }
 
@@ -1226,8 +1802,59 @@ function stepForward() {
 
 function choose(idx) {
   if (!S.activeEvent) return;
-  const c = S.activeEvent.choices[idx];
+  const event = S.activeEvent;
+  const c = event.choices[idx];
+  // ステータス変化だけでなく「何を選んだか」も残し、結末で振り返れるようにする。
+  if (!S.isAutoResolving) {
+    S.choiceHistory.push({
+      term: S.age < 6 ? `${S.age}歳` : `${S.age}歳・${SEASONS[S.seasonIdx]}`,
+      title: event.title || event.badge || "人生の選択",
+      detail: c.t,
+      reason: c.sub || ""
+    });
+  }
   c.act();
+  applyRandomOutcome(c);
+
+  // 地域に「行く」ことと、地域の人と「関係をつくる」ことは別。
+  // 対話や共同作業を選んでも、相手の忙しさ・相性・タイミングで関係が深まらない場合がある。
+  if (S.age === 20 && S.seasonIdx === 1 && (event.badge || "").includes("地方の現場") && idx === 0) {
+    if (Math.random() < 0.32) {
+      S.localReaction = "BOND_SHALLOW";
+      S.relationshipFlags.localConnectionDidNotDeepen = true;
+      S.localInteractionScore = Math.max(0, (S.localInteractionScore || 0) - 1);
+      addLog("一緒に作業はできたが、相手も忙しく、話せたのは活動の段取りが中心だった。悪い経験ではない。ただ、深い関係ができるとは限らない。", "reflect-log");
+    } else {
+      S.localReaction = "BOND_DEEP";
+      S.relationshipFlags.localBondFormed = true;
+      S.localInteractionScore = (S.localInteractionScore || 0) + 2;
+      addLog("作業の合間に、なぜこの町で活動しているのかを聞けた。次に来たときも話そう、と連絡先を交換した。訪問が、続いていく関係の入口になった。", "encounter-log");
+    }
+  }
+
+  // 見学中心だった人も、秋に自分から対話を始めれば関係が深まる可能性がある。
+  if (S.age === 20 && S.seasonIdx === 2 && (event.badge || "").includes("もう一歩近づく") && idx === 0) {
+    if (S.lastOutcome !== "FAIL" && Math.random() < 0.55) {
+      S.localReaction = "BOND_DEEP";
+      S.relationshipFlags.localBondFormed = true;
+      S.localInteractionScore = (S.localInteractionScore || 0) + 2;
+      addLog("話を聞くうちに、相手がなぜ活動を続けているのかが少しわかった。帰る前に『また話したい』と伝え、次の接点が生まれた。", "encounter-log");
+    } else if (S.lastOutcome !== "FAIL") {
+      addLog("話はできたが、相手も忙しく、今回だけで関係が深まったわけではなかった。次に会う機会があるかは、まだわからない。", "reflect-log");
+    }
+  }
+
+  // 共同企画は、関係があっても必ず成功するわけではない。
+  if (S.age === 20 && S.seasonIdx === 2 && (event.badge || "").includes("関係が続いたから") && idx === 0) {
+    if (S.lastOutcome === "FAIL") {
+      S.relationshipFlags.projectStalled = true;
+      addLog("一緒に考え始めた企画は、期待や日程が合わず、いったん保留になった。関係ができても、実践には調整と失敗がある。", "risk-log");
+    } else {
+      S.relationshipFlags.coCreatedWithResidents = true;
+      addLog("小さな企画が一歩進んだ。成功したからというより、地域の人と相談しながら進めたこと自体が、次に学ぶべきことを生んだ。", "encounter-log");
+    }
+  }
+
   S.activeEvent = null;
   render();
 }
@@ -1282,19 +1909,35 @@ function render() {
         </h1>
         <p class="lead" style="font-size:13px; line-height:1.7; margin-bottom:18px;">
           机の上で教科書を解くだけでは、人は変われない。<br>
-          興味ある安全地帯から飛び出し、地域で出会う規格外におもしろい大人たち。<br>
-          泥臭い摩擦と関係性を通して、あなたが24歳でどんな大人になったかを辿る物語。
+          慣れた場所の外へ出て、地域の人と話し、一緒にやってみる。うまくいかないことも経験する。<br>
+          訪問するだけではなく、人との関係が生まれたとき、学び方や価値観はどう変わるのかを体験する物語。<br>
+          <b style="color:#c6a0ff;">生まれる場所も、出会いも、挑戦の結果も毎回少しずつ変わる。</b>
         </p>
+
+        <div style="text-align:left; margin-top:20px;">
+          <h2 style="font-size:17px; margin-bottom:4px;">最初に、どんな生き方を大切にする？</h2>
+          <p style="font-size:12px; color:var(--sub); line-height:1.7;">これは人生の正解を選ぶ質問ではありません。今の自分が大切にしたいテーマを一つ選んでください。人生の途中で考えが変わっても、思いどおりにいかなくても大丈夫です。</p>
+          <div class="theme-grid">
+            ${Object.entries(LIFE_THEMES).map(([key, theme]) => `
+              <button class="theme-card ${selectedLifeTheme === key ? 'selected' : ''}" onclick="selectLifeTheme('${key}')" aria-pressed="${selectedLifeTheme === key}">
+                <span class="theme-tag">${theme.tag}${selectedLifeTheme === key ? ' ・選択中' : ''}</span>
+                <span class="theme-name">${theme.name}</span>
+                <span class="theme-desc">${theme.desc}</span>
+              </button>
+            `).join('')}
+          </div>
+          <p class="theme-note">選んだテーマは、最初のステータスと結末の振り返りに影響します。ただし、人生の展開を固定するものではありません。地域に行くことも、行かないことも、その後の行動次第で意味が変わります。</p>
+        </div>
 
         <div style="background:var(--paper); padding:16px; border-radius:6px; font-size:12px; color:var(--sub); text-align:left; margin:18px 0; line-height:1.8;">
           <b style="color:var(--ink); font-size:13px;">【人生シミュレーションの設計思想】</b><br>
           ・<b>結末は自動判定</b>：最後の大人像は自分で選ぶのではなく、これまでの選択・挫折・ステータスから必然的に1つ導き出されます。<br>
           ・<b>人によるよなーのリアリティ</b>：地域に飛び込んで人生が変わる人もいれば、客観的に距離を置く人、合わずに帰る人もいる。<br>
-          ・<b>偶然の出会い</b>：最初は誰もが地域に興味ゼロ。少しずつ外の世界に近づき、20歳で初めて現場に接触する。<br>
+          ・<b>日常は自動進行</b>：小さな出来事はランダムに起こり、人生の方向を変える大きな決断だけ自分で選ぶ。<br>・<b>地域との関わりが中心</b>：19歳で地域に出るかを選び、訪問だけで終わるか、人と関わり続けるかで未来が分岐する。<br>
           ・<b>プロトタイプ</b>：これはマケリサ2の講義用に作られた「Y7班」のプロトタイプです。
         </div>
 
-        <button class="btn" style="width:100%; padding:14px; font-size:15px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
+        <button class="btn" style="width:100%; padding:14px; font-size:15px;" onclick="startGame()">このテーマで人生を始める（0歳から）</button>
       </div>
     `;
     return;
@@ -1306,12 +1949,16 @@ function render() {
         <span style="font-size:11px; letter-spacing:0.15em; color:var(--sub); font-weight:800;">マケリサ2 Y7班 プロトタイプ</span>
         <h2 style="color:var(--ai); margin: 6px 0 4px;">人生の軌跡：24歳の結実</h2>
         <p style="font-size:12px; color:var(--sub);">あなたが選び、歩み、出会ってきたすべてが今の姿をつくった</p>
+        <div style="display:inline-block; margin-top:10px; padding:5px 10px; border-radius:99px; background:var(--ai-soft); color:var(--ai); font-size:11px; font-weight:800;">最初に選んだテーマ：${(LIFE_THEMES[S.lifeTheme] || LIFE_THEMES.EXPLORE).name}</div>
 
         <div style="background:var(--paper); padding:16px; border-radius:6px; margin:16px 0; text-align:left;">
           <span style="font-size:11px; color:var(--sub);">あなたが到達した大人の姿</span>
           <h3 style="color:var(--shu); margin:4px 0 10px; font-size:20px;">${S.title}</h3>
           <p style="font-size:13px; line-height:1.8;">
             ${S.finalEndingDesc}
+          </p>
+          <p style="font-size:12px; line-height:1.8; margin-top:10px; color:var(--sub);">
+            ${S.fieldExperience >= 4 ? "あなたは現場で何度も試し、人の反応を受けながら考えを変えてきた。経験は、単なる思い出ではなく、次に何を学ぶかを決める材料になっている。" : S.curiosity >= 22 ? "あなたの中には、まだ答えの出ていない問いが残っている。すぐに進路や職業に結びつかなくても、関心を持ち続けることが次の出会いにつながるかもしれない。" : "大きな転機だけでなく、何気ない選択や、選ばなかったことも今の自分につながっている。これからも経験を重ねるなかで、考えや進路が変わる余地はある。"}
           </p>
         </div>
 
@@ -1321,7 +1968,42 @@ function render() {
           ・考え抜く力（シンキング）：<b>${Math.min(100, S.thinking)}pt</b><br>
           ・チームで働く力（チームワーク）：<b>${Math.min(100, S.teamwork)}pt</b><br>
           ・頼れる味方・大人のつながり：<b>${Math.min(100, S.friends)}人</b><br>
-          ・自発的な学習意欲：<b>${Math.min(100, S.studyDrive)}pt</b>
+          ・自発的な学習意欲：<b>${Math.min(100, S.studyDrive)}pt</b><br>
+          ・失敗から学んだ回数：<b>${S.failedAttempts || 0}回</b><br>
+          ・生まれ育った環境：<b>${(BIRTH_ORIGINS.find(o=>o.id===S.birthProfile)||BIRTH_ORIGINS[1]).label}</b><br>
+          ・地域の人との関係：<b>${S.localReaction === "BOND_DEEP" ? "継続するつながり" : S.localReaction === "BOND_SHALLOW" ? "会話・接点あり" : S.localReaction === "BOND_NONE" ? "訪問中心・関係は薄い" : "接点は限定的"}</b><br>
+          ・地域の人と共同企画：<b>${S.relationshipFlags.coCreatedWithResidents ? "一緒に進めた" : S.relationshipFlags.projectStalled ? "挑戦したが保留になった" : "共同企画には至らなかった"}</b>
+        </div>
+
+        <div style="text-align:left; margin:18px 0;">
+          <h3 style="font-size:16px; margin-bottom:8px;">人生の分岐点を振り返る</h3>
+          <p style="font-size:12px; color:var(--sub); margin-bottom:10px;">結末だけでなく、そこに至るまでの選択を見てみよう。どの選択が今の自分につながっただろう？</p>
+          <div style="display:grid; gap:8px;">
+            ${getTurningPoints().map(point => `
+              <div style="border:1px solid var(--rule); border-left:4px solid var(--ai); border-radius:6px; padding:10px 12px;">
+                <div style="font-size:11px; color:var(--sub);">${point.term}</div>
+                <b style="font-size:13px;">${point.title}</b>
+                <div style="font-size:13px; margin-top:3px;">${point.detail}</div>
+                ${point.reason ? `<div style="font-size:11px; color:var(--sub); margin-top:3px;">選択時の見通し：${point.reason}</div>` : ""}
+              </div>
+            `).join("")}
+          </div>
+        </div>
+
+        <div style="background:var(--ai-soft); border-radius:6px; padding:14px; text-align:left; margin:16px 0;">
+          <h3 style="font-size:15px; margin-bottom:6px;">あなたにとって「やってみたい」は？</h3>
+          <p style="font-size:12px; line-height:1.7; margin-bottom:10px;">人生を体験した今、いちばん近い感覚を選んでみよう。正解・不正解はない。</p>
+          <div style="display:grid; gap:7px;">
+            <button class="choice-btn" onclick="setReflection('人との出会いや、誰かの熱量に心が動いた。')"><b>人との出会いで心が動いた</b><small>誰と出会うか、誰と一緒にやるかがきっかけになる。</small></button>
+            <button class="choice-btn" onclick="setReflection('悔しさや違和感が、もっと知りたい・変えたいという気持ちにつながった。')"><b>悔しさや違和感がきっかけになった</b><small>できなかった経験も、自分の問いを生むことがある。</small></button>
+            <button class="choice-btn" onclick="setReflection('まだ「やってみたい」は見つかっていない。でも、出会いや経験を重ねる余地がある。')"><b>まだ、はっきりとはわからない</b><small>今すぐ決まらなくても、経験を重ねながら探していい。</small></button>
+          </div>
+          ${S.reflection ? `<div style="margin-top:12px; padding-top:10px; border-top:1px solid #bfdbfe; font-size:13px;"><b>今回の振り返り</b><p style="margin-top:4px;">${S.reflection}</p></div>` : ""}
+        </div>
+
+        <div style="font-size:12px; line-height:1.8; color:var(--sub); text-align:left; margin-bottom:14px;">
+          <b>このシミュレーションから考えたいこと</b><br>
+          「やりたいこと」は、最初から自分の中に完成した形であるとは限らない。知らない場所に行くこと、誰かと関わること、うまくいかず悔しい思いをすること。その経験が、次に知りたいことや行動する理由をつくることもある。結末は人生の正解ではなく、選択と環境の組み合わせの一例だ。
         </div>
 
         <button class="btn" style="width:100%;" onclick="S.screen='TITLE'; render();">もう一度人生を生きる</button>
@@ -1339,6 +2021,7 @@ function render() {
       <h2>出 生 証 明 書</h2>
       <div class="cert-grid">
         <div class="cert-row"><span>氏名</span><b>${S.name} (${S.sex === "M" ? "男" : "女"})</b></div>
+        <div class="cert-row"><span>生まれた場所</span><b>${S.birthplace || S.pref}</b></div>
         <div class="cert-row"><span>現在地</span><b>${S.pref}</b></div>
         <div class="cert-row"><span>生年</span><b>${S.year - S.age}年</b></div>
         <div class="cert-row"><span>環境・所属</span><b>${S.schoolLabel}</b></div>
@@ -1356,11 +2039,27 @@ function render() {
           <span class="title-tag">${S.title}</span>
         </div>
       </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <span class="origin-chip">${(BIRTH_ORIGINS.find(o=>o.id===S.birthProfile)||BIRTH_ORIGINS[1]).icon} ${(BIRTH_ORIGINS.find(o=>o.id===S.birthProfile)||BIRTH_ORIGINS[1]).label}</span>
+        <span class="origin-chip">🤝 地域との関係：${S.localReaction === "BOND_DEEP" ? "継続するつながり" : S.localReaction === "BOND_SHALLOW" ? "会話・接点あり" : S.localReaction === "BOND_NONE" ? "訪問中心・関係は薄い" : "これから"}</span>
+        <span style="font-size:11px;color:var(--sub);">失敗から学んだ回数：${S.failedAttempts||0}</span>
+      </div>
       <div class="stats-grid">
         <div class="stat-box"><span>やってみたい</span><b>${Math.min(100, S.motto)}%</b></div>
         <div class="stat-box"><span>踏み出す力</span><b>${Math.min(100, S.action)}</b></div>
         <div class="stat-box"><span>考え抜く力</span><b>${Math.min(100, S.thinking)}</b></div>
         <div class="stat-box"><span>チーム力</span><b>${Math.min(100, S.teamwork)}</b></div>
+      </div>
+      <div class="life-progress"><span style="width:${clamp((S.age/24)*100,0,100)}%"></span></div>
+      <div class="run-label"><span>人生の進行度</span><span>${Math.min(24,S.age)} / 24歳</span></div>
+    </div>
+
+    <div class="sheet" style="padding:14px 16px; border-color:#456b78; background:linear-gradient(135deg,rgba(16,50,53,.96),rgba(14,25,44,.98));">
+      <div style="font-size:11px;letter-spacing:.12em;color:#54e0bd;font-weight:800;margin-bottom:5px;">この人生のテーマ</div>
+      <div style="font-size:15px;font-weight:800;margin-bottom:6px;">慣れた世界の外へ出て、人と関わると何が変わる？</div>
+      <div style="font-size:12px;line-height:1.7;color:#c4d7e4;">日常はランダムに進み、人生を大きく変える場面だけ選択する。地域に行くこと自体がゴールではない。そこで誰と話し、何を一緒にやり、関係が続くかによって、その後の興味や学びが変わっていく。</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+        <span class="origin-chip">① 生活圏の外へ</span><span class="origin-chip">② 地域の人と関わる</span><span class="origin-chip">③ 経験が学びに変わる</span>
       </div>
     </div>
 
@@ -1368,10 +2067,10 @@ function render() {
     <div class="control-bar">
       <div class="control-top">
         <button class="btn ${S.autoPlay ? "secondary" : ""}" style="padding: 7px 16px; font-size: 13px;" onclick="toggleAuto()" ${S.activeEvent ? "disabled" : ""}>
-          ${S.autoPlay ? "一時停止 ⏸" : "自動で進める ▶"}
+          ${S.autoPlay ? "一時停止 ⏸" : "人生を自動で進める ▶"}
         </button>
         <button class="btn secondary" style="padding: 7px 16px; font-size: 13px;" onclick="stepForward()" ${S.activeEvent ? "disabled" : ""}>
-          1つ進める »
+          次の出来事へ »
         </button>
       </div>
       <div class="speed-bar">
@@ -1401,7 +2100,8 @@ function render() {
           ${S.activeEvent.choices.map((c, i) => `
             <button class="choice-btn" onclick="choose(${i})">
               <b>${c.t}</b>
-              <small>${c.sub}</small>
+              <small>${c.sub || ""}</small>
+              ${riskChanceForChoice(c)!==null ? `<span class="roll-tag">🎲 不確実な挑戦 · 失敗確率 ${riskChanceForChoice(c)}%</span>` : ""}
             </button>
           `).join("")}
         </div>
@@ -1423,6 +2123,10 @@ function render() {
   `;
 }
 
+render();
+</script>
+</body>
+</html>
 render();
 </script>
 </body>
