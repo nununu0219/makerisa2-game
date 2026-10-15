@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>23136分の1の、人生。</title>
+<title>10,000分の1の、やってみたい。</title>
 <style>
   :root {
     --paper: #f1f5f9;
@@ -295,7 +295,6 @@ const FIRST_F = ["陽葵","凛","詩","結菜","芽依","紬","澪","咲良","�
 const JOBS = ["会社員","公務員","教員","看護師","自営業","エンジニア","銀行員"];
 const SEASONS = ["春", "夏", "秋", "冬"];
 
-// 倍速設定（基準は8000ms = 8秒に1回）
 const BASE_SPEED = 8000;
 const SPEED_MULTIPLIERS = [1, 2, 4, 8, 16];
 
@@ -312,13 +311,13 @@ let S = {
   dad: "",
   mom: "",
   
-  // 完全分岐管理フラグ
+  // 完全因果追跡フラグ
   jukuState: "NONE",        // SAPIX_ACTIVE, SAPIX_QUIT, NO_JUKU, CREATIVE
-  middleRoute: "NONE",      // ELITE, IKKEN_FAIL, PUBLIC_ACT, PUBLIC_THINK
-  highRoute: "NONE",        // JINNAI, LOCAL_WAKE, TANKYU, JUKEN, REGULAR, TSUSHIN
-  univRoute: "NONE",        // TODAI, PRACTICE, NO_UNIV, NORMAL_UNIV, TSUSHIN_UNIV, LOCAL_KOKURITSU
-  localReaction: "NONE",    // BOND_DEEP (深い関係), BOND_SHALLOW (冷静・距離), BOND_NONE (拒絶・離脱)
-  assignedRegion: null,     // 接触した地域データ（全国8地域から割当）
+  middleRoute: "NONE",      // ELITE, IKKEN_FAIL, PUBLIC_JHS
+  highRoute: "NONE",        // LOCAL_RYUGAKU (越境), JINNAI (高校で飛び込み), JUKEN (受験専念), TSUSHIN (通信制)
+  univRoute: "NONE",        // TODAI, PRACTICE, NO_UNIV, NORMAL_UNIV, GLOBAL_UNIV
+  localReaction: "NONE",    // BOND_DEEP, BOND_SHALLOW, BOND_NONE
+  assignedRegion: null,
   schoolLabel: "未就学",
 
   motto: 8,
@@ -341,7 +340,7 @@ function addLog(text, type = "") {
   S.logs.unshift({ term: termStr, year: S.year, text, type });
 }
 
-// 季節ごとの日常叙述（重複しない完全マップ）
+// 季節ごとの日常叙述マップ（完全1対1マップ・24歳まで）
 const NARRATIVE_MAP = {
   infant: {
     1: "初めて自分の足で立ち上がり、両親が拍手して大騒ぎした。",
@@ -383,7 +382,12 @@ const NARRATIVE_MAP = {
   public_jhs: {
     12: ["地元の公立中に入学！部活動に入部し、先輩たちの声出しに圧倒される。", "真夏の部活動の合宿。真っ黒に日焼けして仲間と声を掛け合った。", "秋の体育祭。クラスの全員リレーでアンカーを走り、大歓声を浴びた。", "冬の寒い朝練。手がかじかみながらもグラウンドを全力で走った。"],
     13: ["中2になり、後輩ができて少し先輩としての自覚が芽生え始める。", "夏休み、部活の大会で惜しくも敗退。悔しくてロッカールームで涙を流した。", "秋の合唱コンクール。パートリーダーとしてバラバラだった男子をまとめた。", "冬。高校受験を意識し始め、地元の塾で高校入試の過去問に取り組み始める。"],
-    14: ["中3。部活を引退し、いよいよ高校受験に向けた受験生モードへ突入。", "夏休みの受験勉強。クーラーの効いた図書館の自習室に毎日通い詰めた。", "秋の進路面談。内申点と模試の偏差値を睨みながら志望校を絞り込む。", "冬。推薦入試と一般入試のプレッシャーの中、体調管理に気をつけて机に向かう。"]
+    14: ["中3。部活を引退し、いよいよ高校進路の選択へ向けて動き出す。", "夏休みの勉強。クーラーの効いた図書館の自習室に毎日通い詰めた。", "秋の進路面談。地元の高校か、それとも誰も自分を知らない遠くの高校か悩む。", "冬。進路の最終決定。自分の選んだ道に向かって願書を提出する。"]
+  },
+  local_ryugaku_hs: {
+    15: ["愛媛・小田分校（地域未来留学）へ入学！見渡す限りの山と清流に息を呑む春。", "夏休み、地元農家のお手伝い。採れたての野菜の美味さに言葉を失う。", "秋、全校生徒で挑む分校祭。地域住民が何百人も押し寄せて大盛り上がり！", "冬、雪の降る山あいの町。寮の仲間とストーブを囲んで将来の夢を語り合う。"],
+    16: ["高2。分校の探究活動で、地域の特産品開発プロジェクトのリーダーに就任！", "夏休み、東京から来た視察団の大人たちを前に堂々とプレゼンを行う。", "秋、過疎の現実と人々の温かさの間で葛藤し、まちづくりの本質を考え抜く。", "冬、誰も自分を知らなかったこの町が、かけがえのない『第二の故郷』になる。"],
+    17: ["高3。分校での濃密な3年間を振り返り、大学で地域共創を本格研究すると誓う。", "夏休み、大学の総合型選抜の志望理由書を書きながら、町民一人ひとりの顔を思い出す。", "秋、地域共創学部に合格！分校の先生や町のおじさん達が胴上げしてくれた。", "冬。大自然と温かい人々に育まれた誇りを胸に、旅立ちの準備を整える。"]
   },
   jinnai_action_hs: {
     15: ["高校入学。机の上の勉強だけでなく、外の世界に飛び出す準備を始める。", "夏休み、地域の空き店舗を使ったコミュニティカフェのボランティアに初参加！", "秋、商店街の秋祭りの企画会議に高校生として参加し、大人の議論に驚く。", "冬、町の人たちと焚き火を囲みながら、町の未来について熱く語り合った。"],
@@ -442,9 +446,8 @@ function getNarrative(age, seasonIdx) {
     return NARRATIVE_MAP.public_jhs[age][seasonIdx];
   }
   if (age >= 15 && age <= 17) {
-    if (S.highRoute === "JINNAI" || S.highRoute === "LOCAL_WAKE" || S.highRoute === "TANKYU") {
-      return NARRATIVE_MAP.jinnai_action_hs[age][seasonIdx];
-    }
+    if (S.highRoute === "LOCAL_RYUGAKU") return NARRATIVE_MAP.local_ryugaku_hs[age][seasonIdx];
+    if (S.highRoute === "JINNAI") return NARRATIVE_MAP.jinnai_action_hs[age][seasonIdx];
     return NARRATIVE_MAP.juken_focus_hs[age][seasonIdx];
   }
   if (age >= 18 && age <= 23) {
@@ -458,7 +461,7 @@ function getNarrative(age, seasonIdx) {
 
 // 決断・出会い・問いかけのイベント生成エンジン
 function getStoryEvent(age, seasonIdx) {
-  // 6歳・春：SAPIX入塾か、外遊びか、クリエイティブか（3分岐）
+  // --- 6歳・春：教育方針（3分岐） ---
   if (age === 6 && seasonIdx === 0) {
     return {
       type: "decision",
@@ -497,7 +500,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // 10歳・秋：SAPIXでの葛藤・他ルートでの成長
+  // --- 10歳・秋：SAPIXでの葛藤 ---
   if (age === 10 && seasonIdx === 2) {
     if (S.jukuState === "SAPIX_ACTIVE") {
       return {
@@ -551,7 +554,7 @@ function getStoryEvent(age, seasonIdx) {
           }
         ]
       };
-    } else { // CREATIVE
+    } else {
       return {
         type: "reflection",
         badge: "10歳の問い：自作のロボット・創作",
@@ -572,7 +575,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // 12歳・冬：中学受験の結果と進路
+  // --- 12歳・冬：中学受験の結果と進路（★不合格時の2大分岐を確実に提示！） ---
   if (age === 12 && seasonIdx === 3) {
     if (S.jukuState === "SAPIX_ACTIVE") {
       const isPass = Math.random() < 0.45;
@@ -596,26 +599,36 @@ function getStoryEvent(age, seasonIdx) {
           ]
         };
       } else {
-        S.middleRoute = "IKKEN_FAIL"; S.schoolLabel = "滑り止め私立中高一貫校";
+        // ★不合格時に「滑り止めに行く」か「公立に行く」の2択を確実に選択可能に！
         return {
-          type: "encounter",
-          badge: "12歳・人生の分岐点②：不合格",
-          title: "小6の冬：第一志望に届かず…滑り止めの中高一貫へ",
-          desc: "不合格通知。あんなに我慢して勉強したのにダメだった。両親の重苦しい沈黙の中、滑り止めの中高一貫校へ進学が決まる。",
-          profile: "【挫折とモヤモヤ】\n努力が報われなかった痛みを抱えたまま、何のために勉強するのか見失い、心にぽっかり穴が空いた状態で制服を着る。",
+          type: "decision",
+          badge: "12歳・人生の分岐点②：第一志望不合格の決断",
+          title: "小6の冬：第一志望に届かず…滑り止め私立に行くか、公立中でリベンジか",
+          desc: "不合格通知。あんなに我慢して勉強したのにダメだった。両親の重苦しい沈黙の中、滑り止めの私立中高一貫に行くか、すっぱり諦めて地元の公立中に進むかの選択を迫られる。",
           choices: [
             {
-              t: "悔しさを胸の奥に押し込め、やりたいこともないまま入学を迎える",
-              sub: "やってみたい指数-15 / 挫折感 / 高校での転機へ",
+              t: "【滑り止め私立へ】悔しさを胸の奥に押し込め、第3志望の中高一貫へ進学する",
+              sub: "やってみたい指数-15 / 挫折感 / 高校での陣内先生フラグ",
               act: () => {
+                S.middleRoute = "IKKEN_FAIL"; S.schoolLabel = "滑り止め私立中高一貫校";
                 S.motto = Math.max(0, S.motto - 15); S.title = "挫折を抱えた中学生";
                 addLog("滑り止めの中高一貫へ進学。合格した友達を羨み、勉強に身が入らない無気力な日々が始まる。", "turning");
+              }
+            },
+            {
+              t: "【公立中へ進学】『中途半端な私立に行くくらいなら公立でいい！』とすっぱり切り替える",
+              sub: "反骨心+25 / 前に踏み出す力+20 / 高校受験リベンジへ",
+              act: () => {
+                S.middleRoute = "PUBLIC_JHS"; S.schoolLabel = "地元公立中学校";
+                S.action += 25; S.insight += 20; S.title = "リベンジを誓う公立中学生";
+                addLog("滑り止めを辞退し公立中へ！受験の挫折をバネに、地元の仲間と部活や高校受験でリベンジを誓う。", "turning");
               }
             }
           ]
         };
       }
     } else {
+      S.middleRoute = "PUBLIC_JHS";
       S.schoolLabel = "地元公立中学校";
       return {
         type: "decision",
@@ -627,7 +640,7 @@ function getStoryEvent(age, seasonIdx) {
             t: "運動部（サッカー・陸上など）に入り、体力とチームワークを鍛える",
             sub: "チーム力+25 / 前に踏み出す力+20",
             act: () => {
-              S.middleRoute = "PUBLIC_ACT"; S.teamwork += 25; S.action += 20; S.title = "公立中の部活っ子";
+              S.teamwork += 25; S.action += 20; S.title = "公立中の部活っ子";
               addLog("地元の公立中に入学！運動部で泥だらけになって先輩や仲間と声を掛け合う日々が始まる。", "encounter-log");
             }
           },
@@ -635,7 +648,7 @@ function getStoryEvent(age, seasonIdx) {
             t: "文化部（吹奏楽・パソコンなど）や生徒会に入り、自分の探究や趣味を深める",
             sub: "考え抜く力+25 / 視野+20",
             act: () => {
-              S.middleRoute = "PUBLIC_THINK"; S.thinking += 25; S.insight += 20; S.title = "公立中の探究派";
+              S.thinking += 25; S.insight += 20; S.title = "公立中の探究派";
               addLog("地元の公立中に入学！文化部や生徒会でじっくりと自分の好きな世界に没頭する中学校生活が始まる。", "encounter-log");
             }
           }
@@ -644,7 +657,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // 14歳・秋：思春期の問い（中学2年）
+  // --- 14歳・秋：思春期の問い ---
   if (age === 14 && seasonIdx === 2) {
     return {
       type: "reflection",
@@ -673,7 +686,65 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // 16歳・春：高校時代の分岐（陣内／修学旅行／探究）
+  // --- 15歳・冬：高校進路の選択（★ここで確実に地域未来留学を選択可能に！） ---
+  if (age === 15 && seasonIdx === 3) {
+    if (S.middleRoute === "ELITE" || S.middleRoute === "IKKEN_FAIL") {
+      return {
+        type: "reflection",
+        badge: "高校内部進学",
+        title: "中3の冬：高校への内部進学と、それぞれの思い",
+        desc: "高校受験がないため、エスカレーター式でそのまま高等部へ進学。受験の重圧がない反面、周囲のモチベーションの二極化が進む。",
+        choices: [
+          {
+            t: "高等部での生活に向けて気持ちを切り替える",
+            sub: "高2の春の転機へ",
+            act: () => {
+              addLog("高校への内部進学を迎える。平穏な日常の裏で、何か大きな変化を心のどこかで待っていた。", "");
+            }
+          }
+        ]
+      };
+    } else {
+      // 公立中組には、高校選びの段階で地域未来留学の道が確実に登場！
+      return {
+        type: "decision",
+        badge: "15歳・人生の分岐点：高校進路の選択",
+        title: "中3の冬：普通の進学校か、それとも誰も自分を知らない『地域未来留学』か",
+        desc: "高校受験の最終決定。担任は『無難に地元の公立進学校に行け』と言うが、父が差し出してきたパンフレットには、愛媛の山あいや島根の離島で学ぶ『地域未来留学』の文字があった。",
+        choices: [
+          {
+            t: "【地域未来留学】誰も自分を知らない環境へ！愛媛・小田分校（または島根・海士町）へ越境進学！",
+            sub: "前に踏み出す力+40 / 視野+40 / 越境ルート確定！",
+            act: () => {
+              S.highRoute = "LOCAL_RYUGAKU"; S.action += 40; S.insight += 40; S.motto += 40; S.friends += 25;
+              S.pref = pick(["愛媛県内子町（小田分校）", "島根県海士町（隠岐島前高校）"]);
+              S.schoolLabel = S.pref; S.title = "越境する地域留学生";
+              addLog(`${S.pref}へ越境進学決定！大自然と温かい町民に囲まれ、自分の固定観念が崩れ去っていく生活が始まる！`, "turning");
+            }
+          },
+          {
+            t: "【通信制高校】オンラインで授業を受け、好きな探究やプロジェクトに時間を全集中する",
+            sub: "主体性+40 / 自由な時間獲得",
+            act: () => {
+              S.highRoute = "TSUSHIN"; S.action += 40; S.motto += 30; S.schoolLabel = "通信制高校";
+              S.title = "自走する通信制高校生";
+              addLog("通信制高校へ進学！誰にも縛られない時間の中で、自分の興味ある活動に早くから手を伸ばす。", "encounter-log");
+            }
+          },
+          {
+            t: "【地元の進学校】部活とテスト勉強を両立し、一般的な大学入試に備える",
+            sub: "安定 / 幸福度+5",
+            act: () => {
+              S.highRoute = "JUKEN"; S.schoolLabel = "地元の公立高校"; S.happiness += 5;
+              addLog("地元の高校へ進学。周囲と同じレールに乗りながら、大学受験に向けた日々が始まる。", "");
+            }
+          }
+        ]
+      };
+    }
+  }
+
+  // --- 16歳・春：高校2年の転機（中高一貫での陣内先生の一喝／修学旅行での遭遇） ---
   if (age === 16 && seasonIdx === 0) {
     if (S.middleRoute === "IKKEN_FAIL") {
       return {
@@ -714,7 +785,7 @@ function getStoryEvent(age, seasonIdx) {
             t: "『東大に入ることだけが正解じゃない…！』と衝撃を受け、地域や現場に興味を持ち始める",
             sub: "やってみたい指数+40 / 視野+35 / 現場志向へ",
             act: () => {
-              S.highRoute = "LOCAL_WAKE"; S.motto += 40; S.insight += 35; S.action += 30;
+              S.highRoute = "JINNAI"; S.motto += 40; S.insight += 35; S.action += 30;
               S.title = "現場に目覚めた優等生";
               addLog("修学旅行の出会いを機に、教科書の外側にある<span class='kw-green'>『地域・コミュニティ』</span>に猛烈な興味を持ち始める！", "encounter-log");
             }
@@ -725,41 +796,6 @@ function getStoryEvent(age, seasonIdx) {
             act: () => {
               S.highRoute = "JUKEN"; S.insight += 15;
               addLog("旅先での面白い大人に感心しつつも、自分は自分の受験勉強に集中することを選んだ。", "reflect-log");
-            }
-          }
-        ]
-      };
-    } else {
-      return {
-        type: "decision",
-        badge: "高校の選択：探究と越境",
-        title: "高2の春：『総合的な探究』で地域に出るか、通信制か、一般入試か",
-        desc: "高校2年。新しく始まった探究学習で、地元の商店街と連携したプロジェクトが立ち上がった。『高校生のうちに一度外に出て、自分のやりたいことの種を見つけるべきだ』と担当の先生が熱く語る。",
-        choices: [
-          {
-            t: "地域の商店街プロジェクトに名乗りを上げ、大人たちと協創する",
-            sub: "前に踏み出す力+35 / チーム力+30 / やってみたい+35",
-            act: () => {
-              S.highRoute = "TANKYU"; S.action += 35; S.teamwork += 30; S.motto += 35; S.friends += 25;
-              S.title = "越境探究する高校生";
-              addLog("商店街プロジェクトに参加！<span class='kw-green'>『高校生なのにすごい』</span>と町の人たちから応援され、人との繋がりに目覚める。", "turning");
-            }
-          },
-          {
-            t: "通信制高校への転校も視野に入れ、自分の好きなことに時間を全集中させる",
-            sub: "主体性+40 / 自由な時間獲得",
-            act: () => {
-              S.highRoute = "TSUSHIN"; S.action += 40; S.motto += 30;
-              S.title = "自走する通信制高校生";
-              addLog("学校の枠組みを超え、オンラインと現場を組み合わせて自分のプロジェクトを始動する。", "encounter-log");
-            }
-          },
-          {
-            t: "部活とテスト勉強を両立し、一般的な大学入試に備える",
-            sub: "安定 / 幸福度+5",
-            act: () => {
-              S.highRoute = "REGULAR"; S.happiness += 5;
-              addLog("地元の高校で堅実に過ごす。普通の日常を積み重ねていく。", "");
             }
           }
         ]
@@ -792,26 +828,7 @@ function getStoryEvent(age, seasonIdx) {
           addLog("総合大学へ進学。周囲と同じように講義を受け、単位を揃える学生生活が始まる。", "");
         }
       });
-    } else if (S.highRoute === "REGULAR") {
-      choices.push({
-        t: "【一般大学・経済など】就職に有利とされる有名私立大学へ無難に進学",
-        sub: "安定 / 学歴獲得",
-        act: () => {
-          S.univRoute = "NORMAL_UNIV"; S.schoolLabel = "総合大学（経済・経営系）";
-          S.title = "普通の大学生";
-          addLog("総合大学へ進学。周囲と同じように講義を受け、単位を揃える学生生活が始まる。", "");
-        }
-      });
-      choices.push({
-        t: "【地方国公立大学】自然豊かな地方の国立大学へ進学し、一人暮らしを始める",
-        sub: "自立心+25 / 視野+20",
-        act: () => {
-          S.univRoute = "LOCAL_KOKURITSU"; S.schoolLabel = "地方国立大学";
-          S.action += 25; S.insight += 20; S.title = "地方国立大生";
-          addLog("地方国立大へ進学。新しい土地での生活が始まり、身の回りのことを自分でこなす日々。", "encounter-log");
-        }
-      });
-    } else { // JINNAI, LOCAL_WAKE, TANKYU, TSUSHIN
+    } else { // LOCAL_RYUGAKU, JINNAI, TSUSHIN
       choices.push({
         t: "【実践型大学・都市生活】偏差値ではなく『現場に出て学べる環境』を重視し、まちづくり系学部へ",
         sub: "やってみたい指数+35 / 前に踏み出す力+35 / 実践ルート",
@@ -831,12 +848,12 @@ function getStoryEvent(age, seasonIdx) {
         }
       });
       choices.push({
-        t: "【一般大学】学歴も確保しつつ、学外の地域活動を自力で継続する道を選ぶ",
-        sub: "視野+20 / ハイブリッド志向",
+        t: "【海外・グローバル大学】日本の枠を飛び出し、世界の現場で多様性を学ぶ",
+        sub: "視野+45 / 語学力+30 / グローバル志向",
         act: () => {
-          S.univRoute = "NORMAL_UNIV"; S.schoolLabel = "総合大学（学外活動派）";
-          S.title = "行動派大学生";
-          addLog("総合大学へ進学しつつ、高校時代に培った学外ネットワークを武器に独自の活動を続ける。", "");
+          S.univRoute = "GLOBAL_UNIV"; S.schoolLabel = "海外大学・国際学部";
+          S.insight += 45; S.action += 35; S.title = "越境グローバル学生";
+          addLog("日本の大学という枠組みを超え、海外の現場へ！世界中の多様な価値観に揉まれる日々が幕を開ける。", "turning");
         }
       });
     }
@@ -862,8 +879,8 @@ function getStoryEvent(age, seasonIdx) {
       descText = `東大のゼミのフィールドワーク実習。机上の理論だけでなく、過疎地のリアルを見ろと教授に連れてこられた。`;
     } else if (S.univRoute === "NORMAL_UNIV") {
       descText = `大学の集中講義。地方創生なんて興味はなかったが、単位のために半ば強制的に派遣された。`;
-    } else if (S.univRoute === "PRACTICE") {
-      descText = `大学の地域共創プログラム。自ら志願して、最前線の課題を抱える現場へやってきた。`;
+    } else if (S.univRoute === "PRACTICE" || S.highRoute === "LOCAL_RYUGAKU") {
+      descText = `地域共創の現場。以前から関心を持っていた課題の最前線へ自ら志願してやってきた。`;
     } else if (S.univRoute === "NO_UNIV") {
       descText = `仕事の出張。現場のキーマンに会うため、一人夜行バスに乗ってやってきた。`;
     } else {
@@ -909,7 +926,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 21歳・夏：2回目のアクション（反応に応じた完全分岐） ---
+  // --- 21歳・夏：再訪の条件分岐 ---
   if (age === 21 && seasonIdx === 1) {
     const r = S.assignedRegion || REGIONS[0];
 
@@ -965,7 +982,7 @@ function getStoryEvent(age, seasonIdx) {
           }
         ]
       };
-    } else { // BOND_NONE
+    } else {
       return {
         type: "reflection",
         badge: "大学生活の日常：都内での安定",
@@ -993,10 +1010,11 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 24歳・春：物語の完全結実（どんな大人になったか） ---
+  // --- 24歳・春：物語の完全結実（★結末バリエーションを大幅拡張！） ---
   if (age === 24 && seasonIdx === 0) {
     const choices = [];
 
+    // 1. 地域と深い関係性を結んだルートの結末
     if (S.localReaction === "BOND_DEEP") {
       choices.push({
         t: "都市の会社に勤めつつ、週末はあの地域で若者の居場所づくりを伴走する『二拠点プロデューサー』へ",
@@ -1018,20 +1036,42 @@ function getStoryEvent(age, seasonIdx) {
       });
     }
 
+    // 2. 東大・エリート街道の結末（AI代替の挫折 vs 政策プロフェッショナル）
     if (S.univRoute === "TODAI") {
       choices.push({
-        t: "中央省庁／シンクタンクで、制度と政策から全国の現場を支える『政策プロフェッショナル』へ",
-        sub: "考え抜く力MAX / エリートキャリアの結実",
+        t: "大手シンクタンクで調査分析をしていたが、指示待ちの仕事が大半AIに代替され、自分の生き方に悩む『学歴エリートの挫折』へ",
+        sub: "AI時代への直面 / 知識偏重の限界",
+        act: () => {
+          S.thinking += 20; S.motto = 30; S.title = "AI時代に立ち尽くす知識エリート";
+          addLog("『正解を出す仕事』はAIに奪われた。偏差値の高さを誇ってきた自分が、現場で何も生み出せないことに強い無力感を覚える。", "turning");
+        }
+      });
+      choices.push({
+        t: "中央省庁で現場の血の通った感覚を忘れない『政策プロフェッショナル（官僚）』へ",
+        sub: "考え抜く力MAX / 政策エリートの結実",
         act: () => {
           S.thinking += 45; S.title = "未来を構想する政策プロフェッショナル";
-          addLog("現場の血の通った感覚を忘れないエリートとして、全国の地域が挑戦できる法制度や予算を設計する大人になった！", "turning");
+          addLog("机上の空論を排し、全国の現場が挑戦できる法制度や予算を設計する骨太な官僚になった！", "turning");
         }
       });
     }
 
+    // 3. グローバル大学・海外ルートの結末
+    if (S.univRoute === "GLOBAL_UNIV") {
+      choices.push({
+        t: "外資系企業や海外NGOに所属し、世界中を飛び回る『グローバル・フロントランナー』へ",
+        sub: "国際視野MAX / 越境キャリア",
+        act: () => {
+          S.insight += 50; S.action += 40; S.title = "国境を越えるグローバル実践者";
+          addLog("国境を意識せず、世界各地の社会課題解決やビジネスを動かすグローバルな大人へと羽ばたいた！", "turning");
+        }
+      });
+    }
+
+    // 4. 地域を客観視したルートの結末
     if (S.localReaction === "BOND_SHALLOW") {
       choices.push({
-        t: "大手企業の新規事業部門で、都市のビジネスと地方の資源を結びつける『事業開発リーダー』へ",
+        t: "大手企業の事業開発部で、都市の資本と地方の資源を結びつける『事業プロデューサー』へ",
         sub: "ビジネス力MAX / 広い視野の結実",
         act: () => {
           S.thinking += 35; S.action += 30; S.title = "地域と資本を繋ぐ事業開発リーダー";
@@ -1040,6 +1080,7 @@ function getStoryEvent(age, seasonIdx) {
       });
     }
 
+    // 5. 堅実な会社員ルート
     choices.push({
       t: "会社の主力として着実に実績を上げ、後輩や仲間から厚く信頼される『誠実なビジネスパーソン』へ",
       sub: "社内評価+30 / 地に足のついたゴール",
@@ -1048,6 +1089,18 @@ function getStoryEvent(age, seasonIdx) {
         addLog("会社の中で着実に実績を上げ、周囲から頼りにされる立派な大人へと成長。確固たる人生の基盤を築き上げた！", "turning");
       }
     });
+
+    // 6. やりたいことが定まらなかった場合の結末
+    if (S.localReaction === "BOND_NONE" || S.motto < 30) {
+      choices.push({
+        t: "満員電車に揺られながら『本当にこのままでいいのか』とモヤモヤを抱え続ける『模索中の会社員』へ",
+        sub: "現状維持 / 人生の模索継続",
+        act: () => {
+          S.motto = 25; S.title = "自分の旗を探し続ける会社員";
+          addLog("安定した給料は得ているが、心の奥底で『本当にやりたいこと』に出会えていない焦燥感を今も抱き続けている。", "turning");
+        }
+      });
+    }
 
     return {
       type: "decision",
@@ -1215,12 +1268,12 @@ function render() {
           マケリサ2 Y7班
         </span>
         <h1 style="margin: 6px 0 8px; font-size: 25px; line-height:1.35;">
-          23136分の1の人生。<br>
+          あなたの10,000分の1の人生。<br>
           <span style="color:var(--shu); font-size:21px;">やりたいことを見つけるとは。</span>
         </h1>
         <p class="lead" style="font-size:13px; line-height:1.7; margin-bottom:18px;">
           机の上で教科書を解くだけでは、人は変われない。<br>
-          安全地帯から飛び出し、地域で出会う規格外におもしろい大人たち。<br>
+          興味ある安全地帯から飛び出し、地域で出会う規格外におもしろい大人たち。<br>
           泥臭い摩擦と関係性を通して、あなたが24歳でどんな大人になったかを辿る物語。
         </p>
 
@@ -1229,7 +1282,7 @@ function render() {
           ・<b>人によるよなーのリアリティ</b>：地域に飛び込んで人生が変わる人もいれば、客観的に距離を置く人、合わずに帰る人もいる。<br>
           ・<b>偶然の出会い</b>：最初は誰もが地域に興味ゼロ。少しずつ外の世界に近づき、20歳で初めて現場に接触する。<br>
           ・<b>見つけた先にあるゴール</b>：自分が「やってみたい」を見つけた人間は、今度は次の誰かのきっかけ（精神的支柱）になり、まちと人を動かす存在へ結実する。<br>
-          ・<b>マケリサ2</b>：これは講義のために作ったプロトタイプです。
+          ・<b>再生テンポ</b>：標準は8秒に1回進行。×2、×4、×8、×16の倍速切り替えが可能です。
         </div>
 
         <button class="btn" style="width:100%; padding:14px; font-size:15px;" onclick="startGame()">あゆみはじめる（0歳から開始）</button>
@@ -1306,7 +1359,7 @@ function render() {
       </div>
     </div>
 
-    <!-- コントロールバー（再生・手動・倍速切り替え） -->
+    <!-- コントロールバー -->
     <div class="control-bar">
       <div class="control-top">
         <button class="btn ${S.autoPlay ? "secondary" : ""}" style="padding: 7px 16px; font-size: 13px;" onclick="toggleAuto()" ${S.activeEvent ? "disabled" : ""}>
