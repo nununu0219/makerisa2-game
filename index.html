@@ -299,6 +299,24 @@
   .roll-tag { display:inline-block; margin-top:7px; font-size:10px; letter-spacing:.03em; color:#ffd58a; border:1px solid #745c36; background:#332a1b; padding:3px 7px; border-radius:999px; }
   .dice-flash { animation: diceFlash .55s ease; }
   @keyframes diceFlash { 0%{transform:scale(1)} 35%{transform:scale(1.015);filter:brightness(1.25)} 100%{transform:scale(1)} }
+
+  /* Community relationship / profile-book update */
+  .people-fab{position:fixed;right:14px;bottom:14px;z-index:80;border:0;border-radius:999px;padding:13px 17px;background:#117568;color:#fff;font-weight:900;box-shadow:0 8px 28px #0005;cursor:pointer}
+  .people-overlay{position:fixed;inset:0;z-index:100;background:rgba(3,7,18,.82);display:flex;align-items:center;justify-content:center;padding:12px}
+  .people-modal{width:min(920px,100%);max-height:92vh;overflow:auto;background:#101a2d;color:#edf3ff;border:1px solid #39496c;border-radius:18px;padding:18px;box-shadow:0 25px 80px #0009}
+  .people-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px;margin-top:14px}
+  .person-card{border:1px solid #344365;background:#0a1120;border-radius:12px;padding:12px;text-align:left;color:#edf3ff}
+  .person-card.found{border-color:#238b7b;background:#102a2b}
+  .person-card b{display:block;font-size:14px;margin-bottom:3px}
+  .person-card small{display:block;color:#9fb0d0;font-size:11px;margin-bottom:6px}
+  .people-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .people-tabs button{border:1px solid #405173;border-radius:999px;padding:6px 10px;background:#18233d;color:#e3eaff}
+  .people-tabs button.active{background:#3a4f84;border-color:#8195d8}
+  .people-progress{height:8px;border-radius:99px;background:#25324c;overflow:hidden;margin-top:8px}
+  .people-progress span{display:block;height:100%;background:linear-gradient(90deg,#54e0bd,#8b9cff)}
+  .event-profile{white-space:normal;line-height:1.8;padding:12px 14px;margin:10px 0;border-left:3px solid #54e0bd}
+  @media(max-width:480px){.people-fab{right:8px;bottom:8px;padding:11px 13px;font-size:12px}.people-modal{padding:13px}.people-grid{grid-template-columns:1fr}}
+
   @media (max-width:480px) { .event-title{font-size:19px} .sheet,.cert{padding:15px} .stats-grid{grid-template-columns:repeat(2,1fr)} .age-display{font-size:23px} }
 
 
@@ -478,6 +496,160 @@ const LIFE_THEMES = {
 let selectedLifeTheme = "EXPLORE";
 function selectLifeTheme(key) { if (LIFE_THEMES[key]) { selectedLifeTheme = key; render(); } }
 
+
+// 地域の出会いは「その地域にいる固定の人」と「訪問ごとの偶然の人」を両立させる。
+// 登場人物はすべてゲーム用の架空人物。役職はユースワーク・社会教育・地域活動の実例を参考にした。
+const PEOPLE = [
+{id:'mizu',name:'水本さん',age:'30代',role:'寮の舎監／魅力化コーディネーター／写真家',area:'留学先',kind:'見守る人',desc:'学校の先生でも家族でもない、みんなのお兄さんのような存在。写真を撮りながら地域の人をよく知っている。',hook:'寮の廊下で声をかけられる',callback:'部屋点検を忘れて叱られた記憶。大人になってからは地域の仕事を紹介してくれたり、写真の仕事で協働したりすることも。'},
+{id:'grandma',name:'野村のおばあちゃん',age:'70代',role:'地域の畑を守る人',area:'留学先',kind:'偶然の出会い',desc:'散歩中に「野菜あげるよ」と声をかけてくれる。ひとりでは食べきれないほどの野菜をくれる豪快な人。',hook:'散歩中、知らないのに野菜を渡される',callback:'寮生みんなで料理した夜のことは、地域が心のよりどころになる記憶として残る。'},
+{id:'kanda',name:'神田さん',age:'40代',role:'小さなNPOの職員',area:'地元',kind:'相談相手',desc:'子ども食堂や地域のイベントを手伝う会社員。できていないことを責めず、困っていることを聞いてくれる。',hook:'学校外の活動に興味を持ったとき',callback:'失敗を打ち明け、一緒に原因と次の方法を考えた人。後年、別の地域事業で再会する可能性がある。'},
+{id:'yusuke',name:'佐伯さん',age:'20代',role:'ユースワーカー',area:'地元',kind:'相談相手',desc:'話したくない日は無理に聞かず、雑談の中から本人の「やってみたい」を見つける。',hook:'ユース交流センターで何となく過ごしているとき',callback:'困る前にも、困ったときにも相談できる関係を育てる。'},
+{id:'shakai',name:'高野さん',age:'50代',role:'社会教育主事',area:'地元',kind:'機会をつなぐ人',desc:'公民館や学校、地域団体の間をつなぐ。答えを教えるより、学び合う場をつくることを大切にする。',hook:'地域行事の振り返り会',callback:'活動を学びとして整理する方法を教えてくれる。'},
+{id:'kominkan',name:'吉岡さん',age:'40代',role:'公民館職員',area:'地元',kind:'場を支える人',desc:'部屋を貸すだけでなく、地域の人同士が出会うきっかけをつくる。若者が来ないことを課題に感じている。',hook:'公民館の掲示板を眺めているとき',callback:'企画を持ち込むと、利用ルールや地域への説明を一緒に考えてくれる。'},
+{id:'cafe',name:'藤井さん',age:'30代',role:'コミュニティカフェ店主',area:'地元',kind:'場を支える人',desc:'何か目的がなくてもいられるカフェを営む。話す人も、一人で過ごす人も歓迎する。',hook:'雨宿りでカフェに入ったとき',callback:'雑談から企画が生まれたり、疲れたときに戻れる場所になったりする。'},
+{id:'oyaji',name:'大塚さん',age:'40代',role:'おやじの会メンバー',area:'地元',kind:'地域の担い手',desc:'学校行事や地域のお祭りを支える。最初は少し強面だが、道具の扱いに詳しく面倒見がいい。',hook:'地域イベントの設営中',callback:'行事の裏側を知り、頼まれた仕事を一緒にやるうちに関係ができる。'},
+{id:'teacher',name:'三浦先生',age:'30代',role:'ちょっとおもろい中学校教員',area:'地元',kind:'背中を押す人',desc:'授業では脱線が多いが、生徒の興味を見つけるのがうまい。学校の外で学ぶことも肯定する。',hook:'授業後に質問したとき',callback:'失敗して落ち込んだとき、経験を問いに変える視点をくれる。'},
+{id:'townhall',name:'西村さん',age:'30代',role:'自治体の若者政策担当',area:'地元',kind:'制度につなぐ人',desc:'若者の意見を聞くだけで終わらせず、担当課と若者をつなぐ方法を探している。',hook:'若者会議の説明会',callback:'政策提言だけにこだわらず「相談したい」「協力してほしい」から始める方法を教える。'},
+{id:'skate',name:'蓮見さん',age:'20代',role:'スケートボード団体の運営者',area:'地元',kind:'実践する人',desc:'街で滑ると怒られる経験から、安心して練習できる場所を仲間とつくろうとしている。',hook:'公園でアンケートを取っているとき',callback:'小さな実証や資金集めが状況を変える経験を共有する。'},
+{id:'council',name:'森さん',age:'20代',role:'ユースカウンシルのメンバー',area:'地元',kind:'同世代の仲間',desc:'学校のルールや社会の仕組みに疑問を持ち、若者の声を継続して届けようとしている。',hook:'若者の意見交換会',callback:'一人では言いにくいことを、仲間と一緒に言葉にする。'},
+{id:'kitchen',name:'恵子さん',age:'60代',role:'おばちゃん食堂の世話人',area:'留学先',kind:'食を通じた支え',desc:'月に2回、寮生に無料でご飯をふるまう。食べに来た若者の顔と好き嫌いを覚えている。',hook:'月2回の食堂の日',callback:'食事の場で話したことが、悩みを相談する入口になる。'},
+{id:'mentor',name:'小林さん',age:'30代',role:'地域おこし協力隊',area:'留学先',kind:'機会をつなぐ人',desc:'移住者として地域に入り、地元の人と外から来た人の間を行き来している。',hook:'地域のイベントで道具を運んでいるとき',callback:'地域の人を紹介してくれるが、紹介された相手と仲良くなれるかは自分次第。'},
+{id:'farmer',name:'田辺さん',age:'50代',role:'農家／地域食堂の協力者',area:'留学先',kind:'一緒に動く人',desc:'野菜を育てるだけでなく、寮生や子どもたちに季節の仕事を教えている。',hook:'畑の前を散歩しているとき',callback:'野菜を育てることから、食や流通、地域の暮らしへの問いが生まれる。'},
+{id:'photo',name:'水本さんの友人・相原さん',age:'30代',role:'写真家／地域メディア編集者',area:'留学先',kind:'表現を支える人',desc:'地域の人の営みを写真と文章で伝える。完成度より、誰の視点で伝えるかを気にしている。',hook:'イベントの記録撮影を手伝ったとき',callback:'活動を記録し発信する仕事や、地域の人の物語を聞く機会につながる。'},
+{id:'student',name:'小野さん',age:'高校生',role:'寮の同級生／料理好き',area:'留学先',kind:'同世代の仲間',desc:'人前で話すのは苦手だが、料理をするときは自分から動く。野菜をもらった夜に腕を振るう。',hook:'寮で夕飯の相談をしているとき',callback:'一緒に食べた経験が、何年たっても思い出す共通の記憶になる。'},
+{id:'facilitator',name:'林田先生',age:'50代',role:'ファシリテーター／大学教員',area:'大学・仕事',kind:'場を設計する人',desc:'会議の司会ではなく、参加者が当事者になれるプロセスを設計する。答えより、対話の進み方を大切にする。',hook:'ワークショップの振り返り',callback:'誰かを育てようとしすぎず、参加者の力が発揮される場を一緒に考える。'},
+{id:'studentcouncil',name:'石井さん',age:'20代',role:'若者会議の先輩',area:'大学・仕事',kind:'先輩',desc:'企画を形にする難しさを知っている。成功談だけでなく、失敗した企画の話もしてくれる。',hook:'若者会議の初参加',callback:'活動の経験を進学や就職の言葉にする手助けをしてくれる。'},
+{id:'nonprofit',name:'松浦さん',age:'40代',role:'NPOコーディネーター',area:'大学・仕事',kind:'つなぐ人',desc:'若者、行政、企業、地域団体のそれぞれの事情を聞き、無理のない協働を探す。',hook:'地域活動の相談会',callback:'利害が合わないときも、間に立って話し合う方法を考える。'},
+{id:'business',name:'坂本さん',age:'40代',role:'商店街の店主',area:'地元',kind:'地域の担い手',desc:'若者のアイデアには興味があるが、日々の商売や人手不足も現実として抱えている。',hook:'商店街で聞き取りをしたとき',callback:'アイデアを持ち込むだけでなく、相手の都合や負担を考える必要を教えてくれる。'},
+{id:'librarian',name:'安藤さん',age:'30代',role:'図書館司書',area:'地元',kind:'問いを支える人',desc:'調べたいことを聞き、資料や人につないでくれる。答えを一つに決めつけない。',hook:'自由研究の相談',callback:'経験を調べ直し、問いを深めるときの頼れる相手。'},
+{id:'socialworker',name:'大森さん',age:'40代',role:'スクールソーシャルワーカー',area:'地元',kind:'相談相手',desc:'学校だけでは解決しにくい困りごとを、家庭や地域の資源とつないで考える。',hook:'先生に相談先を紹介されたとき',callback:'困ったときに一人で抱え込まなくてもいいと知るきっかけになる。'},
+{id:'parent',name:'中西さん',age:'40代',role:'PTA／おやじの会の世話役',area:'地元',kind:'地域の担い手',desc:'学校の行事を支える一方で、子どもが主体的にやる余地を残したいと思っている。',hook:'学校行事の準備',callback:'大人が先回りしすぎず、若者に任せる難しさを一緒に考える。'},
+{id:'artist',name:'結城さん',age:'20代',role:'地域のアーティスト',area:'地元',kind:'表現を広げる人',desc:'空き壁や使われていない場所を、地域の人と表現の場に変えようとしている。',hook:'街なかの作品展示',callback:'自分の「好き」が誰かの参加の入口になる経験をくれる。'},
+{id:'repair',name:'遠藤さん',age:'50代',role:'リペアカフェの技術者',area:'地元',kind:'一緒に動く人',desc:'壊れたものをすぐ捨てず、持ち主と一緒に直し方を考える。',hook:'修理イベントで道具を借りたとき',callback:'ものの循環や、教え合う場づくりに関心が広がる。'},
+{id:'foodloss',name:'青木さん',age:'30代',role:'食品ロス削減の活動家',area:'大学・仕事',kind:'実践する人',desc:'賞味期限が近い食品を地域の食堂や団体につなぐ。制度と現場の両方を見ている。',hook:'フードドライブの手伝い',callback:'善意だけでは続かない仕組みづくりを考える相手になる。'},
+{id:'cityplanner',name:'新井さん',age:'40代',role:'まちづくり会社の社員',area:'大学・仕事',kind:'仕事の先輩',desc:'公共空間や商店街の企画を担当。イベントを開催することより、終わった後に関係が続くかを気にしている。',hook:'地域の社会実験',callback:'学生時代の経験が仕事や協働につながる可能性がある。'},
+{id:'researcher',name:'岡田さん',age:'30代',role:'大学院生／地域研究者',area:'大学・仕事',kind:'問いを深める人',desc:'地域の人の語りとデータの両方から、地域で起きていることを調べている。',hook:'大学のフィールドワーク',callback:'現場の疑問を研究テーマに育てる手助けをしてくれる。'},
+{id:'coach',name:'福田さん',age:'40代',role:'地域スポーツクラブのコーチ',area:'地元',kind:'背中を押す人',desc:'上手さだけでなく、続けることやチームで支え合うことを大切にする。',hook:'地域のスポーツイベント',callback:'失敗を責めずに次の練習を考える姿勢を学ぶ。'},
+{id:'organizer',name:'黒田さん',age:'30代',role:'地域イベントの企画者',area:'地元',kind:'実践する人',desc:'参加者が受け身にならない企画を考える。予定どおりに進まないことも面白がる。',hook:'イベントの撤収作業',callback:'企画の裏側にある調整や失敗を知る。'},
+{id:'councilstaff',name:'長谷川さん',age:'40代',role:'市役所の公園担当',area:'地元',kind:'制度につなぐ人',desc:'安全や管理の条件を守りながら、公共空間をどう使えるかを考えている。',hook:'公園利用の相談',callback:'「できない」で終わらず、条件を一緒に整理する相手になる。'},
+{id:'grandpa',name:'村上さん',age:'70代',role:'町内会の世話人',area:'地元',kind:'地域の記憶を持つ人',desc:'地域の変化を長年見てきた。若者の提案には慎重だが、話を聞けば背景を教えてくれる。',hook:'祭りの準備で昔の写真を見たとき',callback:'外から見ただけではわからない地域の歴史を知る。'},
+{id:'chef',name:'真鍋さん',age:'50代',role:'地域食堂の料理人',area:'留学先',kind:'食を通じた支え',desc:'食事を作ることは、誰かを支える方法の一つだと思っている。',hook:'おばちゃん食堂で配膳を手伝う',callback:'人が集まる場所の温かさと、運営の負担の両方を知る。'},
+{id:'remote',name:'宮下さん',age:'20代',role:'二拠点生活の会社員',area:'留学先',kind:'別の生き方を示す人',desc:'都市で働きながら、月の一部を地域で過ごす。地域に住むことだけが関わり方ではないと話す。',hook:'地域のカフェでオンライン会議をしている',callback:'仕事と地域活動を組み合わせる生き方の選択肢を示す。'},
+{id:'farmer2',name:'大西さん',age:'40代',role:'小規模農家／直売所の運営者',area:'留学先',kind:'一緒に動く人',desc:'収穫や販売を手伝ってもらう代わりに、作物が届くまでの工夫を教えてくれる。',hook:'直売所で野菜を選んでいるとき',callback:'地域の仕事を知り、都市の消費とのつながりを考える。'},
+{id:'inn',name:'藤原さん',age:'50代',role:'小さな宿の女将',area:'留学先',kind:'地域の案内人',desc:'旅人と地元の人を自然につなぐ。観光名所より、日々の暮らしを見てほしいと思っている。',hook:'地域の宿に泊まったとき',callback:'偶然の紹介から、地域の別の人と出会うことがある。'},
+{id:'teen',name:'森下さん',age:'高校生',role:'地域留学の同級生',area:'留学先',kind:'同世代の仲間',desc:'地元出身で、外から来た生徒に地域の面白さも面倒くささも正直に話す。',hook:'寮の食堂で隣に座る',callback:'地域を理想化せず、暮らす人の視点を知る。'},
+{id:'nurse',name:'井上さん',age:'40代',role:'地域の保健師',area:'地元',kind:'相談相手',desc:'健康や暮らしの困りごとを早めに受け止め、必要な支援につなぐ。',hook:'地域の相談会',callback:'助けを求めることは弱さではないと実感する。'},
+{id:'entrepreneur',name:'河合さん',age:'30代',role:'小さな会社の経営者',area:'大学・仕事',kind:'仕事の先輩',desc:'起業を成功物語だけで語らず、やめる判断や資金繰りの苦労も隠さない。',hook:'学生の企画相談会',callback:'起業以外の働き方も含めて、自分の道を考える。'},
+{id:'mediator',name:'伊東さん',age:'40代',role:'中間支援組織のコーディネーター',area:'大学・仕事',kind:'つなぐ人',desc:'地域の団体と行政、住民の間に立ち、無理なく協働できる関係をつくる。',hook:'地域の企画が止まって相談したとき',callback:'当事者同士が直接話せる場を整えてくれる。'},
+{id:'libraryyouth',name:'小川さん',age:'20代',role:'図書館のユース企画担当',area:'地元',kind:'場を支える人',desc:'静かに本を読む場所だけでなく、若者が自分の企画を試せる余白を考えている。',hook:'図書館の掲示に若者企画を見つける',callback:'公的な場所でも、自分たちのやりたいことを試せると知る。'},
+{id:'counselor',name:'山岸さん',age:'30代',role:'キャリア相談員',area:'大学・仕事',kind:'相談相手',desc:'すぐに進路を決めさせず、経験の中で何に心が動いたかを一緒に整理する。',hook:'進路に迷ったとき',callback:'経験を自分の言葉で説明する手助けをする。'},
+{id:'sexy',name:'田所さん',age:'50代',role:'地域イベントに現れる距離感の近い男性',area:'地元',kind:'境界線を学ぶ相手',desc:'冗談のつもりで身体や恋愛の話をしつこく振ることがある。親切と不快さが混ざることも。',hook:'イベントの片づけ中に話しかけられる',callback:'嫌なことは嫌だと言う、場を離れる、信頼できる人に相談する選択ができる。本人を一人で対処しなくてもいい。'},
+{id:'volunteer',name:'小泉さん',age:'20代',role:'ボランティアコーディネーター',area:'大学・仕事',kind:'機会をつなぐ人',desc:'活動を紹介するが、参加を強制しない。自分に合う関わり方を探すのを手伝う。',hook:'ボランティア募集のチラシ',callback:'参加者から企画者へ移る道も、見送る道も尊重する。'},
+{id:'maker',name:'浅野さん',age:'30代',role:'ものづくり工房の管理人',area:'地元',kind:'一緒に動く人',desc:'道具の使い方を教えながら、若者が試作する時間を大切にする。',hook:'壊れたものを直しに工房へ行く',callback:'思いつきを実物にする経験が、次のアイデアを生む。'},
+{id:'civic',name:'柴田さん',age:'40代',role:'市民活動センター職員',area:'地元',kind:'機会をつなぐ人',desc:'団体の紹介や助成制度の案内をするが、活動を続けるかどうかは本人たちに任せる。',hook:'企画の資金相談',callback:'助成金だけでなく、協力者や小さな資金集めの方法を考える。'},
+{id:'neighbour',name:'大野さん',age:'60代',role:'近所の世話好きなおばちゃん',area:'地元',kind:'偶然の出会い',desc:'買い物帰りに何気なく声をかけてくる。話が長くなる日もあれば、挨拶だけの日もある。',hook:'帰り道や散歩中',callback:'特別なイベントがなくても、地域に顔見知りができていく。'},
+{id:'designer',name:'瀬戸さん',age:'20代',role:'地域デザイナー',area:'大学・仕事',kind:'表現を広げる人',desc:'課題を解決する前に、誰が何を大切にしているのかを聞く。',hook:'企画のポスターを作るとき',callback:'見た目より、参加する人の体験を設計する視点を学ぶ。'},
+{id:'eldercare',name:'松井さん',age:'50代',role:'地域包括支援センター職員',area:'地元',kind:'支え合いをつなぐ人',desc:'高齢者の相談を受けながら、世代を越えた支え合いの機会を探している。',hook:'地域の清掃活動',callback:'世代間交流が一方的な支援ではなく、互いに助け合う関係になる。'},
+{id:'mediastudent',name:'吉田さん',age:'大学生',role:'地域メディアの学生編集者',area:'大学・仕事',kind:'同世代の仲間',desc:'活動の魅力を伝えたいが、きれいな成功談ばかりになることに違和感がある。',hook:'活動の記録係を頼まれる',callback:'失敗も含めて記録することが、次の人の学びになる。'},
+{id:'eventkid',name:'杏奈さん',age:'高校生',role:'ユースカウンシル参加者',area:'地元',kind:'同世代の仲間',desc:'人前で話すのは緊張するが、アンケートを集めたり、友達の声を聞いたりするのが得意。',hook:'若者の声を集める活動',callback:'発言が得意でなくても、場に参加する方法は複数あると知る。'},
+{id:'craft',name:'岩田さん',age:'60代',role:'地域の職人',area:'留学先',kind:'技を伝える人',desc:'道具や素材の扱いを丁寧に教える。すぐに結果が出なくても、続けて試すことを大切にする。',hook:'地域の工房を見学したとき',callback:'手を動かす経験から、学びや仕事への見方が変わる。'},
+{id:'townplanner',name:'小田さん',age:'40代',role:'都市計画の行政職員',area:'大学・仕事',kind:'制度につなぐ人',desc:'住民の意見と制度上の制約の両方を説明し、対話できる余地を探す。',hook:'まちづくりの意見交換会',callback:'制度を知ることで、提案を現実の行動に変える方法が見える。'},
+{id:'councilgrand',name:'佐々木さん',age:'70代',role:'町内会長',area:'留学先',kind:'地域の記憶を持つ人',desc:'最初は若者の企画に慎重だが、話を聞くと地域の事情を具体的に教えてくれる。',hook:'地域のお祭りの相談',callback:'意見が対立しても、相手の不安や暮らしを聞くことで合意の土台が生まれる。'},
+{id:'coach2',name:'野口さん',age:'30代',role:'高校の探究コーディネーター',area:'大学・仕事',kind:'学びをつなぐ人',desc:'高校生の関心を地域の実践につなぎ、振り返りを進路の言葉にする。',hook:'探究発表のあと',callback:'活動実績を並べるだけでなく、何を問い、どう変わったかを考える。'},
+{id:'founder',name:'平井さん',age:'30代',role:'若者の居場所の立ち上げ経験者',area:'大学・仕事',kind:'先輩',desc:'居場所づくりの成功だけでなく、来てもらえなかった時期の工夫も話してくれる。',hook:'若者向けの場づくり勉強会',callback:'「イベントを用意すれば来る」とは限らないと実感する。'},
+{id:'shopworker',name:'中田さん',age:'20代',role:'商店街の若手店員',area:'地元',kind:'同世代の仲間',desc:'地元で働くことに迷いながらも、街の人の顔が見える仕事に面白さを感じ始めている。',hook:'商店街の手伝い',callback:'地元に残る／外へ出るを単純な二択で考えなくなる。'}
+];
+
+function ensurePeopleState(){
+  if(!S.peopleMet) S.peopleMet=[];
+  if(!S.peopleSeen) S.peopleSeen=[];
+  if(!S.peopleBookFilter) S.peopleBookFilter='all';
+  if(!S.peopleEncounterCounts) S.peopleEncounterCounts={};
+}
+function getPerson(id){return PEOPLE.find(p=>p.id===id)||null;}
+function meetPerson(id, why='出会い'){
+  ensurePeopleState(); const p=getPerson(id); if(!p)return;
+  if(!S.peopleSeen.includes(id))S.peopleSeen.push(id);
+  const first=!S.peopleMet.includes(id);
+  if(first){S.peopleMet.push(id);addLog(`【新しい出会い】${p.name}と知り合った。${p.role}。${p.desc}`, 'encounter-log');}
+  else addLog(`【再会】${p.name}と再び会った。以前の関係が、今回の出来事にもつながっている。`,'encounter-log');
+  S.peopleEncounterCounts[id]=(S.peopleEncounterCounts[id]||0)+1;
+  S.relationshipFlags['met_'+id]=true;
+  return {person:p,first};
+}
+function availablePeople(area){
+  ensurePeopleState();
+  let list=PEOPLE.filter(p=>p.area===area);
+  if(area==='留学先' && S.assignedRegion) list=list.concat(PEOPLE.filter(p=>p.area==='地元' && !list.some(q=>q.id===p.id)));
+  return list;
+}
+function openPeopleBook(){
+  ensurePeopleState();
+  const old=document.getElementById('people-overlay'); if(old){old.remove();return;}
+  const found=new Set(S.peopleMet); const total=PEOPLE.length; const pct=Math.round(found.size/total*100);
+  const categories=['all','met','地元','留学先','大学・仕事'];
+  const labels={all:'すべて',met:'出会った人',地元:'自分の地域',留学先:'地域未来留学', '大学・仕事':'大学・仕事'};
+  const filter=S.peopleBookFilter||'all';
+  let visible=PEOPLE.filter(p=>filter==='all'||(filter==='met'?found.has(p.id):p.area===filter));
+  const overlay=document.createElement('div'); overlay.id='people-overlay';overlay.className='people-overlay';
+  overlay.innerHTML=`<div class="people-modal" role="dialog" aria-modal="true" aria-label="出会った人のプロフィール帳">
+    <div style="display:flex;align-items:start;justify-content:space-between;gap:12px"><div><div style="font-size:11px;letter-spacing:.12em;color:#54e0bd;font-weight:900">PEOPLE & CONNECTIONS</div><h2 style="font-size:22px;margin:4px 0">出会った人のプロフィール帳</h2><p style="font-size:12px;color:#aab8d8">出会った人の記録。再会すると、その人との関係が後の出来事に影響することがあります。</p></div><button onclick="document.getElementById('people-overlay').remove()" style="border:1px solid #405173;border-radius:10px;background:#17223a;color:#fff;padding:8px 12px">閉じる ✕</button></div>
+    <div style="margin-top:14px;border:1px solid #344365;border-radius:12px;padding:12px;background:#0a1120"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>出会いの達成度</b><b>${found.size} / ${total}人（${pct}%）</b></div><div class="people-progress"><span style="width:${pct}%"></span></div><p style="font-size:11px;color:#9fb0d0;margin-top:7px">すべての人に会う必要はありません。出会わなかった人も、別の人生では出会うかもしれません。</p></div>
+    <div class="people-tabs">${categories.map(k=>`<button class="${filter===k?'active':''}" onclick="S.peopleBookFilter='${k}';document.getElementById('people-overlay').remove();openPeopleBook()">${labels[k]}</button>`).join('')}</div>
+    <div class="people-grid">${visible.map(p=>{const met=found.has(p.id);return `<div class="person-card ${met?'found':''}"><div style="display:flex;justify-content:space-between;gap:6px;align-items:start"><b>${met?p.name:'？？？'}</b><span style="font-size:10px;color:${met?'#54e0bd':'#9fb0d0'}">${met?'出会った':'未遭遇'}</span></div><small>${met?p.role:'役割は出会ったときに明らかになる'}</small><div style="font-size:12px;line-height:1.7">${met?p.desc:'どんな人なのかは、出会ったときのお楽しみ。'}</div>${met?`<div style="font-size:11px;color:#b7c6e6;margin-top:8px;border-top:1px solid #344365;padding-top:7px"><b>出会いのきっかけ：</b>${p.hook}<br><b>その後：</b>${p.callback}<br><b>再会：</b>${S.peopleEncounterCounts[p.id]||1}回</div>`:''}</div>`}).join('')}</div>
+    </div>`;
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});document.body.appendChild(overlay);
+}
+function getCommunityEncounter(age,seasonIdx){
+  ensurePeopleState();
+  // 年齢・季節・ルートを踏まえた出会い。主要な進路決定や留学先のイベントを上書きしない季節に配置。
+  const key=`${age}-${seasonIdx}`;
+  const planned={
+    '14-3':{ids:['teacher','kanda','yusuke'],title:'14歳・冬：学校の外にも、話せる大人がいる',desc:'学校生活に少し疲れて、帰り道に地域の小さな活動を見かけた。そこにいた大人は、すぐに解決策を押しつけず、最近どう過ごしているのかを聞いてくれた。'},
+    '15-0':{ids:['mizu','mentor','teen'],title:'15歳・春：地域で知り合った人',desc:'新しい学校と寮での暮らしが始まる。生活の説明を受けたり、荷物を運んだりする中で、学校の先生とも家族とも違う大人や仲間と知り合った。'},
+    '15-2':{ids:['grandma'],title:'15歳・秋：野菜をくれた、なぞのおばあちゃん',desc:'散歩をしていると、突然、話したこともないおばあちゃんに「野菜あげるよ」と声をかけられた。ひとりでは到底食べきれない量だ。帰って寮生のみんなで料理して食べることもできる。'},
+    '16-1':{ids:['kitchen'],title:'16歳・夏：月に2回のおばちゃん食堂',desc:'今日は月に2回ある地域のおばちゃんたちが寮生に無料でご飯を振る舞ってくれる日。ただ、食事処が寮からちょっと遠いんだよなぁ。行けばご飯だけでなく、地域の人や寮生と話す時間も生まれるかもしれない。'},
+    '16-3':{ids:['mizu'],title:'16歳・冬：忘れていた部屋点検',desc:'寮の部屋点検の日をすっかり忘れ、掃除をしていなかった。あまりにも汚い部屋を見た水本さんに、笑いながら叱られてしまった。怒られたけれど、困ったときに話せる関係が少しずつできている。'},
+    '17-2':{ids:['shakai','kominkan','council','townhall'],title:'17歳・秋：地域での経験を進路につなぐ',desc:'高校での活動を振り返る時期。地域で出会った大人が、経験を言葉にする方法や、大学で学び続ける選択肢を教えてくれた。ただし、活動しただけで合格が決まるわけではない。'},
+    '18-2':{ids:['researcher','studentcouncil','counselor','facilitator'],title:'18歳・秋：大学で、地域との関わりを続ける？',desc:'大学に入ると、これまでの地域活動とは違う人や学びに出会う。地域の経験を研究につなげる人もいれば、いったん距離を置く人もいる。'},
+    '21-3':{ids:['nonprofit','mediator','cityplanner','civic'],title:'21歳・冬：関わりが仕事につながるとは限らない',desc:'これまでの活動を知る人から、仕事やプロジェクトの話が届いた。うれしい誘いだが、条件や役割を確認しないまま引き受けると無理が出るかもしれない。'},
+    '24-1':{ids:['mizu','kanda','shakai','townhall'],title:'24歳・夏：昔の知り合いから連絡が来た',desc:'忙しい日々の中、以前出会った人から久しぶりに連絡が来た。かつて助けてもらった人と仕事で協働することもあれば、近況を話すだけで終わることもある。'},
+    '26-2':{ids:['founder','entrepreneur','shopworker','remote'],title:'26歳・秋：自分が支える側になる',desc:'以前は自分が教えてもらう側だった。今度は、年下の人から活動について相談された。すぐ答えを渡すのか、一緒に考えるのか。自分が受けた支えをどう次へ渡すかが問われる。'},
+    '28-1':{ids:['mediator','townplanner','eldercare','designer'],title:'28歳・夏：仕事と地域のあいだで',desc:'仕事で得た知識や人脈を、地域の活動にどう活かすか考える機会ができた。専門家として助言するだけでなく、地域の人の話を聞き、何を一緒にできるか探す。'},
+    '29-2':{ids:['mizu','grandma','kitchen','student'],title:'29歳・秋：あの地域は、まだ帰れる場所だろうか',desc:'久しぶりに、昔暮らした地域のことを思い出した。人も環境も変わっているかもしれない。それでも、あのときの出会いは今の自分に残っている。'}
+  };
+  const spec=planned[key]; if(!spec)return null;
+  // 留学先に実際に進んでいない場合、留学先限定の人物は登場候補から外す。
+  let ids=spec.ids.filter(id=>{const p=getPerson(id);return p && (p.area!=='留学先'||S.highRoute==='LOCAL_RYUGAKU'||S.regionChoice==='GO'||age<15);});
+  if(!ids.length)ids=spec.ids.filter(id=>getPerson(id));
+  const person=pick(ids.map(getPerson)); if(!person)return null;
+  const already=!!S.relationshipFlags['met_'+person.id];
+  return {type:'encounter',badge:already?'再会・関係の続き':'新しい出会い',title:spec.title,desc:spec.desc,profile:`【${person.name}｜${person.role}】\n${person.desc}\n\n出会いのきっかけ：${person.hook}`,question:age===16&&seasonIdx===1?'今日はどうする？':age===15&&seasonIdx===2?'野菜をどうする？':age===16&&seasonIdx===3?'水本さんにどう応える？':'この人との接点を、どう育てる？',choices:makePeopleChoices(person,age,seasonIdx)};
+}
+function makePeopleChoices(person,age,seasonIdx){
+  const id=person.id;
+  if(age===16&&seasonIdx===1)return [
+    {t:'友達を呼んで、だべりながら歩いて食べに行く',sub:'遠い道のりも、仲間と過ごす時間にする',act:()=>{meetPerson(id,'おばちゃん食堂');S.teamwork+=2;S.friends+=2;S.localInteractionScore+=1;addLog('友達とだべりながら食堂へ。食事を受け取るだけでなく、地域のおばちゃんたちと顔見知りになった。','encounter-log');}},
+    {t:'めんどうなので、家でご飯を済ませる',sub:'今日は休む。機会を逃す日もある',act:()=>{S.fatigue=Math.max(0,S.fatigue-1);addLog('今日は家でご飯を済ませた。食堂に行かなかったことが悪いわけではないが、そこで生まれたかもしれない会話は次の機会に持ち越しになった。','reflect-log');}},
+    {t:'自転車でぱっと行って、ぱっと帰ってくる',sub:'ご飯は食べるが、長居はしない',act:()=>{meetPerson(id,'おばちゃん食堂');S.action+=1;S.localInteractionScore+=1;addLog('自転車で食堂へ行き、さっとご飯を食べて帰った。挨拶はできたが、ゆっくり話すところまではいかなかった。','encounter-log');}}
+  ];
+  if(age===15&&seasonIdx===2)return [
+    {t:'野菜を寮に持ち帰り、寮生みんなで料理する',sub:'思いがけない親切が、みんなの食卓になる',act:()=>{meetPerson('grandma','野菜をもらう');meetPerson('student','寮で料理する');S.friends+=3;S.teamwork+=2;S.localInteractionScore+=2;S.relationshipFlags.grandmaVegetables=true;addLog('野村のおばあちゃんにもらった野菜を、寮生みんなで料理して食べた。誰か一人の親切が、寮のみんなの思い出になった。','encounter-log');}},
+    {t:'ありがたく受け取るが、食べきれない分は近所に分ける',sub:'地域の別の人にもつながりが広がる',act:()=>{meetPerson('grandma','野菜をもらう');meetPerson('neighbour','野菜を分ける');S.localInteractionScore+=2;S.teamwork+=1;addLog('野菜を近所の人にもおすそ分けした。おばあちゃんとの出会いが、別の顔見知りをつくるきっかけになった。','encounter-log');}},
+    {t:'知らない人から大量にもらうのは少し不安。丁寧に断る',sub:'無理に受け取らなくてもいい',act:()=>{S.selfTrust+=1;addLog('不安があったので、丁寧に断った。親切に応えることだけが正解ではない。安心できる距離を選ぶことも大切だ。','reflect-log');}}
+  ];
+  if(age===16&&seasonIdx===3)return [
+    {t:'素直に謝り、次の点検日をメモする',sub:'叱られた経験を、次の工夫につなげる',act:()=>{meetPerson('mizu','部屋点検');S.selfTrust+=1;S.relationshipFlags.mizuBond=true;addLog('水本さんに謝り、次の点検日をカレンダーに入れた。笑いながら叱ってくれる人がいることに、少し安心した。','encounter-log');}},
+    {t:'言い訳をしてしまい、気まずくなる',sub:'失敗のあと、関係を修復する必要がある',act:()=>{meetPerson('mizu','部屋点検');S.fatigue+=1;S.unresolvedQuestion+=1;S.relationshipFlags.mizuConflict=true;addLog('とっさに言い訳をしてしまい、水本さんの表情が少し曇った。関係は一度で壊れないが、あとから自分の言葉で話し直す必要がある。','risk-log');}},
+    {t:'片づけを手伝ってもらいながら、最近困っていることも話す',sub:'失敗をきっかけに、相談できる関係を育てる',act:()=>{meetPerson('mizu','部屋点検');S.localInteractionScore+=2;S.selfTrust+=2;S.relationshipFlags.mizuBond=true;addLog('水本さんに片づけを手伝ってもらいながら、学校や寮で困っていることも少し話した。叱られた出来事が、相談できる関係を確かめるきっかけになった。','encounter-log');}}
+  ];
+  return [
+    {t:'少し勇気を出して話しかけ、相手の話を聞く',sub:'関係は一度で深まらない。まず接点をつくる',act:()=>{meetPerson(id);S.curiosity+=2;S.action+=1;S.localInteractionScore+=1;S.relationshipFlags['talked_'+id]=true;addLog(`${person.name}の話を聞いた。すぐに仲良くなったわけではないが、次に会ったときに声をかけられる相手ができた。`,'encounter-log');}},
+    {t:'知り合いに紹介してもらい、一緒に話す',sub:'地域で築いた関係が、別の人との出会いにつながる',act:()=>{const intro=pick(PEOPLE.filter(p=>p.id!==id&&p.area===person.area));meetPerson(id,'地域の人から紹介');if(intro)meetPerson(intro.id,'知り合いからの紹介');S.teamwork+=2;S.localInteractionScore+=2;S.relationshipFlags['talked_'+id]=true;addLog(`${person.name}を知っている人に紹介してもらい、三人で話した。地域では、先にできた関係が新しい出会いの入口になることがある。`,'encounter-log');}},
+    {t:'今日は挨拶だけにして、無理に関係を深めない',sub:'その場で関わらないことも、自分で選べる',act:()=>{S.fatigue=Math.max(0,S.fatigue-1);addLog(`${person.name}とは挨拶だけ交わした。関係はまだ始まっていないが、次に会う可能性は残っている。`,'reflect-log');}}
+  ];
+}
+
 function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 let S = {
@@ -526,6 +698,7 @@ let S = {
   selfTrust: 10,                // 自分の判断への信頼
   unresolvedQuestion: 0,        // 心に残った問い・違和感
   relationshipFlags: {},        // 出会い・約束・関係性の伏線
+  peopleMet: [], peopleSeen: [], peopleEncounterCounts: {}, peopleBookFilter: "all",
   localInteractionScore: 0,     // 地域の人と実際に関わった深さ
   regionChoice: "UNDECIDED",    // 大学時代に地域へ出る選択
   isAutoResolving: false,
@@ -1397,6 +1570,9 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
+  const communityEncounter = getCommunityEncounter(age, seasonIdx);
+  if (communityEncounter) return communityEncounter;
+
   // --- 追加イベント群：日常の小さな選択が後の分岐につながる ---
   // 既存の大きな分岐イベントを優先し、それ以外の季節に小さな転機を配置する。
   const beats = {
@@ -1888,6 +2064,21 @@ function choose(idx) {
   }
   c.act();
   applyRandomOutcome(c);
+  // 過去に出会った人との関係を、成人期の出来事に回収する。
+  if (S.age >= 24 && S.age <= 29 && S.peopleMet && S.peopleMet.length && Math.random() < 0.38) {
+    const oldId = pick(S.peopleMet); const oldPerson = getPerson(oldId);
+    if (oldPerson && !S.relationshipFlags['adult_callback_'+oldId]) {
+      S.relationshipFlags['adult_callback_'+oldId] = true;
+      const callbacks = [
+        `${oldPerson.name}から久しぶりに連絡が来た。以前の経験を覚えていて、仕事や活動の相談をしてくれた。`,
+        `仕事で迷ったとき、${oldPerson.name}の言葉を思い出した。今度は自分が、誰かにとって相談できる相手になれるかもしれない。`,
+        `${oldPerson.name}と再会した。昔と同じ関係ではないが、あの頃の経験が今の自分につながっていることに気づいた。`,
+        `以前は助けてもらう側だったが、今度は${oldPerson.name}の企画を手伝うことになった。立場が変わっても、関係は続いていく。`
+      ];
+      addLog(`【過去の縁がつながる】${callbacks[Math.floor(Math.random()*callbacks.length)]}`, 'encounter-log');
+      S.relationshipFlags['adultConnection_'+oldId] = true;
+    }
+  }
 
   // 地域に「行く」ことと、地域の人と「関係をつくる」ことは別。
   // 対話や共同作業を選んでも、相手の忙しさ・相性・タイミングで関係が深まらない場合がある。
@@ -1977,14 +2168,14 @@ function render() {
           マケリサ2 Y7班
         </span>
         <h1 style="margin: 6px 0 8px; font-size: 25px; line-height:1.35;">
-          1億2300万分の1の人生。<br>
+          140000分の1の人生。<br>
           <span style="color:var(--shu); font-size:21px;">やりたいことを見つけるとは。</span>
         </h1>
         <p class="lead" style="font-size:13px; line-height:1.7; margin-bottom:18px;">
           机の上で教科書を解くだけでは、人は変われない。<br>
           慣れた場所の外へ出て、地域の人と話し、一緒にやってみる。うまくいかないことも経験する。<br>
           訪問するだけではなく、人との関係が生まれたとき、学び方や価値観はどう変わるのかを体験する物語。<br>
-          <b style="color:#c6a0ff;">生まれる場所も、出会いも、挑戦の結果も毎回少しずつ変わる。</b>
+          <b style="color:#c6a0ff;">生まれる場所も、出会いも、挑戦の結果も毎回少しずつ変わる。<br>名前のある人たちとの出会い・再会・支え合いも、30歳まで続いていく。</b>
         </p>
 
         <div style="text-align:left; margin-top:20px;">
@@ -2045,7 +2236,7 @@ function render() {
           ・失敗から学んだ回数：<b>${S.failedAttempts || 0}回</b><br>
           ・生まれ育った環境：<b>${(BIRTH_ORIGINS.find(o=>o.id===S.birthProfile)||BIRTH_ORIGINS[1]).label}</b><br>
           ・地域の人との関係：<b>${S.localReaction === "BOND_DEEP" ? "継続するつながり" : S.localReaction === "BOND_SHALLOW" ? "会話・接点あり" : S.localReaction === "BOND_NONE" ? "訪問中心・関係は薄い" : "接点は限定的"}</b><br>
-          ・地域の人と共同企画：<b>${S.relationshipFlags.coCreatedWithResidents ? "一緒に進めた" : S.relationshipFlags.projectStalled ? "挑戦したが保留になった" : "共同企画には至らなかった"}</b>
+          ・地域の人と共同企画：<b>${S.relationshipFlags.coCreatedWithResidents ? "一緒に進めた" : S.relationshipFlags.projectStalled ? "挑戦したが保留になった" : "共同企画には至らなかった"}</b><br>          ・出会った人：<b>${(S.peopleMet||[]).length} / ${PEOPLE.length}人</b><br>          ・大人になってからつながった過去の縁：<b>${Object.keys(S.relationshipFlags||{}).filter(k=>k.startsWith("adultConnection_")).length}人</b>
         </div>
 
         <div style="text-align:left; margin:18px 0;">
@@ -2090,6 +2281,7 @@ function render() {
           「やりたいこと」は、最初から自分の中に完成した形であるとは限らない。知らない場所に行くこと、誰かと関わること、うまくいかず悔しい思いをすること。その経験が、次に知りたいことや行動する理由をつくることもある。結末は人生の正解ではなく、選択と環境の組み合わせの一例だ。
         </div>
 
+        <div style="text-align:left;margin:18px 0;border:1px solid var(--rule);border-radius:10px;padding:12px"><h3 style="font-size:15px;margin-bottom:6px">出会った人たち</h3><p style="font-size:12px;color:var(--sub);margin-bottom:8px">人生の中で出会った人は ${((S.peopleMet||[]).length)} / ${PEOPLE.length} 人。昔助けてもらった人と再会したり、今度は自分が誰かを支えたりする関係も生まれました。</p><button class="btn secondary" onclick="openPeopleBook()">プロフィール帳・達成度を見る</button></div>
         <button class="btn" style="width:100%;" onclick="S.screen='TITLE'; render();">もう一度人生を生きる</button>
       </div>
     `;
@@ -2209,6 +2401,7 @@ function render() {
       </div>
       <div style="font-size:11px;line-height:1.7;color:#c4d7e4;margin-top:10px;padding:9px 10px;border-radius:8px;background:rgba(4,12,25,.38);">今のテーマ：<b>${({EXPLORE:"① 生活圏の外へ",RELATE:"② 地域の人と関わる",LEARN:"③ 経験が学びに変わる"})[S.lifeTheme]}</b><br>${({EXPLORE:"行動・好奇心・現場経験が伸びやすくなります。",RELATE:"人とのつながり・協働・頼り合う力が伸びやすくなります。",LEARN:"学習意欲・思考・問いを深める力が伸びやすくなります。"})[S.lifeTheme]}<br>${(S.lifeThemeHistory||[]).length ? `これまで ${S.lifeThemeHistory.length} 回変更。直近：${S.lifeThemeHistory[S.lifeThemeHistory.length-1].term}。` : "まだテーマ変更はありません。変更履歴は最後の振り返りに残ります。"}</div>
     </div>
+    <button class="people-fab" onclick="openPeopleBook()">プロフィール帳・達成度 ${(S.peopleMet||[]).length}/${PEOPLE.length}</button>
   `;
 }
 
