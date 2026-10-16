@@ -688,6 +688,40 @@ function getNarrative(age, seasonIdx) {
 
 // 決断・出会い・問いかけのイベント生成エンジン
 function getStoryEvent(age, seasonIdx) {
+  // 地域未来留学：水本さんとの関係が、偶然の出会いから心のよりどころへ育つ連続イベント
+  // 水本さんとの出会いだけは確率イベント。他の地域の人との出会いは別イベントとして発生しうる。
+  // 判定結果を保存し、再描画のたびに確率を引き直さない。
+  if (S.highRoute === "LOCAL_RYUGAKU" && age === 15 && seasonIdx === 0 && !S.relationshipFlags.mizumotoEncounterRolled) {
+    S.relationshipFlags.mizumotoEncounterRolled = true;
+    S.relationshipFlags.mizumotoEncounterChance = Math.random() < 0.30;
+  }
+  if (S.highRoute === "LOCAL_RYUGAKU" && age === 15 && seasonIdx === 0 && S.relationshipFlags.mizumotoEncounterChance && !S.relationshipFlags.mizumotoMet) {
+    return {type:"encounter",badge:"地域未来留学・偶然の出会い",title:"15歳・春：地域で出会ったお兄さん",desc:"地域で過ごしていると、寮の舎監や魅力化コーディネーター、写真家など、さまざまな立場から地域に関わっている水本さんと知り合った。最初は地域で出会った一人のお兄さんだったけれど、気づけば自分だけでなく、みんなにとって頼れるお兄さんのような存在になっていた。",profile:"水本さんは、ひとつの肩書きだけでは語れない人。寮の暮らしを見守り、地域の魅力を伝え、写真を撮りながら人や場所の姿を残している。",choices:[
+      {t:"水本さんに自分から話しかけてみる",sub:"何気ない会話から関係が始まる",act:()=>{S.relationshipFlags.mizumotoMet=true;S.relationshipFlags.mizumotoBond=1;S.curiosity+=2;S.friends+=1;addLog("水本さんと知り合った。地域での暮らしのなかに、学校の先生や家族とは違う大人との接点ができた。","encounter-log");}},
+      {t:"まずは挨拶を重ね、少しずつ知っていく",sub:"急がず、自分のペースで関係をつくる",act:()=>{S.relationshipFlags.mizumotoMet=true;S.relationshipFlags.mizumotoBond=1;S.selfTrust+=1;addLog("水本さんと挨拶を交わすようになった。まだ深い話はしていないけれど、顔を知っている大人が一人増えた。","encounter-log");}}
+    ]};
+  }
+  if (S.highRoute === "LOCAL_RYUGAKU" && age >= 15 && age <= 17 && seasonIdx === 2 && S.relationshipFlags.mizumotoMet && !S.relationshipFlags.mizumotoRoomCheck) {
+    return {type:"everyday",badge:"寮の日常・ちょっとした失敗",title:`${age}歳・秋：忘れていた部屋点検`,desc:"寮の部屋点検の日をすっかり忘れ、掃除をしていなかった。あまりにも汚い部屋を見た水本さんに、笑いながら叱られてしまった。怒られたというより、普段から自分たちを見てくれているからこその一言だった。",profile:"水本さんとの関係は、立派な相談をするときだけのものではない。生活の失敗を見られたり、くだらない話をしたりする時間も、少しずつ安心感につながっていく。",choices:[
+      {t:"「すみません、次はちゃんとやります」と一緒に片づける",sub:"失敗を認めて、次につなげる",act:()=>{S.relationshipFlags.mizumotoRoomCheck=true;S.relationshipFlags.mizumotoBond=(S.relationshipFlags.mizumotoBond||1)+1;S.action+=2;S.selfTrust+=1;addLog("部屋点検を忘れて水本さんに笑いながら叱られた。一緒に片づけるうち、気を張らずに接することのできる大人がいる心強さを感じた。","encounter-log");}},
+      {t:"照れ隠しに笑って、ごまかしながら片づける",sub:"気まずさも、いつか笑い話になる",act:()=>{S.relationshipFlags.mizumotoRoomCheck=true;S.relationshipFlags.mizumotoBond=(S.relationshipFlags.mizumotoBond||1)+1;S.friends+=1;addLog("部屋点検を忘れ、水本さんに笑いながら叱られた。最後は自分も笑って片づけた。こんな何気ないやりとりも寮生活の思い出になっていく。","encounter-log");}},
+      {t:"叱られたのが恥ずかしくて、しばらく距離を置く",sub:"頼れる人がいても、素直になれない日もある",act:()=>{S.relationshipFlags.mizumotoRoomCheck=true;S.relationshipFlags.mizumotoBond=Math.max(0,(S.relationshipFlags.mizumotoBond||1)-1);S.unresolvedQuestion+=1;addLog("水本さんに部屋のことで叱られ、恥ずかしさから少し距離を置いた。頼れる人がいても、いつも素直に頼れるわけではない。","encounter-log");}}
+    ]};
+  }
+  if (S.highRoute === "LOCAL_RYUGAKU" && age >= 16 && age <= 17 && seasonIdx === 1 && S.relationshipFlags.mizumotoMet && !S.relationshipFlags.mizumotoTrusted) {
+    return {type:"encounter",badge:"地域未来留学・関係が育つ",title:`${age}歳・夏：みんなのお兄さん`,desc:"困ったときに相談したり、何気ない話をしたり。一緒に過ごす時間が増えるにつれて、水本さんは学校の先生とも家族とも違う、特別な存在になっていった。自分たち高校生を温かく見守り、ときには背中を押してくれる。そんな水本さんの存在が、地域での暮らしをより安心できるものにしてくれた。",profile:"頼れる関係は、一度の相談だけでできるものではない。何気ない会話や、困ったときに話を聞いてもらった経験が積み重なっていく。",choices:[
+      {t:"悩みを少し打ち明けてみる",sub:"自分のことを知ってもらう",act:()=>{S.relationshipFlags.mizumotoTrusted=true;S.relationshipFlags.mizumotoBond=(S.relationshipFlags.mizumotoBond||1)+2;S.friends+=2;S.selfTrust+=2;addLog("水本さんに悩みを少し話した。答えを押しつけるのではなく、話を聞いて背中を押してくれる存在が、地域での暮らしの安心につながった。","encounter-log");}},
+      {t:"悩みは話さず、いつも通り何気ない話をする",sub:"特別な相談がなくても、つながりは育つ",act:()=>{S.relationshipFlags.mizumotoTrusted=true;S.relationshipFlags.mizumotoBond=(S.relationshipFlags.mizumotoBond||1)+1;S.friends+=2;addLog("水本さんといつも通り何気ない話をした。悩みを打ち明けなくても、気軽に話せる相手がいること自体が心強かった。","encounter-log");}},
+      {t:"同じ寮の仲間と一緒に話しに行く",sub:"一人の支えが、みんなのつながりになる",act:()=>{S.relationshipFlags.mizumotoTrusted=true;S.relationshipFlags.mizumotoBond=(S.relationshipFlags.mizumotoBond||1)+2;S.teamwork+=2;S.friends+=2;addLog("寮の仲間と一緒に水本さんと話した。自分だけでなく、みんなにとって頼れるお兄さんのような存在になっていることに気づいた。","encounter-log");}}
+    ]};
+  }
+  if (S.highRoute === "LOCAL_RYUGAKU" && age === 17 && seasonIdx === 3 && S.relationshipFlags.mizumotoTrusted && !S.relationshipFlags.mizumotoReflection) {
+    return {type:"reflection",badge:"地域未来留学・高校生活を振り返る",title:"17歳・冬：地域に支えられていた",desc:"高校生活を振り返ると、学校での学びや寮での生活だけでなく、地域のお兄さんのような存在との出会いも、自分を成長させてくれた大切な経験だった。地域には、ただ暮らす場所としてだけではなく、自分たちを気にかけ、支えてくれる人たちがいる。そんなつながりの温かさを知った。",question:"地域で出会った人とのつながりは、自分にとってどんな意味を持っていたのだろう？",choices:[
+      {t:"困ったときに頼れる人がいる安心感",sub:"支えられた経験を覚えておく",act:()=>{S.relationshipFlags.mizumotoReflection=true;S.relationshipFlags.mizumotoBond=(S.relationshipFlags.mizumotoBond||1)+1;S.selfTrust+=2;addLog("高校生活を振り返り、地域で出会った人がいることの安心感に気づいた。人に頼ることも、自分が成長するための大切な経験だった。","reflect-log");}},
+      {t:"自分もいつか、誰かの背中を押せる人になりたい",sub:"受け取った支えを、次の誰かへ",act:()=>{S.relationshipFlags.mizumotoReflection=true;S.relationshipFlags.mizumotoBond=(S.relationshipFlags.mizumotoBond||1)+2;S.action+=2;S.teamwork+=2;addLog("水本さんから受け取った支えを、いつか次の誰かにつなぎたいと思った。支えられた経験が、自分も人を支える側になりたいという気持ちにつながった。","reflect-log");}},
+      {t:"うまく言葉にできないけれど、大切な思い出として残す",sub:"名前のつかない感情も人生の一部",act:()=>{S.relationshipFlags.mizumotoReflection=true;S.relationshipFlags.mizumotoBond=(S.relationshipFlags.mizumotoBond||1)+1;S.unresolvedQuestion+=1;addLog("地域での暮らしを思い返すと、水本さんとの何気ない時間が浮かんだ。うまく言葉にできなくても、自分を支えてくれた大切な記憶として残った。","reflect-log");}}
+    ]};
+  }
   // 出生地ごとの物語。能力差を固定せず、最初に出会う風景や人を変える。
   if(age===8 && seasonIdx===1){
     const o = BIRTH_ORIGINS.find(x=>x.id===S.birthProfile) || BIRTH_ORIGINS[1];
@@ -2615,6 +2649,7 @@ const Y7_PEOPLE50 = [
  {id:"ishii",name:"石井蓮",age:21,role:"地域活動を続ける大学生",region:"共通・地域活動",detail:"初参加の気まずさを知っていて、隣で一緒に動いてくれる。",tag:"一歩目を並んで歩く人"},
  {id:"yamamoto",name:"山本恵",age:46,role:"子ども食堂の運営メンバー",region:"共通・地域活動",detail:"できないことを責めず、できることを一緒に探す。",tag:"そのまま迎えてくれる人"},
  {id:"grandma",name:"なぞのおばあちゃん",age:null,role:"留学先の畑のそばで出会った人",region:"地域未来留学先",detail:"散歩中に突然、食べきれないほどの野菜をくれた。名前も詳しいこともまだ知らない。",tag:"偶然から始まったつながり"},
+ {id:"mizumoto",name:"水本さん",age:null,role:"寮の舎監・魅力化コーディネーター・写真家",region:"地域未来留学先",detail:"高校生を温かく見守り、困ったときに相談に乗る。何気ない会話や生活の失敗も含め、地域での暮らしを安心できるものにしてくれる。",tag:"みんなのお兄さん・心のよりどころ"},
  ...[
   ["海士町","島根県海士町",[["隠岐","藤井拓海",29,"漁協の若手職員","海の仕事と島の暮らしをつなぐ"],["隠岐","吉田澄子",71,"民宿を営む人","初対面にも気さくに声をかける"],["隠岐","大野悠",17,"高校の先輩","島での暮らしのコツを教える"],["隠岐","村上徹",54,"港で働く人","天気や船の話から島の事情を教える"],["隠岐","西村真帆",33,"地域おこし協力隊","若者の挑戦を地域につなぐ"]]],
   ["さつま町","鹿児島県さつま町",[["さつま","東郷誠",62,"農家","旬の野菜と畑の知恵を教える"],["さつま","福山彩",27,"地域おこし協力隊","小さな企画を一緒に試す"],["さつま","上村修",44,"整備工場の店主","道具や機械のことに詳しい"],["さつま","有村千代",76,"近所に住む人","通りかかる人をよく見ている"],["さつま","宮内陸",19,"地元出身の専門学生","町の外と中の両方を知っている"]]],
