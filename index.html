@@ -2276,6 +2276,27 @@ function render() {
 // 既存イベントを消さず、イベントがない時期だけに補助イベントを挿入する。
 const __y7OriginalGetStoryEvent = getStoryEvent;
 getStoryEvent = function(age, seasonIdx) {
+  // 地域未来留学ルート限定：散歩中に出会う「なぞのおばあちゃん」。
+  // 出会いは自動発生し、関係を深めるかはその後の選択に委ねる。
+  if (age === 15 && seasonIdx === 1 && S.highRoute === "LOCAL_RYUGAKU" && !(S.relationshipFlags && S.relationshipFlags.mysteryGrandmaEncountered)) {
+    const town = S.pref || "留学先の町";
+    return {
+      type: "encounter",
+      badge: "地域未来留学・偶然の出会い",
+      title: "15歳・夏：なぞのおばあちゃん",
+      desc: `気分転換に${town}をひとりで散歩していた。畑のそばを通りかかると、今まで話したこともないおばあちゃんが、突然こちらを見て声をかけてきた。
+
+「野菜あげるよ！」
+
+気づけば、ひとりでは到底食べきれないほどの野菜を抱えていた。名前も聞けず、どうしてこんなにくれるのかもわからない。寮に持ち帰ると、寮生たちが集まってきた。「これ、みんなで料理しようよ！」知らない土地で起きた小さな偶然が、寮のみんなで食卓を囲む時間につながった。おばあちゃんの名前は、まだ知らない。`,
+      profile: "出会った人：なぞのおばあちゃん／立場：地域に暮らす人／特徴：散歩中の留学生に、食べきれないほどの野菜を分けてくれた／関係：名前も知らない、偶然の出会い",
+      choices: [
+        {t:"寮生みんなで野菜を料理して食べ、おばあちゃんにお礼を言いに行く",sub:"出会いを一度きりで終わらせず、もう一度会いに行く",act:()=>{S.relationshipFlags=S.relationshipFlags||{};S.relationshipFlags.mysteryGrandmaEncountered=true;S.relationshipFlags.mysteryGrandmaThanksVisit=true;S.relationshipFlags.mysteryGrandmaRelationship="thanks";S.relationshipFlags.ryugakuLocalContact=true;S.friends=(S.friends||0)+2;S.teamwork=(S.teamwork||0)+2;addLog("散歩中に出会った『なぞのおばあちゃん』から野菜をもらった。寮生みんなで料理して食べ、後日お礼を伝えに行った。名前はまだ知らないけれど、町にもう一度会いに行きたい人ができた。","encounter-log");}},
+        {t:"寮生たちと料理して食べる。次に散歩で会えたらお礼を言おう",sub:"今は名前も連絡先も知らない。偶然の再会にゆだねる",act:()=>{S.relationshipFlags=S.relationshipFlags||{};S.relationshipFlags.mysteryGrandmaEncountered=true;S.relationshipFlags.mysteryGrandmaRelationship="maybe-again";S.relationshipFlags.ryugakuLocalContact=true;S.teamwork=(S.teamwork||0)+2;addLog("なぞのおばあちゃんからもらった野菜を、寮生みんなで料理して食べた。次に会えたらお礼を言いたい。でも名前も連絡先も知らないから、再会できるかはわからない。","encounter-log");}},
+        {t:"野菜をきっかけに、寮生たちとそれぞれの地元の食べ方を話す",sub:"おばあちゃんのことも、寮での新しい思い出になった",act:()=>{S.relationshipFlags=S.relationshipFlags||{};S.relationshipFlags.mysteryGrandmaEncountered=true;S.relationshipFlags.mysteryGrandmaRelationship="memory";S.relationshipFlags.ryugakuLocalContact=true;S.friends=(S.friends||0)+1;addLog("もらった野菜を寮生と料理し、それぞれの地元の食べ方を話した。おばあちゃんとはその後会えるかわからない。それでも、あの町で突然野菜をもらったことは、みんなで囲んだ食卓の思い出になった。","encounter-log");}}
+      ]
+    };
+  }
   // 1回の人生の中では同じ季節の出来事を固定し、別プレイでは出会いや展開が変わる。
   S.randomStoryCache = S.randomStoryCache || {};
   const event = (badge, title, desc, choices) => ({
