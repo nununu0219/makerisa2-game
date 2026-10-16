@@ -369,6 +369,14 @@
   @keyframes glowPulse{from{opacity:.35;transform:scale(.95)}to{opacity:1;transform:scale(1.08)}}
 
 </style>
+<style>
+
+/* プロフィール帳はボタンから別ページで開く */
+#people-book { display: none !important; }
+#y7-people-open { min-height: 44px; padding: 10px 14px; border-radius: 999px; font-weight: 800; }
+@media (max-width: 600px) { #y7-people-open { right: 10px !important; bottom: 10px !important; font-size: 12px; max-width: calc(100vw - 20px); } }
+
+</style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
@@ -2247,24 +2255,13 @@ function render() {
     <!-- 出会った人のプロフィール帳 -->
     <div class="sheet" id="people-book">
       <h3 style="font-size:15px; margin-bottom:4px;">出会った人のプロフィール帳</h3>
-      <p style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:10px;">人生の中で出会う人たち。まだ出会っていない人は「これから出会う人」として記録され、関わりが生まれるとプロフィールが開きます。</p>
+      <p style="font-size:12px;color:var(--sub);line-height:1.6;margin-bottom:10px;">人生の中で出会う人たち。人物候補は地域や役割ごとに増やせる設計です。まだ出会っていない人は「これから出会う人」として記録され、関わりが生まれるとプロフィールが開きます。</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">
-      ${(()=>{const rf=S.relationshipFlags||{}; const roster=[
-        {name:"佐伯さん",role:"地域の小さなNPOで活動する会社員",detail:"話を急がず、まず本人の話を聞く。活動の外でも、ふとした近況を気にかけてくれる。",tag:"聞いて、一緒に考える"},
-        {name:"森田さん",role:"商店街で店を営む人",detail:"店の仕事も地域のことも現実的に考える。自分の失敗談も隠さず話す。",tag:"失敗を笑い話に変える"},
-        {name:"高橋さん",role:"公民館で若者の活動を支える職員",detail:"答えを決めつけず、次に会えそうな人や使えそうな場所を紹介する。",tag:"人と人をつなぐ"},
-        {name:"石井さん",role:"地域活動を続ける大学生の先輩",detail:"年齢が近く、初参加の気まずさも知っている。最初の一歩を一緒に踏み出す。",tag:"隣で一緒にやってみる"},
-        {name:"山本さん",role:"地域の子ども食堂を手伝う大人",detail:"できていないことを責めず、困っていることや得意なことを聞く。",tag:"そのままの自分を迎える"},
-        {name:"小林先生",role:"中学校の担任",detail:"学校での変化に気づき、必要なときには一緒に次の相談先を考える。",tag:"日常の変化に気づく"},
-        {name:"田中先生",role:"塾の先生",detail:"勉強の相談から始まり、進路や自信のなさについて話すこともある。",tag:"一緒に整理する"},
-        {name:"美咲さん",role:"叔母",detail:"学校とも地域活動とも違う距離感で話せる。すぐに答えを出さずに聞いてくれる。",tag:"少し離れた身近な人"},
-        {name:"鈴木先生",role:"部活動の顧問",detail:"うまくいかない時の悔しさも、続けるか迷う気持ちも知っている。",tag:"挑戦を見守る"},
-        {name:"近所の中村さん",role:"地域で暮らす住民",detail:"通学路や店先で何度か顔を合わせ、挨拶から少しずつ関係が始まる。",tag:"いつもの場所にいる人"}
-      ]; const met=new Set([rf.supportPersonAt14,rf.ryugakuLastPerson].filter(Boolean)); return roster.map((p,i)=>{const known=met.has(p.name)|| (rf.lookedOutsideAt14 && ["佐伯さん","森田さん","高橋さん","石井さん","山本さん"].includes(p.name) && p.name===rf.supportPersonAt14); return `<div style="border:1px solid ${known?'#62cbb0':'var(--rule)'};background:${known?'rgba(98,203,176,.09)':'var(--paper)'};border-radius:10px;padding:11px;">
-        <div style="display:flex;justify-content:space-between;gap:6px;align-items:center;"><b style="font-size:14px;">${known?'✦ ':''}${known?p.name:'？？？'}</b><span style="font-size:10px;color:${known?'#29977d':'var(--sub)'};">${known?'出会った！':'これから'}</span></div>
+      ${(()=>{const state=y7PeopleState(); return Y7_PEOPLE50.map((p)=>{const x=state[p.id],known=!!x; return `<div style="border:1px solid ${known?'#62cbb0':'var(--rule)'};background:${known?'rgba(98,203,176,.09)':'var(--paper)'};border-radius:10px;padding:11px;">
+        <div style="display:flex;justify-content:space-between;gap:6px;align-items:center;"><b style="font-size:14px;">${known?'✦ '+p.name:'？？？'}</b><span style="font-size:10px;color:${known?'#29977d':'var(--sub)'};">${known?'出会った！':'これから'}</span></div>
         <div style="font-size:11px;color:var(--sub);margin:4px 0;">${known?p.role:'まだ出会っていない人'}</div>
         <div style="font-size:12px;line-height:1.55;">${known?p.detail:'どんな人なのかは、出会ったときのお楽しみ。'}</div>
-        ${known?`<div style="font-size:10px;margin-top:6px;color:#29977d;">${p.tag}</div>`:''}
+        ${known?`<div style="font-size:10px;margin-top:6px;color:#29977d;">${p.tag||p.region} · 出会い ${x.count||1}回</div>`:''}
       </div>`;}).join('');})()}
       </div>
     </div>
@@ -2630,12 +2627,49 @@ const Y7_PEOPLE50 = [
   ["地域","日常の地域",[["日常","遠藤久美",60,"青果店の店員","食材の選び方や季節の話をする"],["日常","原田誠",72,"散歩中によく会う人","会うたびに少しずつ話す"],["日常","新井麻衣",28,"図書館スタッフ","関心に合う本や場所を紹介する"],["日常","松井洋平",40,"地域イベントの音響担当","裏方の工夫を教えてくれる"],["日常","石川花",18,"地域行事の参加者","初対面でも一緒に準備する"]]]
  ].flatMap(([group,region,items])=>items.map(([short,name,age,role,detail],i)=>({id:`${group}-${i}`,name,age,role,region,detail,tag:"人生のどこかで出会う人"})))
 ];
+// 人物帳は固定上限にせず、地域ごとの人物候補を追加して拡張できる構造にする。
+const Y7_EXTRA_REGIONS = [
+  ["島根県海士町","島の食堂を営む人"], ["愛媛県内子町","町並み保存に関わる人"],
+  ["鹿児島県さつま町","農業や地域の仕事に関わる人"], ["長野県木曽町","林業や木工に関わる人"],
+  ["東京都多摩市","地域活動に関わる住民"], ["東京都内","学校や生活圏で出会う人"],
+  ["大学・学生生活","大学で出会う人"], ["仕事・社会人","仕事を通じて出会う人"],
+  ["地域活動","地域活動を支える人"], ["日常の地域","日常で顔を合わせる人"]
+];
+const Y7_NAME_A = ["青木","石川","井上","上田","遠藤","大川","岡本","小川","加藤","金子","川村","木村","工藤","小泉","斎藤","坂井","佐藤","柴田","清水","菅原","杉本","鈴木","関","高木","高田","田口","田中","谷口","千葉","辻","中川","中島","中田","西川","西田","野口","橋本","長谷川","林","原田","平井","福田","藤井","藤田","前田","松井","松田","三浦","宮崎","村上"];
+const Y7_NAME_B = ["明子","彩","彩乃","一樹","一郎","恵","恵子","健","健太","幸子","咲","咲子","修","翔","翔太","真","真紀","真理","誠","千尋","大輔","拓海","直子","直樹","智子","徹","奈緒","直人","花","春香","博","久美","裕子","優","優子","洋介","亮","涼","玲奈","和江","和也","和子","美咲","美和","結衣","悠人","理恵","理人","蓮","航"];
+const Y7_ROLE_POOL = [
+ ["おばちゃん食堂の運営メンバー","寮生にご飯を振る舞いながら、何気ない会話を大切にする"],
+ ["公民館職員","活動の場所や、つながれそうな人を紹介してくれる"],
+ ["社会教育主事","人が学び合う場や地域の活動をつくる"],
+ ["コミュニティカフェの店主","用事がなくても立ち寄れる場所を開いている"],
+ ["おもろい先生","型にはめず、本人の興味を面白がってくれる"],
+ ["地域の農家","季節の野菜や土地の暮らしを教えてくれる"],
+ ["商店街の店主","地域の変化や昔からの人間関係に詳しい"],
+ ["地域おこし協力隊","外から来た人と地域の人をつなぐ"],
+ ["地元の高校生","地元の好きなところも不満も率直に話す"],
+ ["大学生ボランティア","初参加の気まずさを知っていて隣で動いてくれる"],
+ ["図書館スタッフ","興味に合いそうな本や場所を教えてくれる"],
+ ["地域の世話好きなおばちゃん","困っていそうな人に気づき、さりげなく声をかける"],
+ ["ちょっと距離感の近いおじさん","悪気なく踏み込みすぎることがあり、境界線を伝える練習にもなる"],
+ ["NPOで働く会社員","仕事の合間に地域活動を続け、現実的な工夫を教える"],
+ ["地域の小さな事業主","地域の課題を仕事として続ける方法を考えている"],
+ ["移住してきた人","土地に慣れるまでの戸惑いや発見を共有する"],
+ ["町役場の職員","制度や手続き、地域でできることを教えてくれる"],
+ ["地域イベントの裏方","音響・設営・片付けなど、見えない仕事を支える"],
+ ["学校の用務員","校内のことや生徒の日々の変化をよく見ている"],
+ ["居酒屋ではなく地域の定食屋の店員","常連の会話から地域の空気が見えてくる"]
+];
+const Y7_EXTRA_PEOPLE = Y7_EXTRA_REGIONS.flatMap(([region,flavor],ri)=>Array.from({length:10},(_,i)=>{
+ const n=ri*10+i, role=Y7_ROLE_POOL[(n*7+ri)%Y7_ROLE_POOL.length], name=Y7_NAME_A[(n*13+ri*3)%Y7_NAME_A.length]+Y7_NAME_B[(n*11+i*5)%Y7_NAME_B.length];
+ return {id:`extra-${ri}-${i}`,name,age:18+((n*7+23)%57),role:role[0],region,detail:role[1],tag:flavor};
+}));
+Y7_PEOPLE50.push(...Y7_EXTRA_PEOPLE);
 function y7PeopleState(){try{return JSON.parse(localStorage.getItem(Y7_PEOPLE50_KEY)||"{}")}catch(e){return {}}}
 function y7SavePeopleState(x){try{localStorage.setItem(Y7_PEOPLE50_KEY,JSON.stringify(x))}catch(e){}}
 function y7MeetPerson(id,source="人生の中で出会った"){const p=Y7_PEOPLE50.find(x=>x.id===id);if(!p)return;const state=y7PeopleState();const old=state[id]||{count:0,firstAge:S.age||null,notes:[]};old.count++;old.lastAge=S.age||old.lastAge;old.source=source;if(!old.notes.includes(source))old.notes.push(source);state[id]=old;y7SavePeopleState(state);}
 function y7MarkPeopleFromEvent(){const ev=S.activeEvent;if(!ev)return;const text=[ev.title,ev.desc,ev.profile].filter(Boolean).join(" ");for(const p of Y7_PEOPLE50){if(text.includes(p.name)){const st=y7PeopleState();if(!st[p.id])y7MeetPerson(p.id,`${S.age||""}歳のイベント「${ev.title||"出会い"}」`);}}
 }
-function y7ShowPeoplePage(){const old=document.getElementById("y7-people-page");if(old){old.remove();return;}const state=y7PeopleState();const found=Object.keys(state).length;const groups=[...new Set(Y7_PEOPLE50.map(p=>p.region))];const page=document.createElement("div");page.id="y7-people-page";page.style.cssText="position:fixed;inset:0;z-index:99999;background:var(--bg,#101827);color:var(--text,#f4f4f5);overflow:auto;padding:18px;";page.innerHTML=`<div style="max-width:1000px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-18px;background:var(--bg,#101827);padding:12px 0;z-index:2"><div><h1 style="font-size:22px;margin:0">出会いのプロフィール帳</h1><div style="font-size:13px;color:var(--sub)">50人のうち ${found} 人と出会った · ${Math.round(found/50*100)}%</div></div><button class="btn" onclick="document.getElementById('y7-people-page').remove()">閉じる ✕</button></div><div style="height:8px;background:#334155;border-radius:99px;overflow:hidden;margin:8px 0 16px"><div style="height:100%;width:${found/50*100}%;background:#54e0bd"></div></div><p style="font-size:13px;color:var(--sub);line-height:1.6">出会った人は自動で記録される。同じイベントでも、地域や人生の展開によって出会う人が変わる。記録はこのブラウザに保存される。</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="btn" onclick="y7RenderPeopleCards('all')">全員</button>${groups.map(g=>`<button class="btn" onclick="y7RenderPeopleCards('${g}')">${g}</button>`).join("")}<button class="btn" onclick="y7RenderPeopleCards('found')">出会った人だけ</button></div><div id="y7-people-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px"></div><div style="font-size:11px;color:var(--sub);margin:18px 0">※人物はゲーム用の架空人物です。実在の人物をモデルにした登場人物は、作品内の設定として表示されます。</div></div>`;document.body.appendChild(page);y7RenderPeopleCards("all");}
+function y7ShowPeoplePage(){const old=document.getElementById("y7-people-page");if(old){old.remove();return;}const state=y7PeopleState();const found=Object.keys(state).length;const groups=[...new Set(Y7_PEOPLE50.map(p=>p.region))];const page=document.createElement("div");page.id="y7-people-page";page.style.cssText="position:fixed;inset:0;z-index:99999;background:var(--bg,#101827);color:var(--text,#f4f4f5);overflow:auto;padding:18px;";page.innerHTML=`<div style="max-width:1000px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-18px;background:var(--bg,#101827);padding:12px 0;z-index:2"><div><h1 style="font-size:22px;margin:0">出会いのプロフィール帳</h1><div style="font-size:13px;color:var(--sub)">${Y7_PEOPLE50.length}人の候補のうち ${found} 人と出会った · ${Math.round(found/Y7_PEOPLE50.length*100)}%</div></div><button class="btn" onclick="document.getElementById('y7-people-page').remove()">閉じる ✕</button></div><div style="height:8px;background:#334155;border-radius:99px;overflow:hidden;margin:8px 0 16px"><div style="height:100%;width:${Math.min(100,found/Y7_PEOPLE50.length*100)}%;background:#54e0bd"></div></div><p style="font-size:13px;color:var(--sub);line-height:1.6">出会った人は自動で記録される。同じイベントでも、地域や人生の展開によって出会う人が変わる。記録はこのブラウザに保存される。</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="btn" onclick="y7RenderPeopleCards('all')">全員</button>${groups.map(g=>`<button class="btn" onclick="y7RenderPeopleCards('${g}')">${g}</button>`).join("")}<button class="btn" onclick="y7RenderPeopleCards('found')">出会った人だけ</button></div><div id="y7-people-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px"></div><div style="font-size:11px;color:var(--sub);margin:18px 0">※人物はゲーム用の架空人物です。実在の人物をモデルにした登場人物は、作品内の設定として表示されます。</div></div>`;document.body.appendChild(page);y7RenderPeopleCards("all");}
 function y7RenderPeopleCards(filter){const el=document.getElementById("y7-people-cards");if(!el)return;const st=y7PeopleState();let list=Y7_PEOPLE50.filter(p=>filter==="all"||filter==="found"?filter==="all"||!!st[p.id]:p.region===filter);el.innerHTML=list.map(p=>{const x=st[p.id],known=!!x;return `<article style="border:1px solid ${known?'#54e0bd':'#475569'};border-radius:12px;padding:12px;background:${known?'rgba(84,224,189,.08)':'rgba(148,163,184,.04)'}"><div style="display:flex;justify-content:space-between;gap:6px"><b>${known?p.name:"？？？"}</b><span style="font-size:11px;color:${known?'#54e0bd':'var(--sub)'}">${known?'出会った':'未発見'}</span></div><div style="font-size:12px;color:var(--sub);margin:5px 0">${known?`${p.age?`${p.age}歳・`:""}${p.role}`:"出会うまでプロフィールは非公開"}</div><div style="font-size:12px;line-height:1.6">${known?p.detail:"どんな人なのかは、出会ったときのお楽しみ。"}</div>${known?`<div style="font-size:11px;margin-top:8px;color:#54e0bd">${p.region} · 出会い ${x.count}回 · 初回 ${x.firstAge??"?"}歳</div><div style="font-size:11px;color:var(--sub)">${x.source||""}</div>`:`<div style="font-size:11px;color:var(--sub);margin-top:8px">地域：${p.region}</div>`}</article>`}).join("");}
 
 // --- 地域に根ざした人物と「おばちゃん食堂」特殊イベント ---
@@ -2690,7 +2724,7 @@ y7MarkPeopleFromEvent = function(){
   __y7MarkPeopleBeforeProfile();
 };
 const __y7RenderBeforePeople50=render;
-render=function(){__y7RenderBeforePeople50();try{y7MarkPeopleFromEvent();const app=document.getElementById("app");if(app&&!document.getElementById("y7-people-open")){const b=document.createElement("button");b.id="y7-people-open";b.className="btn";b.style.cssText="position:fixed;right:12px;bottom:12px;z-index:9000;box-shadow:0 4px 18px #0005;background:#176f64;color:white";b.textContent=`人物帳 ${Object.keys(y7PeopleState()).length}/50`;b.onclick=y7ShowPeoplePage;app.appendChild(b);}else{const b=document.getElementById("y7-people-open");if(b)b.textContent=`人物帳 ${Object.keys(y7PeopleState()).length}/50`;}}catch(e){console.warn("人物帳の更新に失敗",e)}};
+render=function(){__y7RenderBeforePeople50();try{y7MarkPeopleFromEvent();const app=document.getElementById("app");if(app&&!document.getElementById("y7-people-open")){const b=document.createElement("button");b.id="y7-people-open";b.className="btn";b.style.cssText="position:fixed;right:12px;bottom:12px;z-index:9000;box-shadow:0 4px 18px #0005;background:#176f64;color:white";b.textContent=`プロフィール帳・達成度 ${Object.keys(y7PeopleState()).length}/${Y7_PEOPLE50.length}`;b.onclick=y7ShowPeoplePage;app.appendChild(b);}else{const b=document.getElementById("y7-people-open");if(b)b.textContent=`プロフィール帳・達成度 ${Object.keys(y7PeopleState()).length}/${Y7_PEOPLE50.length}`;}}catch(e){console.warn("人物帳の更新に失敗",e)}};
 
 </script>
 </body>
