@@ -1639,7 +1639,7 @@ function getStoryEvent(age, seasonIdx) {
   return null;
 }
 
-// 24歳到達時の完全自動結末判定（ゲーム性・因果の完全回収）
+// 30歳までの歩みを踏まえた自動結末判定（過去の選択と人間関係を回収）
 function determineEnding() {
   // 1. 東大・知識偏重エリートの挫折（地域関係なし＆東大ルート）
   if (S.univRoute === "TODAI" && S.localReaction !== "BOND_DEEP") {
@@ -1866,8 +1866,8 @@ function stepForward() {
       S.year++;
     }
 
-    // ★24歳・春に到達した瞬間、選ばせるのではなく自動で結末を判定してENDへ！
-    if (S.age >= 24) {
+    // ★30歳までの人生を歩み終えた瞬間、結末を判定してENDへ！
+    if (S.age >= 31) {
       pauseAuto();
       determineEnding(); // 過去の行動・ステータスから結末を自動決定
       S.screen = "END";
@@ -2069,7 +2069,7 @@ function render() {
     app.innerHTML = `
       <div class="sheet" style="text-align:center; padding: 24px 16px;">
         <span style="font-size:11px; letter-spacing:0.15em; color:var(--sub); font-weight:800;">マケリサ2 Y7班 プロトタイプ</span>
-        <h2 style="color:var(--ai); margin: 6px 0 4px;">人生の軌跡：24歳の結実</h2>
+        <h2 style="color:var(--ai); margin: 6px 0 4px;">人生の軌跡：30歳までの歩み</h2>
         <p style="font-size:12px; color:var(--sub);">あなたが選び、歩み、出会ってきたすべてが今の姿をつくった</p>
         <div style="display:inline-block; margin-top:10px; padding:5px 10px; border-radius:99px; background:var(--ai-soft); color:var(--ai); font-size:11px; font-weight:800;">最初に選んだテーマ：${(LIFE_THEMES[S.lifeTheme] || LIFE_THEMES.EXPLORE).name}</div>
 
@@ -2173,7 +2173,7 @@ function render() {
         <div class="stat-box"><span>チーム力</span><b>${Math.min(100, S.teamwork)}</b></div>
       </div>
       <div class="life-progress"><span style="width:${clamp((S.age/24)*100,0,100)}%"></span></div>
-      <div class="run-label"><span>人生の進行度</span><span>${Math.min(24,S.age)} / 24歳</span></div>
+      <div class="run-label"><span>人生の進行度</span><span>${Math.min(30,S.age)} / 30歳</span></div>
     </div>
 
     <div class="sheet" style="padding:14px 16px; border-color:#456b78; background:linear-gradient(135deg,rgba(16,50,53,.96),rgba(14,25,44,.98));">
@@ -2230,6 +2230,20 @@ function render() {
       </div>
     ` : ""}
 
+    <!-- 人生の記録ログ -->
+    <div class="sheet">
+      <h3 style="font-size:13px; color:var(--sub); margin-bottom:8px;">人生の手帳・記憶の記録</h3>
+      <div class="log-container">
+        ${S.logs.map(l => `
+          <div class="log-row ${l.type}">
+            <span class="yr">${l.term}</span>
+            <span>${l.text}</span>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+
+    <!-- 出会った人のプロフィール帳：スマホで記録を読む邪魔にならないよう、記憶の記録の下に配置 -->
     <!-- 出会った人のプロフィール帳 -->
     <div class="sheet" id="people-book">
       <h3 style="font-size:15px; margin-bottom:4px;">出会った人のプロフィール帳</h3>
@@ -2255,18 +2269,6 @@ function render() {
       </div>
     </div>
 
-    <!-- 人生の記録ログ -->
-    <div class="sheet">
-      <h3 style="font-size:13px; color:var(--sub); margin-bottom:8px;">人生の手帳・記憶の記録</h3>
-      <div class="log-container">
-        ${S.logs.map(l => `
-          <div class="log-row ${l.type}">
-            <span class="yr">${l.term}</span>
-            <span>${l.text}</span>
-          </div>
-        `).join("")}
-      </div>
-    </div>
   `;
 }
 
@@ -2493,6 +2495,90 @@ getStoryEvent = function(age, seasonIdx){
     return {type:"reflection",badge:v.badge,title:v.title,desc:v.desc,question:"このとき、自分は何に心を動かされた？",choices:v.choices.map(c=>({t:c.t,sub:c.sub,act:()=>{Object.entries(c.d||{}).forEach(([k,n])=>S[k]=(Number(S[k])||0)+n);S.relationshipFlags=S.relationshipFlags||{};if(c.flag)Object.assign(S.relationshipFlags,c.flag);if(c.log)addLog(c.log,"reflect-log");else addLog("幼い頃の小さな経験が、今の自分の感じ方の一部になった。","reflect-log");}}))};
   }
   return __y7GetStoryBeforeTheme(age,seasonIdx);
+};
+
+
+// --- 大人編：かつて支えてくれた人との関係が、仕事・協働・取引へと変化する ---
+// 14歳の出会いを「いい思い出」で終わらせず、年月を経て互いの立場が変わる可能性を描く。
+const __y7BeforeAdultRelationship = getStoryEvent;
+getStoryEvent = function(age, seasonIdx){
+  const f = S.relationshipFlags || {};
+  if (f.supportPersonAt14 && f.lookedOutsideAt14 && age === 21 && seasonIdx === 2) {
+    const person = f.supportPersonAt14;
+    const role = f.supportRoleAt14 || "地域で活動する大人";
+    const closeness = Number(f.supportBond || 0);
+    return {
+      type:"encounter", badge:"21歳・関係の変化", title:"大学生／社会人：久しぶりに会った人から、相談を受ける",
+      desc:`14歳のとき、失敗して落ち込んでいた自分に向き合ってくれた${person}（${role}）。年月がたち、今度は${person}のほうから連絡が来た。地域の企画や仕事で少し困っているらしい。昔のように自分が教えてもらうだけの関係ではなくなっている。相手の事情も、自分にできることも、当時とは違う。${closeness > 1 ? "何度か関わりを続けてきたからこそ、声をかけてもらえたのかもしれない。" : "頻繁に会っていたわけではない。それでも、以前のつながりを思い出して連絡してくれた。"}`,
+      profile:`再会した人：${person}／以前の関係：困ったときに支えてくれた人／今の関係：これから変わるかもしれない`,
+      choices:[
+        {t:"自分にできることを聞き、企画の準備や作業を手伝う",sub:"助けてもらった経験を、今度は行動で返す",act:()=>{f.adultSupportReturned=true;f.supportRelationshipContinued=true;f.supportBond=(Number(f.supportBond)||0)+1;S.action=(S.action||0)+2;S.teamwork=(S.teamwork||0)+2;S.relationshipFlags=f;addLog(`${person}から相談を受け、できる範囲で企画の準備を手伝った。昔助けてもらった相手に、今度は自分が力を貸せた。恩返しを一度で終わらせず、互いに頼れる関係にしていきたいと思った。`,'encounter-log');}},
+        {t:"自分の得意分野を活かして、一緒に企画や仕事を進める",sub:"支える側・支えられる側が固定されず、協働する関係へ",act:()=>{f.adultCollaborator=true;f.supportRelationshipContinued=true;f.supportBond=(Number(f.supportBond)||0)+2;S.action=(S.action||0)+2;S.teamwork=(S.teamwork||0)+3;S.insight=(S.insight||0)+1;S.relationshipFlags=f;addLog(`${person}と役割を分け、一緒に企画を進めた。かつて自分を支えてくれた人と、今は対等な立場で考え、動けることがうれしかった。`,'encounter-log');}},
+        {t:"すぐには引き受けず、条件や自分の余裕を確認して返事をする",sub:"大切な相手でも、無理をせず誠実に関わる",act:()=>{f.adultBoundarySet=true;S.thinking=(S.thinking||0)+2;S.selfTrust=(S.selfTrust||0)+1;S.relationshipFlags=f;addLog(`${person}からの相談について、時間や役割を確認してから返事をした。大切な人だからこそ、できないことを曖昧にせず、続けられる関わり方を考えた。`,'reflect-log');}}
+      ]
+    };
+  }
+  if (f.supportPersonAt14 && f.lookedOutsideAt14 && age === 23 && seasonIdx === 1) {
+    const person=f.supportPersonAt14;
+    const helped=!!f.adultSupportReturned;
+    const worked=!!f.adultCollaborator;
+    return {
+      type:"encounter", badge:"23歳・つながりの先に", title:"23歳・夏：あの人との関係は、思い出だけじゃなくなった",
+      desc:`${person}との関係を振り返る。14歳のころは、困ったときに助けてもらう相手だった。今は${worked ? "一緒に仕事や企画を進めた経験がある。" : helped ? "相手が困っていたときに、自分から手を貸したことがある。" : "何かを一緒に成し遂げたわけではないが、互いの近況を知る関係が残っている。"}この先も同じ距離で関わるとは限らない。仕事仲間になることも、取引相手として協力することも、時々連絡を取る関係に戻ることもある。大切なのは、昔の恩を返し切ることではなく、今の二人に合う関係をつくることだ。`,
+      profile:`関係の変化：${worked ? "協働する相手" : helped ? "支え合う相手" : "長い時間を経ても思い出せる相手"}`,
+      choices:[
+        {t:"一緒にできる仕事や企画がないか、具体的に話してみる",sub:"関係を次の協働につなげる",act:()=>{f.adultFutureWorkTalk=true;S.action=(S.action||0)+2;S.teamwork=(S.teamwork||0)+2;S.relationshipFlags=f;addLog(`${person}と、今後一緒にできそうな仕事や企画について話した。昔の出会いが、今の自分たちの選択肢につながっている。`,'encounter-log');}},
+        {t:"仕事とは切り分けて、困ったときに相談し合える関係を続ける",sub:"取引や成果がなくても、頼れるつながりには価値がある",act:()=>{f.supportAsAnchor=true;f.supportRelationshipContinued=true;S.relationshipFlags=f;addLog(`${person}とは仕事に結びつかなくても、近況を話し、必要なときに相談し合える関係を続けることにした。人とのつながりは、役に立つかどうかだけでは測れない。`,'reflect-log');}},
+        {t:"相手の活動を紹介し、自分の知人ともつなぐ",sub:"助けてもらった縁が、別の人の可能性も広げる",act:()=>{f.adultIntroducedOthers=true;S.teamwork=(S.teamwork||0)+2;S.friends=(S.friends||0)+1;S.relationshipFlags=f;addLog(`${person}の活動を自分の知人に紹介し、人と人をつないだ。昔、自分に差し出された手が、今度は別の誰かへ届くかもしれない。`,'encounter-log');}}
+      ]
+    };
+  }
+  return __y7BeforeAdultRelationship(age,seasonIdx);
+};
+
+
+// --- 24〜30歳：地域で出会った人との関係が、人生の中で形を変えて続く ---
+// 仕事になることだけを正解にせず、協働・取引・相談相手・疎遠からの再会を描く。
+const __y7BeforeAge30 = getStoryEvent;
+getStoryEvent = function(age, seasonIdx){
+  const f = S.relationshipFlags || {};
+  const person = f.supportPersonAt14;
+  if (person && f.lookedOutsideAt14 && age === 25 && seasonIdx === 0) {
+    const mode = f.adultCollaborator ? "collaborator" : f.adultSupportReturned ? "mutual" : f.supportAsAnchor ? "anchor" : "open";
+    const desc = mode === "collaborator"
+      ? `${person}と一緒に企画を進めた経験から、今回は仕事の相談が届いた。昔は自分を支えてくれた人だが、今は互いの得意なことや苦手なことを知り始めている。仕事として組むなら、気持ちだけでなく役割や報酬も話し合う必要がある。`
+      : mode === "mutual"
+      ? `${person}とは以前、困ったときに助け合った。今回は地域の仕事について相談が届いた。昔の恩を返すためだけに引き受けるのか、それとも今の自分にも意味がある仕事なのか、考えてみる。`
+      : mode === "anchor"
+      ? `${person}とは仕事に結びつかなくても、折に触れて連絡を取ってきた。今回は仕事の話ではなく、近況を尋ねる連絡が来た。人との関係は、役に立つかどうかだけで続くものではない。`
+      : `${person}とはしばらく会っていなかった。共通の知人を通じて、地域で新しい企画を始めるらしいと知る。今から関わることもできるし、無理に過去の関係を取り戻そうとしなくてもいい。`;
+    return {type:"encounter",badge:"25歳・関係のかたち",title:"25歳・春：あの人とのつながりを、今の自分で考える",desc,
+      profile:`人生の記憶：${person}／14歳の頃に支えてくれた人／現在の関係は、これまでの選択とこれからの関わり方で変わる`,
+      choices:[
+        {t:"条件や役割を話し合い、一緒に仕事をする",sub:"思い出ではなく、今の互いの力を持ち寄る",act:()=>{f.adultCollaborator=true;f.adultBusinessPartner=true;f.supportRelationshipContinued=true;f.supportBond=(Number(f.supportBond)||0)+1;S.relationshipFlags=f;S.teamwork=(S.teamwork||0)+2;S.action=(S.action||0)+2;addLog(`${person}と役割や条件を話し合い、仕事を一緒に進めることにした。昔助けてもらったことだけでなく、今の互いの力を信頼して組む関係になった。`,'encounter-log');}},
+        {t:"仕事は引き受けず、困ったときに相談し合える関係を大切にする",sub:"仕事にしないことも、関係を選ぶ一つの形",act:()=>{f.supportAsAnchor=true;f.supportRelationshipContinued=true;S.relationshipFlags=f;addLog(`${person}の依頼は今回は引き受けなかったが、理由を率直に伝えた。仕事をしなくても、互いを気にかける関係は続けられる。`,'reflect-log');}},
+        {t:"今は関わらず、また自然に会う機会を待つ",sub:"関係の距離は、人生の時期によって変わる",act:()=>{f.supportDistanceNow=true;S.relationshipFlags=f;addLog(`${person}との関係を無理に進めず、今は自分の生活を優先することにした。大切な出会いでも、いつも近くにいる必要はない。`,'reflect-log');}}
+      ]};
+  }
+  if (person && f.lookedOutsideAt14 && age === 27 && seasonIdx === 2) {
+    const collaborated = !!(f.adultCollaborator || f.adultBusinessPartner || f.adultFutureWorkTalk);
+    return {type:"encounter",badge:"27歳・支えがめぐる",title:"27歳・秋：今度は、誰かのよりどころになる",desc:`地域の活動で、若い参加者が失敗して落ち込んでいる。かつて14歳の自分が${person}に助けてもらったことを思い出す。相手にとって必要なのは、すぐに正解を教えることだろうか。それとも、安心してやり直せる関係だろうか。${collaborated ? "仕事で人と協力する経験も、誰かを支える方法を考える手がかりになっている。" : "仕事や生活で余裕があるとは限らない。自分にできる範囲で関わることも大切だ。"}`,
+      choices:[
+        {t:"まず話を聞き、本人がどうしたいかを一緒に考える",sub:"昔受け取った支えを、別の誰かへ手渡す",act:()=>{f.supportedYoungerPerson=true;S.relationshipFlags=f;S.teamwork=(S.teamwork||0)+2;S.insight=(S.insight||0)+2;addLog(`落ち込んでいた若い参加者の話を聞き、本人が次にどうしたいかを一緒に考えた。${person}が昔してくれたように、すぐに答えを与えるのではなく、そばで考えることを選んだ。`,'encounter-log');}},
+        {t:"自分の失敗談を話し、必要なら相談できる人を紹介する",sub:"自分だけで抱えず、頼れるつながりを増やす",act:()=>{f.connectedSupportNetwork=true;S.relationshipFlags=f;S.teamwork=(S.teamwork||0)+2;addLog(`自分が失敗したときの話を伝え、必要なら相談できる人を紹介した。支えは一人の英雄が全部引き受けることではなく、頼れる人や場所がいくつもあることだと思った。`,'encounter-log');}},
+        {t:"今は余裕がないことを正直に伝え、別の相談先を一緒に探す",sub:"自分をすり減らさず、支えにつなぐ",act:()=>{f.supportedWithBoundary=true;S.relationshipFlags=f;S.thinking=(S.thinking||0)+1;addLog(`自分に余裕がないことを正直に伝えたうえで、別の相談先を一緒に探した。支えることは、何でも一人で背負うことではない。`,'reflect-log');}}
+      ]};
+  }
+  if (person && f.lookedOutsideAt14 && age === 30 && seasonIdx === 2) {
+    const relation = f.adultBusinessPartner ? "仕事のパートナー" : f.adultCollaborator ? "一緒に企画を進めた仲間" : f.supportAsAnchor ? "仕事とは別に相談し合える人" : f.supportRelationshipContinued ? "折に触れて連絡を取る人" : "今も記憶に残る人";
+    return {type:"reflection",badge:"30歳・つながりを振り返る",title:"30歳・秋：あの出会いは、今の自分に何を残したか",desc:`14歳のときに出会った${person}。あの頃は、自分が困ったときに手を差し伸べてくれた大人だった。今の二人は${relation}になっている。ずっと近くにいたわけではないかもしれないし、関係の形が変わったかもしれない。それでも、助けてもらった経験は消えず、今度は自分が誰かを支えるときの手がかりにもなった。地域や人が心のよりどころになるとは、いつもそこにいることではなく、必要なときに思い出し、またつながれることなのかもしれない。`,
+      choices:[
+        {t:"その人に連絡し、あらためて感謝と近況を伝える",sub:"過去を美化するのではなく、今の関係を確かめる",act:()=>{f.supportPersonThankedAt30=true;f.supportRelationshipContinued=true;S.relationshipFlags=f;addLog(`30歳になり、${person}に連絡して近況と感謝を伝えた。昔の出会いは過去に閉じた出来事ではなく、今の自分の人との関わり方にもつながっている。`,'encounter-log');}},
+        {t:"自分が支えられた経験を、若い人や地域の活動に返していく",sub:"恩返しを同じ相手だけに返すのではなく、次の人へ",act:()=>{f.paidSupportForwardAt30=true;S.relationshipFlags=f;S.teamwork=(S.teamwork||0)+2;addLog(`${person}から受け取った支えを思い出し、今度は若い人や地域の活動を支えることにした。受け取ったものは、同じ相手に返すだけでなく、次の誰かへ手渡すこともできる。`,'encounter-log');}},
+        {t:"特別なことはせず、心の中で大切な出会いとして持ち続ける",sub:"関係の価値は、連絡の頻度だけでは決まらない",act:()=>{f.supportMemoryCarriedAt30=true;S.relationshipFlags=f;addLog(`${person}との出会いを、今も自分の中に残る大切な記憶として受け止めた。会う頻度が少なくても、あのとき助けてもらったことは、自分が人を信じたり誰かに手を差し伸べたりする感覚につながっている。`,'reflect-log');}}
+      ]};
+  }
+  return __y7BeforeAge30(age,seasonIdx);
 };
 
 render();
