@@ -319,7 +319,6 @@
 
   @media (max-width:480px) { .event-title{font-size:19px} .sheet,.cert{padding:15px} .stats-grid{grid-template-columns:repeat(2,1fr)} .age-display{font-size:23px} }
 
-
   /* IMMERSION UPDATE: life RPG / event presence */
   .event-card {
     animation: event-arrive .32s ease-out both;
@@ -369,7 +368,6 @@
     .event-card { animation: none; }
     .choice-btn { transition: none; }
   }
-
 </style>
 </head>
 <body>
@@ -428,7 +426,6 @@ const REGIONS = [
 ];
 
 const PREFS = ["東京都", "神奈川県", "大阪府", "愛知県", "埼玉県", "千葉県", "福岡県", "北海道"];
-// 生まれた場所によって、日常で出会う風景や人との距離が少し変わる。
 const BIRTH_ORIGINS = [
   {id:"metro",pref:"東京都",label:"人も情報も多い都市部",icon:"🌃",intro:"駅前には店も人も多く、知らない世界の情報がすぐ目に入る。一方、近所の人の顔を知らないまま過ごすこともある。",age8:"駅前の再開発現場",age14:"知らない人が多い街のイベント",age17:"選択肢が多すぎる進路説明会"},
   {id:"suburb",pref:"神奈川県",label:"住宅地と大きな街のあいだ",icon:"🚉",intro:"住宅街の公園、駅前の商業施設、少し電車に乗れば大きな街。身近な生活圏と、外の世界がつながっている。",age8:"駅前で開かれる地域のお祭り",age14:"地元の友達と外の世界のあいだ",age17:"通学時間と進路選び"},
@@ -471,9 +468,8 @@ function applyRandomOutcome(choice){
   } else {
     S.lastOutcome = "SUCCESS";
     if (Math.random() < 0.18) {
-    // 成功しても、予想外の小さな助けや縁が生まれることがある。
-    S.friends = Math.min(100,(S.friends||0)+1);
-    addLog("【思いがけない追い風】声をかけた人が別の人を紹介してくれた。予定にはなかったつながりが生まれた。","encounter-log");
+      S.friends = Math.min(100,(S.friends||0)+1);
+      addLog("【思いがけない追い風】声をかけた人が別の人を紹介してくれた。予定にはなかったつながりが生まれた。","encounter-log");
     }
   }
 }
@@ -487,7 +483,6 @@ const SEASONS = ["春", "夏", "秋", "冬"];
 const BASE_SPEED = 8000;
 const SPEED_MULTIPLIERS = [1, 2, 4, 8, 16];
 
-// 最初に選ぶ「人生のテーマ」。将来を固定するルートではなく、序盤の傾向と振り返りに影響する。
 const LIFE_THEMES = {
   EXPLORE: {name:"まず、外に出て試す", tag:"行動から始める", desc:"知らない場所や人、経験に飛び込んでみる。やってみた先で、自分の興味が見つかるかもしれない。", endingTitle:"経験を重ねながら、自分の道をつくる人", endingDesc:"最初から明確な目標があったわけではない。まず現場に行き、人に会い、うまくいかないことも経験しながら、自分に合うものを探してきた。すべての挑戦が成功したわけではないが、試した経験が次の選択肢を増やしている。"},
   RELATE: {name:"身近な人と、深く関わる", tag:"関係から始める", desc:"身近な人や好きなことを大切にし、関係を育てる。日常を深める中で、やりたいことが見えてくるかもしれない。", endingTitle:"人とのつながりから、道をひらく人", endingDesc:"遠くへ飛び出すことだけが変化ではなかった。身近な人と関わり続け、頼ったり頼られたりするなかで、自分にできることが少しずつ見えてきた。関係を育てることが、次の機会や新しい役割につながっている。"},
@@ -496,9 +491,6 @@ const LIFE_THEMES = {
 let selectedLifeTheme = "EXPLORE";
 function selectLifeTheme(key) { if (LIFE_THEMES[key]) { selectedLifeTheme = key; render(); } }
 
-
-// 地域の出会いは「その地域にいる固定の人」と「訪問ごとの偶然の人」を両立させる。
-// 登場人物はすべてゲーム用の架空人物。役職はユースワーク・社会教育・地域活動の実例を参考にした。
 const PEOPLE = [
 {id:'mizu',name:'水本さん',age:'30代',role:'寮の舎監／魅力化コーディネーター／写真家',area:'留学先',kind:'見守る人',desc:'学校の先生でも家族でもない、みんなのお兄さんのような存在。写真を撮りながら地域の人をよく知っている。',hook:'寮の廊下で声をかけられる',callback:'部屋点検を忘れて叱られた記憶。大人になってからは地域の仕事を紹介してくれたり、写真の仕事で協働したりすることも。'},
 {id:'grandma',name:'野村のおばあちゃん',age:'70代',role:'地域の畑を守る人',area:'留学先',kind:'偶然の出会い',desc:'散歩中に「野菜あげるよ」と声をかけてくれる。ひとりでは食べきれないほどの野菜をくれる豪快な人。',hook:'散歩中、知らないのに野菜を渡される',callback:'寮生みんなで料理した夜のことは、地域が心のよりどころになる記憶として残る。'},
@@ -600,10 +592,28 @@ function openPeopleBook(){
     </div>`;
   overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});document.body.appendChild(overlay);
 }
+
+// 地域や外部の人との出会いは、本人が外に出る行動を起こした結果としてのみ発生する
 function getCommunityEncounter(age,seasonIdx){
   ensurePeopleState();
-  // 年齢・季節・ルートを踏まえた出会い。主要な進路決定や留学先のイベントを上書きしない季節に配置。
   const key=`${age}-${seasonIdx}`;
+  
+  // 勉強専念・机の上・外へのアクションを取っていない場合は地域の人と偶然親密に出会えない
+  const hasSteppedOut = (S.fieldExperience > 0) || 
+                        (S.localInteractionScore > 0) || 
+                        (S.highRoute === 'LOCAL_RYUGAKU') || 
+                        (S.highRoute === 'JINNAI') || 
+                        (S.regionChoice === 'GO') ||
+                        (S.relationshipFlags.firstEvent) ||
+                        (S.relationshipFlags.festivalHelper) ||
+                        (S.relationshipFlags.askedWorker) ||
+                        (S.action >= 35 && S.motto >= 30);
+
+  // 中学・高校・大学で外に出ていない（勉強・受験・机上のみ）の場合の足切り
+  if (age >= 14 && !hasSteppedOut && S.highRoute !== 'LOCAL_RYUGAKU') {
+    return null;
+  }
+
   const planned={
     '14-3':{ids:['teacher','kanda','yusuke'],title:'14歳・冬：学校の外にも、話せる大人がいる',desc:'学校生活に少し疲れて、帰り道に地域の小さな活動を見かけた。そこにいた大人は、すぐに解決策を押しつけず、最近どう過ごしているのかを聞いてくれた。'},
     '15-0':{ids:['mizu','mentor','teen'],title:'15歳・春：地域で知り合った人',desc:'新しい学校と寮での暮らしが始まる。生活の説明を受けたり、荷物を運んだりする中で、学校の先生とも家族とも違う大人や仲間と知り合った。'},
@@ -619,9 +629,10 @@ function getCommunityEncounter(age,seasonIdx){
     '29-2':{ids:['mizu','grandma','kitchen','student'],title:'29歳・秋：あの地域は、まだ帰れる場所だろうか',desc:'久しぶりに、昔暮らした地域のことを思い出した。人も環境も変わっているかもしれない。それでも、あのときの出会いは今の自分に残っている。'}
   };
   const spec=planned[key]; if(!spec)return null;
-  // 留学先に実際に進んでいない場合、留学先限定の人物は登場候補から外す。
-  let ids=spec.ids.filter(id=>{const p=getPerson(id);return p && (p.area!=='留学先'||S.highRoute==='LOCAL_RYUGAKU'||S.regionChoice==='GO'||age<15);});
-  if(!ids.length)ids=spec.ids.filter(id=>getPerson(id));
+
+  // 留学先に実際に進んでいない場合、留学先限定の人物は登場候補から除外
+  let ids=spec.ids.filter(id=>{const p=getPerson(id);return p && (p.area!=='留学先'||S.highRoute==='LOCAL_RYUGAKU'||S.regionChoice==='GO');});
+  if(!ids.length) return null;
   const person=pick(ids.map(getPerson)); if(!person)return null;
   const already=!!S.relationshipFlags['met_'+person.id];
   return {type:'encounter',badge:already?'再会・関係の続き':'新しい出会い',title:spec.title,desc:spec.desc,profile:`【${person.name}｜${person.role}】\n${person.desc}\n\n出会いのきっかけ：${person.hook}`,question:age===16&&seasonIdx===1?'今日はどうする？':age===15&&seasonIdx===2?'野菜をどうする？':age===16&&seasonIdx===3?'水本さんにどう応える？':'この人との接点を、どう育てる？',choices:makePeopleChoices(person,age,seasonIdx)};
@@ -667,13 +678,12 @@ let S = {
   dad: "",
   mom: "",
   
-  // 完全分岐追跡フラグ
-  jukuState: "NONE",        // SAPIX_ACTIVE, SAPIX_QUIT, NO_JUKU, CREATIVE
-  middleRoute: "NONE",      // ELITE, IKKEN_FAIL, PUBLIC_JHS
-  highRoute: "NONE",        // LOCAL_RYUGAKU, JINNAI, JUKEN, TSUSHIN
-  univRoute: "NONE",        // TODAI, PRACTICE, NO_UNIV, NORMAL_UNIV, GLOBAL_UNIV
+  jukuState: "NONE",
+  middleRoute: "NONE",
+  highRoute: "NONE",
+  univRoute: "NONE",
   joinedYumeCan: false,
-  localReaction: "NONE",    // BOND_DEEP, BOND_SHALLOW, BOND_NONE
+  localReaction: "NONE",
   assignedRegion: null,
   schoolLabel: "未就学",
 
@@ -685,24 +695,23 @@ let S = {
   friends: 5,
   studyDrive: 10,
   title: "産声をあげた子",
-  finalEndingDesc: "",      // 自動判定された最終結末テキスト
+  finalEndingDesc: "",
   logs: [],
-  choiceHistory: [],          // 選択とその時点の自分を振り返るための記録
-  lifeThemeHistory: [],       // 人生テーマを変えた時点・理由の記録
-  initialLifeTheme: "EXPLORE", // 最初に選んだテーマ（最後の振り返り用）
-  lifeThemeAskedAt: [],       // 18・22・27歳の転機を一度ずつ提示する
-  reflection: "",             // 結末を見た後の自己理解
-  curiosity: 10,                // 知らないものに近づく姿勢
-  fatigue: 0,                   // 無理や抱え込みの蓄積
-  fieldExperience: 0,           // 現場で試した経験
-  selfTrust: 10,                // 自分の判断への信頼
-  unresolvedQuestion: 0,        // 心に残った問い・違和感
-  relationshipFlags: {},        // 出会い・約束・関係性の伏線
+  choiceHistory: [],
+  lifeThemeHistory: [],
+  initialLifeTheme: "EXPLORE",
+  lifeThemeAskedAt: [],
+  reflection: "",
+  curiosity: 10,
+  fatigue: 0,
+  fieldExperience: 0,
+  selfTrust: 10,
+  unresolvedQuestion: 0,
+  relationshipFlags: {},
   peopleMet: [], peopleSeen: [], peopleEncounterCounts: {}, peopleBookFilter: "all",
-  localInteractionScore: 0,     // 地域の人と実際に関わった深さ
-  regionChoice: "UNDECIDED",    // 大学時代に地域へ出る選択
+  localInteractionScore: 0,
+  regionChoice: "UNDECIDED",
   isAutoResolving: false,
-  failedAttempts: 0,
   lastOutcome: "",
   activeEvent: null,
   autoPlay: false,
@@ -715,7 +724,6 @@ function addLog(text, type = "") {
   S.logs.unshift({ term: termStr, year: S.year, text, type });
 }
 
-// 季節ごとの日常叙述マップ（完全1対1マップ・24歳まで）
 const NARRATIVE_MAP = {
   infant: {
     1: "初めて自分の足で立ち上がり、両親が拍手して大騒ぎした。",
@@ -847,9 +855,7 @@ function getNarrative(age, seasonIdx) {
   return themeNarratives[S.lifeTheme] || "選んだ道を一歩ずつ着実に歩んでいる。";
 }
 
-// 決断・出会い・問いかけのイベント生成エンジン
 function getStoryEvent(age, seasonIdx) {
-  // 出生地ごとの物語。能力差を固定せず、最初に出会う風景や人を変える。
   if(age===8 && seasonIdx===1){
     const o = BIRTH_ORIGINS.find(x=>x.id===S.birthProfile) || BIRTH_ORIGINS[1];
     const profiles = {
@@ -895,7 +901,8 @@ function getStoryEvent(age, seasonIdx) {
       {t:"まだ決めず、いくつかの選択肢を残しておく",sub:"決めきれなさも含めて考える",act:()=>{S.selfTrust+=1;S.unresolvedQuestion+=2;S.relationshipFlags.originFuture="open";addLog("すぐに答えを決めず、迷いを持ったまま選択肢を探すことにした。","reflect-log");}}
     ]};
   }
-  // --- 6歳・春：教育方針（3分岐） ---
+
+  // 6歳・春：教育方針
   if (age === 6 && seasonIdx === 0) {
     return {
       type: "decision",
@@ -934,7 +941,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 10歳・秋：SAPIXでの葛藤 ---
+  // 10歳・秋：SAPIXでの葛藤
   if (age === 10 && seasonIdx === 2) {
     if (S.jukuState === "SAPIX_ACTIVE") {
       return {
@@ -1009,7 +1016,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 12歳・冬：中学受験の結果と進路（★不合格時の2大分岐を確実に提示！） ---
+  // 12歳・冬：中学受験の結果と進路
   if (age === 12 && seasonIdx === 3) {
     if (S.jukuState === "SAPIX_ACTIVE") {
       const isPass = Math.random() < 0.45;
@@ -1033,7 +1040,6 @@ function getStoryEvent(age, seasonIdx) {
           ]
         };
       } else {
-        // ★不合格時に「滑り止めに行く」か「公立に行く」の2択を確実に提示！
         return {
           type: "decision",
           badge: "12歳・人生の分岐点②：第一志望不合格の決断",
@@ -1091,7 +1097,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 14歳・秋：思春期の問い ---
+  // 14歳・秋：思春期の問い
   if (age === 14 && seasonIdx === 2) {
     return {
       type: "reflection",
@@ -1120,7 +1126,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 15歳・冬：高校進路の選択（★15歳で地域未来留学の道が確実に登場！） ---
+  // 15歳・冬：高校進路の選択
   if (age === 15 && seasonIdx === 3) {
     if (S.middleRoute === "ELITE" || S.middleRoute === "IKKEN_FAIL") {
       return {
@@ -1177,7 +1183,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 16歳・春：高校2年の転機（中高一貫での陣内先生の一喝／修学旅行での遭遇） ---
+  // 16歳・春：高校2年の転機
   if (age === 16 && seasonIdx === 0) {
     if (S.middleRoute === "IKKEN_FAIL") {
       return {
@@ -1236,7 +1242,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-  // --- 18歳・春：大学進学 ---
+  // 18歳・春：大学進学
   if (age === 18 && seasonIdx === 0) {
     const choices = [];
     
@@ -1261,7 +1267,7 @@ function getStoryEvent(age, seasonIdx) {
           addLog("総合大学へ進学。周囲と同じように講義を受け、単位を揃える学生生活が始まる。", "");
         }
       });
-    } else { // LOCAL_RYUGAKU, JINNAI, TSUSHIN
+    } else {
       choices.push({
         t: "【実践型大学・都市生活】偏差値ではなく『現場に出て学べる環境』を重視し、まちづくり系学部へ",
         sub: "やってみたい指数+35 / 前に踏み出す力+35 / 実践ルート",
@@ -1300,7 +1306,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 19歳・春（大2）：夢canクリエイターの甘い罠 ---
+  // 19歳・春（大2）：夢canクリエイター
   if (age === 19 && seasonIdx === 0 && (S.univRoute === "NORMAL_UNIV" || S.univRoute === "PRACTICE")) {
     return {
       type: "decision",
@@ -1329,7 +1335,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 19歳・秋（大2）：「夢can'tクリエイターだぁ…」の絶望 ---
+  // 19歳・秋（大2）：「夢can'tクリエイターだぁ…」
   if (age === 19 && seasonIdx === 2 && S.joinedYumeCan) {
     return {
       type: "reflection",
@@ -1359,7 +1365,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // 大学生活の大きな分岐：慣れた生活圏の外へ出るかどうか。
+  // 大学生活の大きな分岐：慣れた生活圏の外へ出るかどうか
   if (age === 19 && seasonIdx === 3) {
     return {
       type: "decision",
@@ -1375,7 +1381,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 20歳・夏：地方・地域への接触（全国8箇所のおもしろい大人たち） ---
+  // 20歳・夏：地方・地域への接触
   if (age === 20 && seasonIdx === 1 && S.regionChoice === "GO") {
     if (!S.assignedRegion) {
       S.assignedRegion = pick(REGIONS);
@@ -1423,6 +1429,7 @@ function getStoryEvent(age, seasonIdx) {
           act: () => {
             S.insight += 20;
             S.localReaction = "BOND_SHALLOW";
+            S.localInteractionScore = (S.localInteractionScore||0) + 1;
             S.relationshipFlags.localPersonMet = true;
             addLog(`${r.name}を訪れ、景色や活動の雰囲気には刺激を受けた。ただ、地域の人と話す時間は少なく、暮らしや活動の背景まではまだ知らない。`, "reflect-log");
           }
@@ -1440,7 +1447,7 @@ function getStoryEvent(age, seasonIdx) {
     };
   }
 
-  // --- 21歳・夏：再訪の条件分岐 ---
+  // 21歳・夏：再訪の条件分岐
   if (age === 21 && seasonIdx === 1 && S.regionChoice === "GO") {
     const r = S.assignedRegion || REGIONS[0];
 
@@ -1524,8 +1531,7 @@ function getStoryEvent(age, seasonIdx) {
     }
   }
 
-
-  // --- 20歳・秋：訪問しただけでは終わらない。地域の人との関係が次を変える ---
+  // 20歳・秋
   if (age === 20 && seasonIdx === 2 && S.regionChoice === "GO") {
     const r = S.assignedRegion || REGIONS[0];
     if (S.localReaction === "BOND_DEEP") {
@@ -1573,8 +1579,7 @@ function getStoryEvent(age, seasonIdx) {
   const communityEncounter = getCommunityEncounter(age, seasonIdx);
   if (communityEncounter) return communityEncounter;
 
-  // --- 追加イベント群：日常の小さな選択が後の分岐につながる ---
-  // 既存の大きな分岐イベントを優先し、それ以外の季節に小さな転機を配置する。
+  // 追加イベント群
   const beats = {
     "6-1": {badge:"小さな好奇心",title:"6歳・夏：帰り道に見つけた工事現場",desc:"通学路の工事現場で、重機が土をすくい上げていた。大人は早く帰ろうと言うけれど、どうしても仕組みが気になる。",choices:[
       {t:"家に帰って図鑑で調べる",sub:"考える力・学習意欲",d:{thinking:4,studyDrive:3,curiosity:3}},
@@ -1731,7 +1736,7 @@ function getStoryEvent(age, seasonIdx) {
         act: () => {
           Object.entries(option.d || {}).forEach(([key, value]) => { S[key] = (Number(S[key]) || 0) + value; });
           if (option.flag) Object.assign(S.relationshipFlags, option.flag);
-          addLog(`${beat.title}——${option.t}。${option.sub}。`, "turning");
+          addLog(`${beat.title}——${option.t}。`, "turning");
         }
       }))
     };
@@ -1740,52 +1745,44 @@ function getStoryEvent(age, seasonIdx) {
   return null;
 }
 
-// 24歳到達時の完全自動結末判定（ゲーム性・因果の完全回収）
+// 24歳到達時の完全自動結末判定
 function determineEnding() {
-  // 1. 東大・知識偏重エリートの挫折（地域関係なし＆東大ルート）
   if (S.univRoute === "TODAI" && S.localReaction !== "BOND_DEEP") {
     S.title = "AI時代に立ち尽くす知識エリート";
     S.finalEndingDesc = "日本最高峰の学歴を手に入れ、大手シンクタンクやメガバンクでエリートとして働き始めたあなた。しかし、生成AIの爆発的進化により『答えのある知識作業・分析』の大半が代替される現実に直面しました。これまで偏差値や知識の多さを誇ってきた自分が、現場で人の心を動かしゼロから課題を見つける力を持っていなかったことに強い無力感を覚え、今、人生で初めて『自分は何をしたいのか』を痛切に問い直しています。";
     return;
   }
 
-  // 2. 東大×現場の政策プロフェッショナル（東大＆深く地域と結びついた）
   if (S.univRoute === "TODAI" && S.localReaction === "BOND_DEEP") {
     S.title = "未来を構想する政策プロフェッショナル（官僚）";
     S.finalEndingDesc = "中央省庁へ進み、国家の制度設計を担う官僚となったあなた。同僚たちが机上のデータだけで政策を語る中、あなたには『現場の農家や町民の泥臭い顔と生活』が焼き付いています。居酒屋での悔しさから学び直した法律と経済の知見を武器に、現場で挑戦する人々を真に支える血の通った制度や予算を設計する、骨太なリーダーとして活躍しています。";
     return;
   }
 
-  // 3. グローバル大学×海外越境
   if (S.univRoute === "GLOBAL_UNIV") {
     S.title = "国境を越えるグローバル実践者";
     S.finalEndingDesc = "日本の枠組みを飛び出し、世界の現場で多様性に揉まれてきたあなた。外資系ソーシャルビジネスや国際機関を舞台に、国境を越えて人と現場を繋ぐ実践者として歩んでいます。語学力以上に、相手の懐に飛び込んで信頼を勝ち取る『現場での胆力』を武器に、地球規模の課題解決を牽引しています。";
     return;
   }
 
-  // 4. 地域完全移住・ローカル起業家（やってみたい指数MAX＆現場ダイブ）
   if (S.localReaction === "BOND_DEEP" && S.action >= 60) {
     S.title = "地域を切り拓くローカル起業家";
     S.finalEndingDesc = "かつて机の上で悩んでいたあなたが、会社を辞めて地域へ完全移住！空き家を改修した複合拠点（カフェ・シェアオフィス）を立ち上げ、町の内外から人が集まるハブを作りました。今度はあなたが、昔の自分のように悩んでいる高校生や大学生を受け入れ、『やってみたい』を形にする挑戦の背中を押す精神的支柱となっています。";
     return;
   }
 
-  // 5. 二拠点生活プロデューサー（バランス型・協創）
   if (S.localReaction === "BOND_DEEP") {
     S.title = "都市と地域を繋ぐ二拠点プロデューサー";
     S.finalEndingDesc = "平日は都市の企業でビジネスを回し、週末はあの町に通い詰めて地域プロジェクトを伴走する二拠点生活を確立しました。都市の資金やITノウハウを地域に流し込み、現場の仲間と共に新たな産業を生み出しています。複数の居場所と頼れる仲間を持つ生き方は、どんな時代の変化にも揺らがないあなたの確固たる背骨になっています。";
     return;
   }
 
-  // 6. 地域と資本を繋ぐ事業開発リーダー（客観視ルート）
   if (S.localReaction === "BOND_SHALLOW") {
     S.title = "地域と資本を繋ぐ事業開発リーダー";
     S.finalEndingDesc = "都市の生活をベースにしつつも、外の世界の広さと地方の現実をその目で見てきたあなた。大企業の新規事業開発部門で、地方の一次産業や資源と都市のマーケットを結びつける大型プロジェクトを牽引しています。熱狂に流されず冷静に両方の世界を知るあなたのバランス感覚は、組織の中で替えの利かない大きな強みとなっています。";
     return;
   }
 
-  // 7. 最初に選んだテーマが、経験や行動と結びついた場合の結末。
-  // 地域との深い関係による結末は上で優先し、ここでは地域以外の人生も肯定的に描く。
   if (S.lifeTheme === "EXPLORE" && (S.fieldExperience >= 3 || S.action >= 45)) {
     S.title = LIFE_THEMES.EXPLORE.endingTitle;
     S.finalEndingDesc = LIFE_THEMES.EXPLORE.endingDesc;
@@ -1802,27 +1799,23 @@ function determineEnding() {
     return;
   }
 
-  // 8. やりたいことがまだ定まらなかった場合。失敗した人生ではなく、探索の途中として描く。
   if (S.localReaction === "BOND_NONE" || S.motto <= 35) {
     S.title = "身近な日常から、自分の問いを探す人";
     S.finalEndingDesc = "地域での大きな出会いはなかったが、それだけで人生が決まったわけではない。仕事や身近な人との時間を重ねるなかで、何が心地よく、何に違和感を覚えるのかを少しずつ考え始めている。今の生活を大切にしながら、新しい関心や人との出会いを探すこともできる。人生は24歳で完成するものではなく、ここからも選び直せる。";
     return;
   }
 
-  // 8. 周囲に応え続けて自分の問いを見失うルート
   if (S.fatigue >= 8 && S.unresolvedQuestion >= 5 && S.selfTrust <= 12) {
     S.title = "期待に応え続け、自分の問いを見失った人";
     S.finalEndingDesc = "頼まれたことには真面目に応え、目の前の役割を投げ出さずにやってきた。周囲からは責任感があると思われている。一方で、無理をしていることや、自分が本当は何を望んでいるのかを後回しにしてきたことに、ようやく気づき始めた。人生が失敗だったわけではない。ただ、これからは期待に応えるだけでなく、自分の問いを確かめる時間も必要なのかもしれない。";
     return;
   }
 
-  // 9. 誠実で信頼されるビジネスパーソン（標準的な堅実ルート）
   S.title = "信頼されるビジネスパーソン";
   S.finalEndingDesc = "派手な冒険や波乱は選ばなかったものの、置かれた場所で誠実に努力を積み重ね、会社やチームから厚い信頼を寄せられる中核メンバーへと成長しました。地に足のついた生活基盤を築き、周囲の人々を温かく支える立派な大人として歩んでいます。";
 }
 
 function getTurningPoints() {
-  // 選択履歴から、人生の分岐点を最大3つ表示する。履歴が少ない場合も自然な説明を出す。
   const history = S.choiceHistory || [];
   if (!history.length) return [{ term: "人生の記録", title: "まだ大きな決断は記録されていない", detail: "日々の経験も、これからの選択も、人生を形づくる材料になる。" }];
   const indexes = [];
@@ -1887,7 +1880,6 @@ function startGame() {
   S.localReaction = "NONE";
   S.lifeTheme = selectedLifeTheme;
   S.initialLifeTheme = selectedLifeTheme;
-  // 選んだテーマは初期傾向に少しだけ反映。後の選択で変わる余地を残す。
   if (S.lifeTheme === "EXPLORE") { S.action += 4; S.curiosity += 4; S.fieldExperience += 1; }
   if (S.lifeTheme === "RELATE") { S.friends += 4; S.teamwork += 3; S.selfTrust += 2; }
   if (S.lifeTheme === "LEARN") { S.studyDrive += 4; S.thinking += 4; S.curiosity += 2; }
@@ -1901,7 +1893,6 @@ function startGame() {
   render();
 }
 
-// 人生のテーマはいつでも変更できる。変更した時点を記録し、最終画面で振り返る。
 function changeLifeTheme(key, source = "いつでも変更") {
   if (!LIFE_THEMES[key] || !S || S.screen !== "PLAY") return;
   const previous = S.lifeTheme;
@@ -1910,7 +1901,6 @@ function changeLifeTheme(key, source = "いつでも変更") {
   S.lifeTheme = key;
   S.lifeThemeHistory = S.lifeThemeHistory || [];
   S.lifeThemeHistory.push({term, from: LIFE_THEMES[previous]?.name || "未設定", to: LIFE_THEMES[key].name, source});
-  // 変更は性格を丸ごと入れ替えるのではなく、次の行動に向けた小さな傾向として反映。
   if (key === "EXPLORE") { S.action += 3; S.curiosity += 3; S.fieldExperience += 1; S.motto += 1; }
   if (key === "RELATE") { S.friends += 3; S.teamwork += 3; S.selfTrust += 2; S.localInteractionScore = (S.localInteractionScore||0) + 1; }
   if (key === "LEARN") { S.studyDrive += 3; S.thinking += 3; S.curiosity += 2; S.unresolvedQuestion = Math.max(0,(S.unresolvedQuestion||0)-1); }
@@ -1950,23 +1940,20 @@ function changeLifeThemeFromEvent(key, age) {
   render();
 }
 
-// すべてを選ばせず、人生の方向を変える場面だけプレイヤーに委ねる。
 function isMajorDecisionEvent(ev, age, seasonIdx) {
   if (!ev) return false;
-  // 年齢・時期で定義する大きな決断。日常の小さな出来事は自動で進む。
   const key = `${age}-${seasonIdx}`;
   const majorKeys = new Set([
     "6-0", "10-2", "12-3", "14-2", "15-3", "16-0", "18-0",
     "19-3", "20-1", "20-2", "21-1"
   ]);
-  // 出生地による景色・出会いは人生の背景として自動進行させる。
   if (["8-1", "14-1", "17-1"].includes(key)) return false;
   return majorKeys.has(key) || /人生の大きな決断/.test(ev.badge || "");
 }
 
+// 日常の出来事はシステムメッセージではなく、自然な物語の地続きとして処理
 function resolveEverydayEvent(ev) {
   if (!ev || !ev.choices || !ev.choices.length) return;
-  // 日常イベントは確率で自動選択。特定の能力が高い場合は、その人らしい選択が少し出やすくなる。
   const weights = ev.choices.map(c => {
     let w = 1;
     const t = c.t || "";
@@ -1981,7 +1968,6 @@ function resolveEverydayEvent(ev) {
   for (let i=0;i<weights.length;i++) { roll -= weights[i]; if (roll <= 0) { index=i; break; } }
   S.activeEvent = ev;
   S.isAutoResolving = true;
-  addLog(`【日常・自動進行】「${ev.title || ev.badge || "小さな出来事"}」は、日々の流れの中で自然にこうなった。`, "auto-log");
   choose(index);
   S.isAutoResolving = false;
 }
@@ -2016,16 +2002,14 @@ function stepForward() {
       S.year++;
     }
 
-    // ★30歳・春に到達した瞬間、選ばせるのではなく自動で結末を判定してENDへ！
     if (S.age >= 30) {
       pauseAuto();
-      determineEnding(); // 過去の行動・ステータスから結末を自動決定
+      determineEnding();
       S.screen = "END";
       render();
       return;
     }
 
-    // 18・22・27歳の春は、生き方を見直す節目。通常イベントより先に提示する。
     if (S.seasonIdx === 0 && [18, 22, 27].includes(S.age) && showLifeThemeTurningPoint(S.age)) {
       pauseAuto(); render(); return;
     }
@@ -2053,7 +2037,6 @@ function choose(idx) {
   if (!S.activeEvent) return;
   const event = S.activeEvent;
   const c = event.choices[idx];
-  // ステータス変化だけでなく「何を選んだか」も残し、結末で振り返れるようにする。
   if (!S.isAutoResolving) {
     S.choiceHistory.push({
       term: S.age < 6 ? `${S.age}歳` : `${S.age}歳・${SEASONS[S.seasonIdx]}`,
@@ -2064,8 +2047,10 @@ function choose(idx) {
   }
   c.act();
   applyRandomOutcome(c);
-  // 過去に出会った人との関係を、成人期の出来事に回収する。
-  if (S.age >= 24 && S.age <= 29 && S.peopleMet && S.peopleMet.length && Math.random() < 0.38) {
+
+  // 過去に出会った人との関係の回収も、外に出て人間関係を築いた人だけ
+  const hasSocialTies = (S.peopleMet && S.peopleMet.length > 0) && (S.localInteractionScore > 0 || S.fieldExperience > 0);
+  if (S.age >= 24 && S.age <= 29 && hasSocialTies && Math.random() < 0.38) {
     const oldId = pick(S.peopleMet); const oldPerson = getPerson(oldId);
     if (oldPerson && !S.relationshipFlags['adult_callback_'+oldId]) {
       S.relationshipFlags['adult_callback_'+oldId] = true;
@@ -2080,8 +2065,7 @@ function choose(idx) {
     }
   }
 
-  // 地域に「行く」ことと、地域の人と「関係をつくる」ことは別。
-  // 対話や共同作業を選んでも、相手の忙しさ・相性・タイミングで関係が深まらない場合がある。
+  // 地方現場での関係性形成
   if (S.age === 20 && S.seasonIdx === 1 && (event.badge || "").includes("地方の現場") && idx === 0) {
     if (Math.random() < 0.32) {
       S.localReaction = "BOND_SHALLOW";
@@ -2096,7 +2080,6 @@ function choose(idx) {
     }
   }
 
-  // 見学中心だった人も、秋に自分から対話を始めれば関係が深まる可能性がある。
   if (S.age === 20 && S.seasonIdx === 2 && (event.badge || "").includes("もう一歩近づく") && idx === 0) {
     if (S.lastOutcome !== "FAIL" && Math.random() < 0.55) {
       S.localReaction = "BOND_DEEP";
@@ -2108,7 +2091,6 @@ function choose(idx) {
     }
   }
 
-  // 共同企画は、関係があっても必ず成功するわけではない。
   if (S.age === 20 && S.seasonIdx === 2 && (event.badge || "").includes("関係が続いたから") && idx === 0) {
     if (S.lastOutcome === "FAIL") {
       S.relationshipFlags.projectStalled = true;
@@ -2197,7 +2179,7 @@ function render() {
           <b style="color:var(--ink); font-size:13px;">【人生シミュレーションの設計思想】</b><br>
           ・<b>結末は自動判定</b>：最後の大人像は自分で選ぶのではなく、これまでの選択・挫折・ステータスから必然的に1つ導き出されます。<br>
           ・<b>人によるよなーのリアリティ</b>：地域に飛び込んで人生が変わる人もいれば、客観的に距離を置く人、合わずに帰る人もいる。<br>
-          ・<b>日常は自動進行</b>：小さな出来事はランダムに起こり、人生の方向を変える大きな決断だけ自分で選ぶ。<br>・<b>地域との関わりが中心</b>：19歳で地域に出るかを選び、訪問だけで終わるか、人と関わり続けるかで未来が分岐する。<br>
+          ・<b>日常は自動進行</b>：小さな出来事は日々の流れとして進み、人生の方向を変える大きな決断だけ自分で選ぶ。<br>・<b>地域との関わりが中心</b>：19歳で地域に出るかを選び、訪問だけで終わるか、人と関わり続けるかで未来が分岐する。<br>
           ・<b>プロトタイプ</b>：これはマケリサ2の講義用に作られた「Y7班」のプロトタイプです。
         </div>
 
@@ -2330,7 +2312,7 @@ function render() {
       <div class="run-label"><span>人生の進行度</span><span>${Math.min(30,S.age)} / 30歳</span></div>
     </div>
 
-    <!-- コントロールバー（再生・手動・倍速切り替え） -->
+    <!-- コントロールバー -->
     <div class="control-bar">
       <div class="control-top">
         <button class="btn ${S.autoPlay ? "secondary" : ""}" style="padding: 7px 16px; font-size: 13px;" onclick="toggleAuto()" ${S.activeEvent ? "disabled" : ""}>
