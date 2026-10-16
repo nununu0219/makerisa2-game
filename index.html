@@ -2603,6 +2603,95 @@ getStoryEvent = function(age, seasonIdx){
 };
 
 render();
+
+
+// --- 人物図鑑 v2：50人・出会いの自動記録・地域別コレクション ---
+const Y7_PEOPLE50_KEY = "y7_people_collection_v2";
+const Y7_PEOPLE50 = [
+ {id:"kanda",name:"神田理人",age:35,role:"海士町のクラフト醸造家",region:"島根県海士町",detail:"元ITベンチャー。若者が失敗できる場所をつくろうとしている。",tag:"挑戦を後押しする人"},
+ {id:"kawano",name:"川野修一",age:58,role:"さつま町の商店街再生リーダー",region:"鹿児島県さつま町",detail:"元大工。考えるだけでなく、手を動かして町を変えようとする。",tag:"まず一緒にやってみる人"},
+ {id:"matsushita",name:"松下和江",age:64,role:"内子町の和紙職人・古民家宿オーナー",region:"愛媛県内子町",detail:"手仕事や暮らしの豊かさを大切にしている。",tag:"暮らしから学ばせてくれる人"},
+ {id:"date",name:"伊達直樹",age:41,role:"木曽町の木工家具ブランド起業家",region:"長野県木曽町",detail:"森の資源を仕事につなげている。",tag:"地域の資源を仕事にする人"},
+ {id:"saeki",name:"佐伯美和",age:42,role:"地域NPOで働く会社員",region:"共通・地域活動",detail:"話を急がず、まず本人の話を聞く。必要な人を一緒に探してくれる。",tag:"聞いて一緒に考える人"},
+ {id:"morita",name:"森田剛",age:51,role:"商店街の店主",region:"共通・地域活動",detail:"商売の現実も失敗談も率直に話す。",tag:"現実を教えてくれる人"},
+ {id:"takahashi",name:"高橋由紀",age:39,role:"公民館職員",region:"共通・地域活動",detail:"若者が活動できる場所や、つながれそうな人を紹介する。",tag:"人と人をつなぐ人"},
+ {id:"ishii",name:"石井蓮",age:21,role:"地域活動を続ける大学生",region:"共通・地域活動",detail:"初参加の気まずさを知っていて、隣で一緒に動いてくれる。",tag:"一歩目を並んで歩く人"},
+ {id:"yamamoto",name:"山本恵",age:46,role:"子ども食堂の運営メンバー",region:"共通・地域活動",detail:"できないことを責めず、できることを一緒に探す。",tag:"そのまま迎えてくれる人"},
+ {id:"grandma",name:"なぞのおばあちゃん",age:null,role:"留学先の畑のそばで出会った人",region:"地域未来留学先",detail:"散歩中に突然、食べきれないほどの野菜をくれた。名前も詳しいこともまだ知らない。",tag:"偶然から始まったつながり"},
+ ...[
+  ["海士町","島根県海士町",[["隠岐","藤井拓海",29,"漁協の若手職員","海の仕事と島の暮らしをつなぐ"],["隠岐","吉田澄子",71,"民宿を営む人","初対面にも気さくに声をかける"],["隠岐","大野悠",17,"高校の先輩","島での暮らしのコツを教える"],["隠岐","村上徹",54,"港で働く人","天気や船の話から島の事情を教える"],["隠岐","西村真帆",33,"地域おこし協力隊","若者の挑戦を地域につなぐ"]]],
+  ["さつま町","鹿児島県さつま町",[["さつま","東郷誠",62,"農家","旬の野菜と畑の知恵を教える"],["さつま","福山彩",27,"地域おこし協力隊","小さな企画を一緒に試す"],["さつま","上村修",44,"整備工場の店主","道具や機械のことに詳しい"],["さつま","有村千代",76,"近所に住む人","通りかかる人をよく見ている"],["さつま","宮内陸",19,"地元出身の専門学生","町の外と中の両方を知っている"]]],
+  ["内子町","愛媛県内子町",[["内子","大西正人",57,"農家","季節ごとの暮らしを大切にする"],["内子","河野咲",31,"町並み保存に関わる人","古い建物の使い方を考える"],["内子","井上航",18,"高校生","町の好きなところも不満も率直に話す"],["内子","武田和子",69,"商店の店主","町の昔の話をよく覚えている"],["内子","越智亮",38,"地域の企画担当","人が集まるきっかけをつくる"]]],
+  ["木曽町","長野県木曽町",[["木曽","小沢誠司",48,"林業に携わる人","森の手入れと仕事のつながりを教える"],["木曽","清水結衣",25,"木工職人","失敗しながら手を動かすことを大切にする"],["木曽","三浦修子",63,"食堂の店主","町の人が集まる食卓を守る"],["木曽","林大地",16,"地元の高校生","放課後の過ごし方を教えてくれる"],["木曽","青木恵一",52,"移住してきた会社員","外から来た人の戸惑いを知っている"]]],
+  ["多摩","東京都多摩市",[["多摩","池田康介",34,"地域活動に関わる住民","生活者の目線で企画を考える"],["多摩","薮田尚宏",47,"諏訪地域の住民","地域の歴史や人のつながりを知る"],["多摩","櫻田直子",50,"学校地域活動の支援者","初めての人が参加しやすいよう支える"],["多摩","伊東真理",45,"地域活動の経験者","活動の段取りや安全面を教える"],["多摩","小野寺翔",20,"大学生ボランティア","若者同士で気軽に相談できる"]]],
+  ["東京","東京都内",[["東京","小林先生",39,"中学校教員","日々の変化に気づく"],["東京","田中先生",46,"塾講師","勉強と進路を一緒に整理する"],["東京","美咲さん",36,"叔母","学校とも地域とも違う距離で話せる"],["東京","鈴木先生",34,"部活動顧問","挑戦と迷いを見守る"],["東京","中村さん",68,"近所の住民","挨拶からゆっくり関係が始まる"]]],
+  ["大学","大学・学生生活",[["大学","長谷川葵",20,"ゼミの先輩","自分の経験を言葉にする手伝いをする"],["大学","岡田悠人",19,"同じ授業の学生","違う考えを持ち寄る"],["大学","宮本先生",52,"大学教員","問いを深めるための視点をくれる"],["大学","吉川優",22,"学生団体の代表","企画の実践と失敗を重ねている"],["大学","平野千尋",20,"アルバイト仲間","大学外の日常を共有する"]]],
+  ["仕事","社会人・仕事",[["仕事","黒田真司",37,"取引先の担当者","条件や期限を率直に話し合う"],["仕事","坂本玲奈",29,"同僚","仕事の悩みを共有し、助け合う"],["仕事","野口修",55,"上司","結果だけでなく過程も見る"],["仕事","前田紗季",32,"協働する事業者","互いの強みを持ち寄る"],["仕事","石田徹",43,"地域の事業主","昔のつながりを仕事に結び直す"]]],
+  ["地域","日常の地域",[["日常","遠藤久美",60,"青果店の店員","食材の選び方や季節の話をする"],["日常","原田誠",72,"散歩中によく会う人","会うたびに少しずつ話す"],["日常","新井麻衣",28,"図書館スタッフ","関心に合う本や場所を紹介する"],["日常","松井洋平",40,"地域イベントの音響担当","裏方の工夫を教えてくれる"],["日常","石川花",18,"地域行事の参加者","初対面でも一緒に準備する"]]]
+ ].flatMap(([group,region,items])=>items.map(([short,name,age,role,detail],i)=>({id:`${group}-${i}`,name,age,role,region,detail,tag:"人生のどこかで出会う人"})))
+];
+function y7PeopleState(){try{return JSON.parse(localStorage.getItem(Y7_PEOPLE50_KEY)||"{}")}catch(e){return {}}}
+function y7SavePeopleState(x){try{localStorage.setItem(Y7_PEOPLE50_KEY,JSON.stringify(x))}catch(e){}}
+function y7MeetPerson(id,source="人生の中で出会った"){const p=Y7_PEOPLE50.find(x=>x.id===id);if(!p)return;const state=y7PeopleState();const old=state[id]||{count:0,firstAge:S.age||null,notes:[]};old.count++;old.lastAge=S.age||old.lastAge;old.source=source;if(!old.notes.includes(source))old.notes.push(source);state[id]=old;y7SavePeopleState(state);}
+function y7MarkPeopleFromEvent(){const ev=S.activeEvent;if(!ev)return;const text=[ev.title,ev.desc,ev.profile].filter(Boolean).join(" ");for(const p of Y7_PEOPLE50){if(text.includes(p.name)){const st=y7PeopleState();if(!st[p.id])y7MeetPerson(p.id,`${S.age||""}歳のイベント「${ev.title||"出会い"}」`);}}
+}
+function y7ShowPeoplePage(){const old=document.getElementById("y7-people-page");if(old){old.remove();return;}const state=y7PeopleState();const found=Object.keys(state).length;const groups=[...new Set(Y7_PEOPLE50.map(p=>p.region))];const page=document.createElement("div");page.id="y7-people-page";page.style.cssText="position:fixed;inset:0;z-index:99999;background:var(--bg,#101827);color:var(--text,#f4f4f5);overflow:auto;padding:18px;";page.innerHTML=`<div style="max-width:1000px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-18px;background:var(--bg,#101827);padding:12px 0;z-index:2"><div><h1 style="font-size:22px;margin:0">出会いのプロフィール帳</h1><div style="font-size:13px;color:var(--sub)">50人のうち ${found} 人と出会った · ${Math.round(found/50*100)}%</div></div><button class="btn" onclick="document.getElementById('y7-people-page').remove()">閉じる ✕</button></div><div style="height:8px;background:#334155;border-radius:99px;overflow:hidden;margin:8px 0 16px"><div style="height:100%;width:${found/50*100}%;background:#54e0bd"></div></div><p style="font-size:13px;color:var(--sub);line-height:1.6">出会った人は自動で記録される。同じイベントでも、地域や人生の展開によって出会う人が変わる。記録はこのブラウザに保存される。</p><div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0"><button class="btn" onclick="y7RenderPeopleCards('all')">全員</button>${groups.map(g=>`<button class="btn" onclick="y7RenderPeopleCards('${g}')">${g}</button>`).join("")}<button class="btn" onclick="y7RenderPeopleCards('found')">出会った人だけ</button></div><div id="y7-people-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px"></div><div style="font-size:11px;color:var(--sub);margin:18px 0">※人物はゲーム用の架空人物です。実在の人物をモデルにした登場人物は、作品内の設定として表示されます。</div></div>`;document.body.appendChild(page);y7RenderPeopleCards("all");}
+function y7RenderPeopleCards(filter){const el=document.getElementById("y7-people-cards");if(!el)return;const st=y7PeopleState();let list=Y7_PEOPLE50.filter(p=>filter==="all"||filter==="found"?filter==="all"||!!st[p.id]:p.region===filter);el.innerHTML=list.map(p=>{const x=st[p.id],known=!!x;return `<article style="border:1px solid ${known?'#54e0bd':'#475569'};border-radius:12px;padding:12px;background:${known?'rgba(84,224,189,.08)':'rgba(148,163,184,.04)'}"><div style="display:flex;justify-content:space-between;gap:6px"><b>${known?p.name:"？？？"}</b><span style="font-size:11px;color:${known?'#54e0bd':'var(--sub)'}">${known?'出会った':'未発見'}</span></div><div style="font-size:12px;color:var(--sub);margin:5px 0">${known?`${p.age?`${p.age}歳・`:""}${p.role}`:"出会うまでプロフィールは非公開"}</div><div style="font-size:12px;line-height:1.6">${known?p.detail:"どんな人なのかは、出会ったときのお楽しみ。"}</div>${known?`<div style="font-size:11px;margin-top:8px;color:#54e0bd">${p.region} · 出会い ${x.count}回 · 初回 ${x.firstAge??"?"}歳</div><div style="font-size:11px;color:var(--sub)">${x.source||""}</div>`:`<div style="font-size:11px;color:var(--sub);margin-top:8px">地域：${p.region}</div>`}</article>`}).join("");}
+
+// --- 地域に根ざした人物と「おばちゃん食堂」特殊イベント ---
+const __y7StoryBeforeLocalFood = getStoryEvent;
+getStoryEvent = function(age, seasonIdx) {
+  // 月2回の食堂の日。地域未来留学ルートでは、地域の人と寮生の接点になる。
+  if (age === 16 && seasonIdx === 0 && S.highRoute === "LOCAL_RYUGAKU" &&
+      !(S.relationshipFlags && S.relationshipFlags.obaachanShokudoDone)) {
+    const town = S.pref || "留学先の町";
+    const residents = Y7_PEOPLE50.filter(p => p.region === town || p.region === "地域未来留学先" ||
+      (town.includes("海士町") && p.region === "島根県海士町") ||
+      (town.includes("内子町") && p.region === "愛媛県内子町") ||
+      (town.includes("さつま町") && p.region === "鹿児島県さつま町"));
+    const person = residents.length ? residents[Math.floor(Math.random()*residents.length)] : null;
+    const nameLine = person ? `食事処には${person.name}も来ているらしい。` : "今日も地域のおばちゃんたちが準備をしているらしい。";
+    return {
+      type:"encounter", badge:"地域未来留学・特殊イベント",
+      title:"16歳・春：月に2回のおばちゃん食堂",
+      desc:`今日は月に2回ある、地域のおばちゃんたちが寮生に無料でご飯を振る舞ってくれる日だ。${town}で暮らすようになって、こういう日があることを知った。ありがたいけれど、食事処が寮からちょっと遠いんだよなぁ。${nameLine}`,
+      profile: person ? `この場で会える人：${person.name}／${person.role}／${person.detail}` : "地域のおばちゃんたちが寮生に食事を振る舞ってくれる場所。",
+      choices:[
+        {t:"友達を呼んで、みんなでだべりながらだらだら食べに行く",sub:"食事とおしゃべりを通して、寮生や地域の人との時間が増える",act:()=>{
+          S.relationshipFlags=S.relationshipFlags||{};S.relationshipFlags.obaachanShokudoDone=true;S.relationshipFlags.obaachanShokudoChoice="friends";
+          S.friends=(S.friends||0)+3;S.teamwork=(S.teamwork||0)+2;
+          if(person) y7MeetPerson(person.id,"16歳のおばちゃん食堂で出会った");
+          addLog(`友達を誘っておばちゃん食堂へ。みんなでだべりながらご飯を食べた。遠かったけれど、行ったからこそ生まれた会話があった。${person?person.name+"とも顔を合わせた。":""}`,"encounter-log");
+        }},
+        {t:"めんどくさいので家でご飯を済ませる",sub:"今日は行かない。地域とのつながりは、別の日にも生まれる",act:()=>{
+          S.relationshipFlags=S.relationshipFlags||{};S.relationshipFlags.obaachanShokudoDone=true;S.relationshipFlags.obaachanShokudoChoice="stay";
+          addLog("今日は遠いおばちゃん食堂まで行くのが面倒で、寮でご飯を済ませた。行かなかった日があっても、地域との関係がそれだけでなくなるわけではない。","reflect-log");
+        }},
+        {t:"チャリでぱっと行って、ぱっと帰ってくる",sub:"食事を受け取りに行く。短い滞在でも、挨拶や会話が生まれるかもしれない",act:()=>{
+          S.relationshipFlags=S.relationshipFlags||{};S.relationshipFlags.obaachanShokudoDone=true;S.relationshipFlags.obaachanShokudoChoice="bike";
+          S.action=(S.action||0)+1;
+          if(person) y7MeetPerson(person.id,"16歳のおばちゃん食堂で出会った");
+          addLog(`自転車でおばちゃん食堂へ行き、ぱっと食べて帰ってきた。長居はしなかったけれど、地域のおばちゃんたちに挨拶をした。${person?person.name+"のことも少し知った。":""}`,"encounter-log");
+        }}
+      ]
+    };
+  }
+  // 同じイベントでも地域の顔ぶれは固定地域の候補から抽選。出身地域の人とも自然に出会える。
+  return __y7StoryBeforeLocalFood(age, seasonIdx);
+};
+// イベント本文に登場した名前だけでなく、profile欄の人物も出会いとして登録する。
+const __y7MarkPeopleBeforeProfile = y7MarkPeopleFromEvent;
+y7MarkPeopleFromEvent = function(){
+  const ev=S.activeEvent;
+  if(ev && ev.profile){
+    const text=String(ev.profile);
+    for(const p of Y7_PEOPLE50){ if(text.includes(p.name)) y7MeetPerson(p.id, `${S.age||""}歳のイベント「${ev.title||"出会い"}」`); }
+  }
+  __y7MarkPeopleBeforeProfile();
+};
+const __y7RenderBeforePeople50=render;
+render=function(){__y7RenderBeforePeople50();try{y7MarkPeopleFromEvent();const app=document.getElementById("app");if(app&&!document.getElementById("y7-people-open")){const b=document.createElement("button");b.id="y7-people-open";b.className="btn";b.style.cssText="position:fixed;right:12px;bottom:12px;z-index:9000;box-shadow:0 4px 18px #0005;background:#176f64;color:white";b.textContent=`人物帳 ${Object.keys(y7PeopleState()).length}/50`;b.onclick=y7ShowPeoplePage;app.appendChild(b);}else{const b=document.getElementById("y7-people-open");if(b)b.textContent=`人物帳 ${Object.keys(y7PeopleState()).length}/50`;}}catch(e){console.warn("人物帳の更新に失敗",e)}};
+
 </script>
 </body>
 </html>
