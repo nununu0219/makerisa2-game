@@ -667,6 +667,13 @@ function getCommunityEncounter(age,seasonIdx){
                         (S.action >= 35 && S.motto >= 30);
 
   if (age >= 14 && !hasSteppedOut && S.highRoute !== 'LOCAL_RYUGAKU') return null;
+  // 受験・学歴中心のルートは、本人が現場へ出る選択をしない限り地域の出会いを自動発生させない。
+  if (S.highRoute === 'JUKEN' &&
+      (S.fieldExperience || 0) === 0 &&
+      (S.localInteractionScore || 0) === 0 &&
+      !S.relationshipFlags.firstEvent &&
+      !S.relationshipFlags.festivalHelper &&
+      !S.relationshipFlags.askedWorker) return null;
   // 「学び中心」でも、机上の学習だけでは地域の人との関係は発生しない。
   // 行動・現場経験・地域での会話が生まれてから、出会いイベントを解放する。
   if (S.lifeTheme === 'LEARN' && age >= 14 && (S.fieldExperience||0) === 0 && (S.localInteractionScore||0) === 0 && !S.relationshipFlags.firstEvent && !S.relationshipFlags.askedWorker && !S.relationshipFlags.festivalHelper && S.highRoute !== 'LOCAL_RYUGAKU' && S.highRoute !== 'JINNAI' && S.regionChoice !== 'GO') return null;
@@ -2005,7 +2012,16 @@ function determineEnding() {
   const theme = S.lifeTheme || "EXPLORE";
   const localDeep = bond === "BOND_DEEP";
   const localSome = localDeep || bond === "BOND_SHALLOW";
+  const credentialOnly = (S.highRoute === "JUKEN" || S.examRoute === "GENERAL") &&
+    n("fieldExperience") < 2 && n("action") < 25 &&
+    n("localInteractionScore") === 0 && n("curiosity") < 25;
   const candidates = [
+    {
+      score: (credentialOnly ? 22 : -100) + n("studyDrive") * .16 + n("thinking") * .08 +
+        (n("fieldExperience") < 2 ? 3 : 0) - n("action") * .08,
+      title: "肩書きは得たが、仕事の意味を見失った人",
+      desc: "難関資格や学歴を手にし、条件のよい仕事を目指してきた。けれど、仕事で何を解決したいのか、自分は何に手応えを感じるのかを確かめる機会は少なかった。定型的な調査や資料作成の多くはAIで効率化され、肩書きだけでは自分の役割を説明しにくくなった。すべてを失ったわけではない。知識は残っているが、それを誰のどんな課題に使うのか、現場や人との接点をつくり直す必要に迫られている。"
+    },
     {
       score: (S.univRoute === "TODAI" ? 7 : 0) + n("studyDrive") * .12 + n("thinking") * .08 - n("fieldExperience") * .08,
       title: "専門性を磨く、組織のスペシャリスト",
@@ -2311,11 +2327,19 @@ function choose(idx) {
   const chosenText = `${event.title || ''} ${event.badge || ''} ${c.t || ''} ${c.sub || ''}`;
   S.relationshipFlags = S.relationshipFlags || {};
   const hasLocalExperience = (S.fieldExperience || 0) > 0 || (S.localInteractionScore || 0) > 0 || (S.peopleMet || []).length > 0;
-  if (!S.cinematicMoment && !S.relationshipFlags.firstDreamCinematic && S.age >= 13 && S.age <= 24 &&
+  // 「やりたいこと」演出は単語だけで発火させない。実際に試した経験が必要。
+  const hasTriedSomething = (S.fieldExperience || 0) >= 1 ||
+    S.relationshipFlags.firstEvent === true || S.relationshipFlags.festivalHelper === true ||
+    S.relationshipFlags.askedWorker === true || S.relationshipFlags.projectStarted === true;
+  const isExamOnlyRoute = S.highRoute === "JUKEN" && !hasTriedSomething && (S.localInteractionScore || 0) === 0;
+  if (!S.cinematicMoment && !isExamOnlyRoute && hasTriedSomething &&
+      !S.relationshipFlags.firstDreamCinematic && S.age >= 13 && S.age <= 24 &&
       /興味|やりたいこと|探究|地域の活動|外に出|現場に飛び込|好きなこと/.test(chosenText)) {
     S.relationshipFlags.firstDreamCinematic = true;
     S.cinematicMoment = {theme:"cut-violet", kicker:"A NEW POSSIBILITY", stamp:"自分の旗を見つけた", symbol:"✦", title:"やってみたいことが、見えた", body:"最初から、はっきりした夢があったわけじゃない。人に会い、知らない場所へ行き、実際に手を動かした。その経験が、ただの『なんとなく気になる』を、自分の言葉で話せる興味に変えてくれた。これは人生の答えではなく、次に進むための手がかりだ。"};
   } else if (!S.cinematicMoment && !S.relationshipFlags.leftHometownCinematic && S.age >= 17 && S.age <= 20 &&
+      (S.univRoute === "OTHER" || S.univRoute === "GLOBAL_UNIV" || S.highRoute === "LOCAL_RYUGAKU" ||
+       S.regionChoice === "GO" || /地元を離|遠くの街|海外の現場|地域未来留学/.test(chosenText)) &&
       /進学|大学|越境|地元を離|遠くの街|海外の現場|地域未来留学/.test(chosenText)) {
     S.relationshipFlags.leftHometownCinematic = true;
     S.cinematicMoment = {theme:"cut-blue", kicker:"BEYOND THE FAMILIAR", stamp:"新しい世界へ", symbol:"旅", title:"見慣れた町を、いったん離れる", body:`${S.birthplace || '地元'}で当たり前だった景色や人間関係を、少し遠くから見つめる日が来た。楽しみだけではない。知らない場所でやっていけるのか、不安もある。それでも、ここを離れることは、地元を捨てることではない。外の世界で出会うものが、いつか自分の故郷の見え方も変えていく。`};
