@@ -1432,7 +1432,7 @@ window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredIns
 
 /* ================= 続きから ================= */
 function saveProgress(){if(!G||G.dead||G.waiting||!$("#log"))return;try{const L=G.L;
-  store.set("oi.save",{v:1,t:Date.now(),L:{...L,used:[...L.used]},G:{birth:G.birth,minutes:G.minutes,era:G.era,base:G.base,mode:G.mode,mult:G.mult,auto:G.auto,age:G.age,focus:G.focus,peers:G.peers,id:G.id,seed:G.seed,y0:G.y0},
+  store.set("oi.save",{v:1,t:Date.now(),L:{...L,used:[...L.used]},G:{birth:G.birth,minutes:G.minutes,era:G.era,base:G.base,mode:G.mode,mult:G.mult,auto:G.auto,age:G.age,focus:G.focus,peers:G.peers,id:G.id,seed:G.seed,y0:G.y0,hsQuarter:G.hsQuarter||null},
     log:$("#log").innerHTML,map:[...document.querySelectorAll("#map i")].map(i=>i.className)})}catch(e){}}
 function clearSave(){try{localStorage.removeItem("oi.save")}catch(e){}}
 function renderResume(){const d=store.get("oi.save",null),box=$("#resumeBox");if(!box)return;
@@ -1445,7 +1445,7 @@ function renderResume(){const d=store.get("oi.save",null),box=$("#resumeBox");if
   $("#resumeDel").onclick=()=>{const b=$("#resumeDel");if(!b.dataset.armed){b.dataset.armed="1";b.textContent="本当に破棄する";return}clearSave();renderResume()}}
 function resume(){const d=store.get("oi.save",null);if(!d||!d.L||!d.G)return;const L=d.L;if(!L.friend){const sx=R()<0.5?"M":"F";L.friend={n:pick(SURN)+(sx==="M"?"くん":"さん"),sx,d:deathFrom(0,sx)}}L.used=new Set(L.used||[]);ERA=ERAS[d.G.era]||ERAS.now;YEAR0=d.G.y0||ERA.y;
   G={L,birth:d.G.birth,minutes:d.G.minutes,base:d.G.base,mode:d.G.mode,era:ERA.key,mult:d.G.mult||1,paused:true,auto:!!d.G.auto,skip:false,age:d.G.age,timer:null,queue:[],waiting:false,focus:d.G.focus,cur:null,tab:"fam",seed:d.G.seed,y0:d.G.y0||YEAR0,
-     peers:d.G.peers,curve:survivalCurve(L.sex,calibrate(L.sex,L.prefLE)),dead:false,lastStats:null,id:d.G.id,still:matchMedia("(prefers-reduced-motion: reduce)").matches,frame:0};
+     peers:d.G.peers,hsQuarter:d.G.hsQuarter||null,curve:survivalCurve(L.sex,calibrate(L.sex,L.prefLE)),dead:false,lastStats:null,id:d.G.id,still:matchMedia("(prefers-reduced-motion: reduce)").matches,frame:0};
   $("#start").hidden=true;renderLifeShell();
   $("#log").innerHTML=d.log||"";curLi=$("#log li");
   if(!curLi){newYear(G.age);line("続きから再開する。")}
@@ -1459,11 +1459,11 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden)saveProgres
 /* ================= 時間の進行 ================= */
 function schedule(){clearTimeout(G.timer);saveProgress();if(G.dead||G.paused||G.waiting)return;
   G.timer=setTimeout(tick,G.skip?70:G.base/G.mult*(G.quiet?0.55:1))}
-function ask(d){if(!d.reflect&&anach(d.title))return;if(!d.reflect){if(d.text&&anach(d.text))d.text="";const ok=d.opts.filter(o=>!anach(o.t)&&!anach(o.sub||""));if(ok.length>=2)d.opts=ok;else if(ok.length<d.opts.length)return}if(!d.reflect&&G&&G.L&&!famCtx()){d.title=fitFam(d.title);if(d.text)d.text=fitFam(d.text);d.opts.forEach(o=>{o.t=fitFam(o.t);if(o.sub)o.sub=fitFam(o.sub)})}G.queue.push(d)}
+function ask(d){if(!d.reflect&&anach(d.title))return;if(!d.reflect){if(d.text&&anach(d.text))d.text="";const ok=d.opts.filter(o=>!anach(o.t)&&!anach(o.sub||""));if(ok.length>=2)d.opts=ok;else if(ok.length<d.opts.length)return}if(!d.reflect&&G&&G.L&&!famCtx()){d.title=fitFam(d.title);if(d.text)d.text=fitFam(d.text);d.opts.forEach(o=>{o.t=fitFam(o.t);if(o.sub)o.sub=fitFam(o.sub)})}d._queuedAge=G.age;G.queue.push(d)}
 function showNext(){
   if(G.dead)return;
   if(!G.queue.length){G.waiting=false;G.cur=null;$("#sheet").hidden=true;renderAll();schedule();return}
-  G.waiting=true;const d=G.queue.shift();if(d.valid&&!d.valid()){G.cur=null;showNext();return}G.cur=d;
+  G.waiting=true;const d=G.queue.shift();if(d._queuedAge!=null&&d._queuedAge<G.age&&!d.keepAcrossYears){G.cur=null;showNext();return}if(d.valid&&!d.valid()){G.cur=null;showNext();return}G.cur=d;
   if(G.skip&&!d.reflect){G.skip=false;$("#bSkip").setAttribute("aria-pressed","false")}
   if(G.auto){if(d.reflect){G.cur=null;showNext()}else autoPick();return}
   renderAll();
@@ -1505,6 +1505,7 @@ function autoPick(){const d=G.cur;reseed(G.age*977+((G.L.decs||[]).length)*13+3)
 
 function tick(){
   if(!G||G.dead||G.paused||G.waiting)return;
+  if(G.hsQuarter){runHighSchoolQuarter();return}
   const L=G.L;G.age++;const a=G.age;G.lines=0;G.bigN=0;reseed(a*31+7);if(L.income>0)L.peakInc=Math.max(L.peakInc||0,L.income);L.peakSav=Math.max(L.peakSav||0,(L.savings||0)+(L.invest||0));if(a>=75&&(L.job||L.silver))L.used.add("worked75");
   newYear(a);
   yearly(a);
@@ -1515,6 +1516,9 @@ function tick(){
   if(R()<q){die(a);return}
   if(!G.lines){const f=flavor(a);if(f)line(f)}
   recHist();
+  // 15〜18歳は年齢を増やさず、四半期ごとの経験イベントを挟む。
+  // 年次の収支・健康・加齢処理は従来どおり年1回だけ。
+  if(a>=15&&a<=18&&YEAR0+a>=2000)G.hsQuarter={age:a,q:1};
   G.quiet=!G.bigN&&!G.queue.length&&!REFLECT[a];
   if(REFLECT[a])ask({reflect:true,title:REFLECT[a][0],opts:REFLECT[a][1].map(t=>({t}))});
   renderAll();
@@ -1526,6 +1530,30 @@ const REFLECT={
   30:["30歳のあなたは、どこで誰と暮らしていましたか。あるいは、暮らしたいですか。",["実家で家族と","ひとりで","パートナーと","パートナーや子どもと","まだ想像できない"]],
   50:["この人の50年とあなたの人生。いちばん違うのはどこでしょう。",["生まれた場所","家の暮らし向き","自分で選んだ道","運","思ったより似ている"]],
   70:["70歳のとき、そばにいてほしいのは誰ですか。",["家族","パートナー","友人","ひとりで静かに過ごしたい"]]};
+
+/* 高校期の四半期イベント：年齢や年次の家計・健康処理は進めない */
+function runHighSchoolQuarter(){
+  const st=G.hsQuarter;if(!st){schedule();return}
+  const a=st.age,q=st.q,L=G.L,Y=(L.y7=L.y7||{});
+  const seasons=['春','夏','秋','冬'];
+  const prompts=[
+    {title:`${a}歳・${seasons[q-1]}：教室の外にある問い`,text:'授業では問題文が与えられる。でも、暮らしや仕事の困りごとは、誰が困っているのかさえ見えにくい。今学期、何を試してみる？',opts:[
+      {t:'地域の店や施設に連絡し、短時間の手伝いを相談する',sub:'現場で役に立つことを探す',go(){Y.hsOutside=(Y.hsOutside||0)+1;L.action=(L.action||0)+2;L.rel+=1;line('地域の店や施設に連絡してみた。すぐに大きな役割は任されないが、相手が何に困っているかを聞く入口ができた。','big')}},
+      {t:'気になる課題を調べ、当事者の話を聞く',sub:'答えを決めつけず、問いを立てる',go(){Y.hsQuestions=(Y.hsQuestions||0)+1;L.know+=2;L.action=(L.action||0)+1;line('気になる課題について調べ、関わる人の話を聞いた。資料だけではわからない事情があり、最初の問いを少し変えることにした。')}},
+      {t:'今学期は勉強や部活、休息を優先する',sub:'参加しない選択もできる',go(){Y.hsStudy=(Y.hsStudy||0)+1;L.know+=1;L.hp+=1;line('今学期は勉強や部活、自分の時間を優先した。外に出ることだけが正解ではない。次に関心が動いたとき、また選べる。')}}
+    ]},
+    {title:`${a}歳・${seasons[q-1]}：人と一緒にやってみる`,text:'思いつきだけでは進まない。誰に声をかけ、どこまで自分でやり、何を相談する？',opts:[
+      {t:'友人を一人誘い、小さく試す',sub:'協力して実際に動く',go(){Y.hsTeam=(Y.hsTeam||0)+1;L.action=(L.action||0)+2;L.rel+=2;line('友人を一人誘って小さく試した。意見が違い、予定どおりには進まなかったが、相談しながら調整する経験になった。')}},
+      {t:'経験のある大人に、失敗も含めて話を聞く',sub:'成功談だけでなく、費用や手間も知る',go(){Y.hsMentor=(Y.hsMentor||0)+1;L.know+=2;L.rel+=1;line('経験のある大人に話を聞いた。うまくいった話だけでなく、時間や費用、人との調整に苦労したことも聞けた。')}},
+      {t:'ひとりで考える時間を取り、今は動かない',sub:'考えることも選択のひとつ',go(){L.hp+=1;line('今は動かず、考える時間を取った。急いで参加するより、自分が何に関心を持っているのかを確かめることにした。')}}
+    ]}
+  ];
+  G.hsQuarter=null;
+  if(q<4)G.hsQuarter={age:a,q:q+1};
+  const d=prompts[(q-1)%prompts.length];
+  ask({title:d.title,text:d.text,opts:d.opts});
+  if(G.queue.length)showNext();else schedule();
+}
 
 /* 毎年の変化：重点・お金・加齢 */
 function yearly(a){const L=G.L;
@@ -1868,6 +1896,16 @@ function makerisaStory(a){
   Y.contacts=Y.contacts||{};
   // 2026-10-20追加：資産形成と人生設計を、年齢ごとの意思決定として体験する。
   // 金額はゲーム内の概算であり、個別の投資・税務助言ではない。
+  // 18歳の進路選択は、別イベントが同じ年に出ても消えないよう独立したY7イベントとして保持。
+  if(a>=18&&a<=21&&y>=2000&&!L.edu&&!Y.universityPath&&!L.used.has('y7:university-path')){
+    Y.universityPath=true;L.used.add('y7:university-path');
+    ask({title:`${a}歳：高校卒業後、どこへ進む？`,text:'大学へ行くことだけが進路ではない。でも、大学で出会える人や研究、使える制度もある。入試方式や費用を調べ、何を学びたいのか、何を試したいのかも考える。',opts:[
+      {t:'一般選抜で大学を受験する',sub:'試験で問われる力を準備する。合格しても、大学で何をするかは自分次第',w:3,go(){Y.universityPath='general';const prob=SUCC(L.univ+8+(L.hs==='進学校'?18:0)+(L.know-55)*0.5);if(R()*100<prob){L.edu='大学';L.school='大学生';L.u0=a;L.know+=5;say('一般選抜で大学に合格した。受験勉強で身につけた力を、大学で何に使うかはこれから決める。','big')}else{L.hp-=5;say('一般選抜では合格に届かなかった。進路が閉じたわけではない。別の入試方式や専門学校、就職も含めて考え直す。','big');Y.universityFailed=true}}},
+      {t:'総合型・学校推薦型選抜を調べて挑戦する',sub:'活動や考えを言葉にし、大学との相性を確かめる',w:3,go(){Y.universityPath='comprehensive';const prob=SUCC(L.univ+5+(L.rel-50)*0.15+(L.action||0)*1.5);if(R()*100<prob){L.edu='大学';L.school='大学生';L.u0=a;L.know+=3;L.rel+=2;say('総合型・学校推薦型選抜で大学に進むことになった。自分が何をしてきたか、何を問い続けたいかを説明する経験が残った。','big')}else{L.hp-=3;say('選抜では合格に届かなかった。活動を評価してもらうことと、大学で学ぶ内容が自分に合うことは別だと気づき、別の道も調べる。','big');Y.universityFailed=true}}},
+      {t:'専門学校・職業訓練で実践的に学ぶ',sub:'資格や技能を身につけ、現場に近い場所で学ぶ',w:2,go(){Y.universityPath='vocational';L.edu='専門';L.school='専門学校生';L.field=pick(['IT','看護','調理','保育','デザイン','自動車整備']);L.know+=3;L.action=(L.action||0)+1;say(`${L.field}を学べる専門学校へ進む。大学に行かない選択も、学びを終えることではない。現場で必要になった知識を学び続ける道を選んだ。`,'big')}},
+      {t:'就職して、社会に出てから学ぶ',sub:'収入と現場経験を得る。学び直しの時間や費用も考える',w:2,go(){Y.universityPath='work';L.edu='高校';L.school='';L.action=(L.action||0)+2;L.rel+=2;say('就職して社会に出ることにした。目の前の仕事をこなすだけでなく、現場で何が問題になっているのかを見つけ、必要になった知識を学び直すことを目標にする。','big');jobAsk()}}
+    ]});return;
+  }
   if(a===18&&y>=2000&&!Y.moneyBasics&&!L.used.has('y7:money-basics')){
     Y.moneyBasics=true;L.used.add('y7:money-basics');
     ask({title:'18歳：初めて自分のお金を管理する',text:'進学や就職で、使えるお金と自分で払う費用が変わる。奨学金は借りるお金で、卒業後に返済が必要なものもある。手取りは額面給与より少なく、家賃や食費を払った残りが生活を支える。何を優先する？',opts:[
@@ -1883,6 +1921,15 @@ function makerisaStory(a){
       {t:'今は投資せず、貯金と家計管理を優先する',sub:'投資しない選択も、目的に合っていればよい',w:3,go(){Y.investingChoice='cash';L.savings+=20;L.know+=2;say('転職や引っ越しの予定もあるため、今は現金の備えを優先する。投資を始める時期より、必要なときに使えるお金を持つことを大切にした。')}} ,
       {t:'短期間で大きく増やそうと、余裕資金以上を投じる',sub:'値下がり時に生活費まで不足する危険がある',w:1,go(){Y.investingChoice='overrisk';const loss=Math.min(L.savings,Math.round(Math.max(10,L.savings*.25)));L.savings-=loss;L.invest+=loss;L.know+=1;say('値上がりを期待して投資額を増やした。短期的に増えることもあるが、相場が下がれば生活に必要なお金まで影響を受ける。後からリスクと資金配分を見直す必要が出てくる。')}}
     ]});return;
+  }
+  // 都道府県ごとの地域事例を、主人公の現住所に応じて現場訪問の選択肢として出す。
+  if(a>=15&&a<=45&&y>=2000&&!Y.prefCaseVisited&&!L.used.has('y7:pref-case')&&Y7_PREF_CASES.some(c=>c.pref===(L.livingPref||L.pref))){
+    const c=Y7_PREF_CASES.find(c=>c.pref===(L.livingPref||L.pref));
+    Y.prefCaseVisited=true;L.used.add('y7:pref-case');
+    ask({title:`${c.pref}の現場に行く：${c.name}`,text:`地域で実際に行われている取り組みを知った。${c.desc}。紹介記事を読むだけで終わらせず、現場に行き、関わる人の話を聞き、自分にもできる小さな役割を探してみる。`,opts:[
+      {t:'現場を訪ね、準備や作業を手伝わせてもらう',sub:'実際の手間や人間関係、続ける難しさに触れる',w:3,go(){Y.prefCaseChoice='field';Y.prefCaseName=c.name;L.action=(L.action||0)+3;L.rel+=3;L.know+=2;say(`${c.name}に関わる人を訪ね、できる作業を手伝った。外から見える成果だけではわからない準備や調整、続けるための工夫があった。自分が次に何をできるかは、現場で聞いた話をもとに考える。`,'big')}},
+      {t:'関係者に連絡し、何が課題かを聞く',sub:'答えを決めつけず、当事者の見方を知る',w:3,go(){Y.prefCaseChoice='listen';Y.prefCaseName=c.name;L.action=(L.action||0)+2;L.rel+=2;L.know+=3;say(`関係者に連絡し、取り組みが始まった理由や、今も残る課題を聞いた。成功談として語られる部分だけでなく、失敗や人手不足、費用の悩みもある。自分が外から来た人として何をできるか、もう少し考えてみる。`,'big')}},
+      {t:'今回は参加せず、まず自分の生活や学びを優先する',sub:'関わらない選択もできる。関心が生まれたら戻ってこられる',w:3,go(){Y.prefCaseChoice='pass';Y.prefCaseName=c.name;L.know+=1;say('今は参加しないことにした。地域の取り組みがすべての人にとって自分事になるわけではない。別の経験を重ねて、関心が生まれたときに改めて考えることもできる。')}}]});return;
   }
   // 実在事例を追体験する「居場所づくり」。資産を使う前に需要・仲間・固定費を確かめる。
   if(a>=30&&a<=48&&y>=2000&&!Y.communityHubStart&&!L.used.has('y7:community-hub-start')&&(L.savings>=25||Y.adultRealCaseChallenge||Y.localSuccessionChoice||Y.becomesSupporter||Y.cityRegionBridge||Y.lifeDirection==='youth-support')){
@@ -2182,7 +2229,7 @@ function makerisaStory(a){
     ]});return;
   }
   // 大学進学の方法は一度に比較できるようにまとめる。経験の有無で選択肢自体を消さない。
-  if(a===18&&y>=2000&&!Y.universityRouteAsked&&!L.used.has('y7:university-route')&&L.school){
+  if(a>=18&&a<=21&&y>=2000&&!Y.universityRouteAsked&&!L.used.has('y7:university-route')&&L.school){
     Y.universityRouteAsked=true;L.used.add('y7:university-route');
     const prep=(Y.portfolioStrong?18:0)+(Y.studyLink?12:0)+(Y.projectStarted?8:0)+(trust('localAdult')>=3?7:0)+(L.know>=60?5:0);
     const academic=clamp(0.30+(L.know-35)*0.008+(Y.studyCommit?0.10:0),0.15,0.82);
@@ -2282,10 +2329,10 @@ function makerisaStory(a){
   // 先生の一言は「地域ルートへの入口」だが、即座に進路を決めさせない。
   if(a>=14&&a<=16&&y>=2000&&!Y.teacherTalk&&!L.used.has('y7:teacher-talk')&&L.school&&ch(0.42)){
     Y.teacherTalk=true;L.used.add('y7:teacher-talk');
-    ask({title:'高校の先生の、少し変わった一言',text:'授業の終わり、先生がぽつりと言う。「テストでいい点を取ることは大事。でも、何のために学ぶのかは、教室の中だけではわからないこともある。誰かの困りごとに出会ってから、数学を学び直した生徒もいたよ」。',opts:[
-      {t:'言葉が少し引っかかる。地域の活動を調べてみる',sub:'すぐに夢が見つかるとは限らない',w:2,go(){Y.teacherSpark=true;L.know+=1;say('先生の言葉が、なぜか頭に残る。地域のイベントや高校生が参加できる活動を調べてみることにした。まだ、何をしたいかはわからない。','big')}} ,
-      {t:'今は受験や勉強に集中する',sub:'学ぶ意味は、あとから見えてくるかもしれない',w:3,go(){Y.studyFocus=true;L.know+=3;say('今は勉強に集中することにした。ただ、先生の言葉は完全には消えず、何かの拍子に思い出すかもしれない。')}} ,
-      {t:'先生に「具体的にはどういうこと？」と聞いてみる',sub:'答えではなく、次の問いが返ってくるかもしれない',w:1,go(){Y.teacherAsked=true;const p=meet('teacher','勉強の意味を問いかけた先生','teacher');say('先生に聞いてみると、「地域の人に話を聞いてみたら？」と返ってきた。答えを教えてもらったわけではないが、最初の一歩が少し具体的になった。','big')}}
+    ask({title:'高校の先生の、乱暴な一言',text:'授業の終わり、先生は教壇から言い放った。「お前らは勉強なんてするな。答えのある勉強なんてAIでいいんだよ。社会に出ろ」。教室がざわつく。勉強を否定されたようにも聞こえる。でも先生は続ける。「社会には、問題文も正解も用意されていない。誰が困っているのか、何を変えたいのか、自分で見つけて人と動け。必要になった知識は、そのとき本気で学べ」。納得するかどうかは、自分で決めていい。',opts:[
+      {t:'学校の外へ出て、現場の仕事を一つ手伝ってみる',sub:'見学だけで終わらせず、実際に人と動く',w:2,go(){Y.teacherSpark=true;Y.teacherAsked=true;Y.localRoute=true;Y.outsideAction=(Y.outsideAction||0)+1;L.action=(L.action||0)+3;L.rel+=1;say('地域の活動先に自分で連絡し、当日の準備を手伝うことにした。頼まれた作業は地味で、思ったより段取りが難しい。相手の話を聞き、手を動かして初めて「何が問題なのか」も簡単には決められないとわかった。必要な知識が出てきたら、あとで自分で調べ直そう。','big')}},
+      {t:'先生に「社会に出ろって、具体的にどこへ？」と食い下がる',sub:'答えを待つのではなく、会いに行く相手を決める',w:1,go(){Y.teacherAsked=true;Y.teacherSpark=true;Y.localRoute=true;const p=meet('teacher','社会に出ろと言った先生','teacher');L.action=(L.action||0)+1;L.rel+=1;say('先生は「商店街でも、福祉施設でも、会社でもいい。自分が気になったところに連絡しろ」と言う。紹介状をもらって終わりにはしない。自分で連絡し、何を手伝えるか聞くところから始めることにした。','big')}},
+      {t:'今は受験勉強を続ける。言い方にも納得できない',sub:'反発するのも、勉強を選ぶのも自分の判断',w:3,go(){Y.studyFocus=true;L.know+=3;say('先生の言い方には納得できず、受験勉強を続けることにした。知識を身につける意味まで否定されたくない。ただ、社会に出たとき何をしたいのか、誰と何を変えたいのかは、まだ自分でもわからない。','big')}}
     ]});return;
   }
   // 高偏差値ルートでも、本人が小さく外へ踏み出した場合にだけ別の可能性が開く。
@@ -3501,7 +3548,29 @@ function soumato(age){if(G.auto||matchMedia("(prefers-reduced-motion: reduce)").
     setTimeout(()=>{box.querySelector(".sm-ic").innerHTML=pxSvg(iconFor([t],y));box.querySelector(".sm-age").textContent=`${y}歳`;box.querySelector(".sm-t").textContent=t;box.classList.add("on");i++;tm=setTimeout(show,1700)},450)};
   setTimeout(()=>{ov.classList.add("in");show()},50)}
 /* 更新情報 */
+const Y7_PREF_CASES=[{"pref": "北海道", "name": "東川町の写真文化と移住・交流", "desc": "写真文化を軸に町外の人と関係をつくる"}, {"pref": "青森県", "name": "田舎館村の田んぼアート", "desc": "農業と観光を結び、地域の風景を発信する"}, {"pref": "岩手県", "name": "紫波町オガールプロジェクト", "desc": "公共施設と民間事業を組み合わせて駅前を再生する"}, {"pref": "宮城県", "name": "東松島のブルーインパルス・震災復興交流", "desc": "復興の経験を伝え、交流や産業につなげる"}, {"pref": "秋田県", "name": "五城目町の住民主体の小さな拠点", "desc": "買い物や交流の場を住民が支える"}, {"pref": "山形県", "name": "川西町きらりよしじまネットワーク", "desc": "住民組織が地域課題を話し合い活動する"}, {"pref": "福島県", "name": "会津若松のスマートシティ", "desc": "データを使って暮らしや地域産業の課題を考える"}, {"pref": "茨城県", "name": "取手市の起業家タウン", "desc": "起業相談や人のつながりから事業を育てる"}, {"pref": "栃木県", "name": "那須地域の観光・農産物連携", "desc": "地域資源を商品や仕事につなげる"}, {"pref": "群馬県", "name": "上野村の森林資源活用", "desc": "木材や地域資源を使い仕事をつくる"}, {"pref": "埼玉県", "name": "小川町の有機農業と地域資源PR", "desc": "農産物と地域の魅力を伝え、販路を開く"}, {"pref": "千葉県", "name": "いすみ市の有機米給食", "desc": "農業と学校給食をつなぎ地域内の循環をつくる"}, {"pref": "東京都", "name": "立川のシーズ立川", "desc": "子育てと仕事を両立できる場を市民活動から事業化する"}, {"pref": "神奈川県", "name": "横浜の地域課題解決型市民活動", "desc": "行政・企業・市民が連携して課題に取り組む"}, {"pref": "新潟県", "name": "十日町の大地の芸術祭", "desc": "アートをきっかけに地域を歩き、人と出会う"}, {"pref": "富山県", "name": "氷見の魚食文化と地域ブランド", "desc": "地元の食材と担い手をつなぐ"}, {"pref": "石川県", "name": "能登の里山里海の地域活動", "desc": "自然や暮らしの知恵を次世代へつなぐ"}, {"pref": "福井県", "name": "鯖江市の市民協働・ものづくり", "desc": "眼鏡産業などの技術と若い担い手を結ぶ"}, {"pref": "山梨県", "name": "小菅村の源流・観光まちづくり", "desc": "自然環境を守りながら交流や仕事を生む"}, {"pref": "長野県", "name": "塩尻市のテレワーク・地域人材育成", "desc": "デジタル環境を使って働き方の選択肢を増やす"}, {"pref": "岐阜県", "name": "飛騨市の広葉樹活用", "desc": "使われにくい木材に価値を見出し商品化する"}, {"pref": "静岡県", "name": "浜松の中山間地域の小さな拠点", "desc": "移動・買い物・交流の困りごとに地域で向き合う"}, {"pref": "愛知県", "name": "豊田市の山村地域の仕事づくり", "desc": "都市と山村をつなぎ、地域資源の活用を試す"}, {"pref": "三重県", "name": "尾鷲の林業・地域資源活用", "desc": "森の手入れを仕事や地域の将来につなぐ"}, {"pref": "滋賀県", "name": "近江八幡の水辺・町並み保全", "desc": "観光と暮らしの両立を考える"}, {"pref": "京都府", "name": "南丹市美山のかやぶき集落保全", "desc": "景観と生活を守りながら来訪者を受け入れる"}, {"pref": "大阪府", "name": "大阪の商店街空き店舗活用", "desc": "小さな商いと交流の場を生む"}, {"pref": "兵庫県", "name": "豊岡のコウノトリと農業", "desc": "環境保全と農産物の価値をつなぐ"}, {"pref": "奈良県", "name": "川上村の森林と水源保全", "desc": "森を守る仕事と下流の暮らしを結ぶ"}, {"pref": "和歌山県", "name": "田辺・熊野古道の地域ガイド", "desc": "文化や自然を伝える仕事をつくる"}, {"pref": "鳥取県", "name": "智頭町の森のようちえん・森林資源", "desc": "子育てや森林を地域の価値として活かす"}, {"pref": "島根県", "name": "海士町の島留学と地域づくり", "desc": "外から来た若者と地域の人が一緒に学ぶ"}, {"pref": "岡山県", "name": "西粟倉村の百年の森林構想", "desc": "森林資源から小さな事業や雇用を生み出す"}, {"pref": "広島県", "name": "東広島・ファームおだ", "desc": "農業と地域活動を組み合わせ集落を支える"}, {"pref": "山口県", "name": "萩の町並み保存と観光", "desc": "地域の歴史を守り、訪れる人との接点をつくる"}, {"pref": "徳島県", "name": "上勝町の葉っぱビジネス", "desc": "身近な葉を商品にし、高齢者も担い手になる"}, {"pref": "香川県", "name": "東かがわ市五名の地域活動", "desc": "地域住民が資源を持ち寄り暮らしを支える"}, {"pref": "愛媛県", "name": "内子町の町並み保存と農産物直売", "desc": "景観や農産物を地域の仕事につなげる"}, {"pref": "高知県", "name": "梼原町の集落活動センター", "desc": "集落の困りごとを住民が協力して解決する"}, {"pref": "福岡県", "name": "那珂川の南畑ぼうぶら会議", "desc": "住民と外から来る人が地域の魅力を形にする"}, {"pref": "佐賀県", "name": "有田焼の産地継承と新商品づくり", "desc": "伝統技術を次の世代や新しい市場につなぐ"}, {"pref": "長崎県", "name": "五島の移住・島の仕事づくり", "desc": "島の暮らしと仕事を実際に体験して考える"}, {"pref": "熊本県", "name": "水俣の環境再生と地域づくり", "desc": "公害の経験から環境と産業のあり方を問い直す"}, {"pref": "大分県", "name": "豊後高田の昭和の町", "desc": "商店街の歴史や店主の物語をまち歩きにつなぐ"}, {"pref": "宮崎県", "name": "椎葉村の地域資源と小さな事業", "desc": "山村の資源から暮らしを支える仕事を考える"}, {"pref": "鹿児島県", "name": "三島村の焼酎蔵プロジェクト", "desc": "地域の産品を事業にし、地域内の仕事をつくる"}, {"pref": "沖縄県", "name": "久米島の海洋深層水活用", "desc": "島の自然資源を産業に活かす一方、持続可能性も考える"}];
 const NEWS=[
+ {v:17,d:"2026年10月20日",t:"イベントの古い表示を防ぎ、高校期に四半期ごとの行動選択を追加",g:[
+  ["イベントキューの年齢ずれ対策",["イベントを積んだ年齢を記録し、年齢が進んでから古いイベントが表示される場合は破棄するようにしました。続きから再開するデータにも高校期の四半期状態を保存します。"]],
+  ["15〜18歳に四半期ごとの選択を追加",["年齢・年次の家計や健康処理は従来どおり年1回のまま、春夏秋冬に現場へ連絡する・当事者の話を聞く・人と小さく試す・勉強や休息を優先する選択を追加しました。選択結果は行動・知識・人間関係の変化として後に残ります。"]]
+ ]},
+ {v:16,d:"2026年10月20日",t:"大学選択の復旧と、47都道府県ごとの現場事例イベントを追加",g:[
+  ["高校卒業後の進路選択をY7ルートに復旧",["18〜21歳で進路未決定なら、一般選抜・総合型／学校推薦型・専門学校・就職を選べる独立イベントを追加しました。別のイベントが同年に先に出ても、大学選択そのものが抑止条件で消えないようにしています。"]],
+  ["47都道府県に少なくとも1つの地域事例を登録",["現住所の都道府県に対応する事例を15〜45歳に一度提示し、現場を手伝う・関係者に課題を聞く・今回は参加しない、から選べます。地域の成功談を読むだけでなく、現場に触れる選択と、その後の行動・人間関係への反映を追加しました。","事例候補の参照先：内閣官房・地方創生の事例集 https://www.chisou.go.jp/sousei/data/case_index.html ／ 地方創生事例集 https://www.chisou.go.jp/sousei/pdf/chihousousei_jireisyu.pdf。各事例の詳細確認を今後も進めるため、ゲーム内では短い導入ケースとして扱っています。"]]
+ ]},
+ {v:15,d:"2026年10月20日",t:"18歳の大学選択イベントが他のイベントに遮られて出ない問題を修正",g:[
+  ["大学進学ルートの発生条件を修正",[
+   "18歳時に地域留学など別のイベントが先に表示されて処理が終了すると、大学選択イベントまで到達できない場合がありました。大学選択イベントの発生年齢を18〜21歳に広げ、18歳で表示できなかった場合も後の年齢で再び判定するようにしました。",
+   "旧来の大学志望先・合否イベントとの二重表示を避ける既存条件は維持しています。"
+  ]]
+ ]},
+ {v:14,d:"2026年10月20日",t:"高校の先生の言葉を、きれいな教育論ではなく『社会に出ろ』という強い挑発に変更",g:[
+  ["教室の正解と、社会で問いを見つけることの違いを選択で体験",[
+   "高校の先生が『お前らは勉強なんてするな。答えのある勉強なんてAIでいいんだよ。社会に出ろ』と言い放つイベントに変更しました。続けて、社会には問題文も正解も用意されていないこと、困りごとや変えたいことを自分で見つけ、人と動くこと、必要な知識は必要になったとき本気で学ぶことを問いかけます。",
+   "選択肢は、現場の仕事を実際に手伝う、自分で訪問先を決めるため先生に食い下がる、反発して受験勉強を続ける、の3つ。外へ出る選択では行動・関係性や後続の地域ルートに影響します。勉強を続ける選択も残し、先生の言葉をゲーム側の唯一の正解にはしません。",
+   "参考として共有された記事：https://steenz.jp/40474/。記事本文は取得できなかったため、強い言い回しと問題意識はユーザーがこの会話で示した言葉を基に反映しました。"
+  ]]
+ ]},
  {v:13,d:"2026年10月20日",t:"資産を使ってコミュニティカフェ・居場所をつくる実在事例の追体験を追加",g:[
   ["構想から試行・資金調達・運営継続までの3段階イベントを追加",[
    "30代以降、貯蓄や地域経験などの条件に応じて、コミュニティカフェや交流スペースをつくるイベントが発生します。いきなり物件を契約するだけでなく、住民への聞き取り、月1回の小さな試行、空き店舗や既存施設の活用、既存の居場所を手伝う選択を用意しました。",
