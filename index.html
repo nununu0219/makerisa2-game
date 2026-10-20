@@ -414,15 +414,8 @@ button:active,.btn:active{transform:translateY(1px)}
   <div class="jbg" id="jbg" aria-hidden="true"></div>
   <header style="display:flex;flex-direction:column;gap:16px">
     <h1><small>マケリサY7 · LIFE PATH PROTOTYPE</small>人生の分岐点</h1>
-    <p class="lead">やりたいことが見つからない。だから、勉強する意味もわからない。——でも、やりたいことは最初から自分の中にあるとは限りません。街に出て、知らない人の話を聞き、自分とは違う生き方に触れる。誰かに誘われて、気が進まないまま行った場所でさえ、「こんな世界があるんだ」と心が動くことがあります。その驚きが、次に学びたいことを教えてくれるかもしれません。</p>
+    <p class="lead">人生は、大きな決断だけで変わるわけじゃない。何気ない会話、初めて参加した活動、断った誘い、もう一度足を運んだ場所。そんな経験が、少し先の出会いや選択肢につながることがあります。ひとりの人生を、誕生からその先までたどってみよう。</p>
   </header>
-  <section class="card" aria-labelledby="prototypeMessage" style="border:1px solid var(--accent,#e65b8c);margin:18px 0 22px">
-    <span class="label">マケリサY7が問いかけること</span>
-    <h2 id="prototypeMessage" style="margin:6px 0 12px">答えを当てるより、自分で問いを見つけよう。</h2>
-    <p style="font-size:1.08rem;line-height:1.85;margin:0 0 10px"><b>やりたいことがないと、勉強したい気持ちも生まれにくい。</b> だから、まず街に出てみる。地域の人の話を聞く。誰かに紹介された人に会う。自分なら選ばなかった場所に、学校や誰かの誘いで行ってみる。そこで知らなかった仕事や生き方に出会い、「もっと知りたい」「自分も試したい」が生まれたら、学ぶ理由ができる。</p>
-    <p style="line-height:1.8;margin:0 0 10px">興味のあることだけを選んでいたら、出会えない世界もある。最初は強制された参加でも、そこで出会う人や経験が、自分の見方を変えることがある。もちろん、必ず何かが見つかるわけではないし、断ることも休むことも選べる。</p>
-    <p style="line-height:1.8;margin:0">学校の勉強と社会での経験は、敵同士ではありません。街で生まれた疑問を調べるために勉強し、学んだ知識を誰かと現場で試す。<b>出会いが好奇心を生み、好奇心が学びを動かし、学びが次の行動を生む。</b> その循環を、ひとりの人生を通して体験するプロトタイプです。</p>
-  </section>
 
   <button type="button" class="upnote" id="upNote" hidden></button>
   <div class="card resume" id="sharedBox" hidden></div>
@@ -1085,7 +1078,7 @@ function renderSceneCard(){const L=G.L;const cv=$("#scv");if(!cv)return;drawScen
   $("#scap").innerHTML=`<b>${place}</b> · ${home}${G.dead?"":" · "+liveWith()}`}
 function renderLogNote(){const L=G.L;const homePref=L.livingPref||CITY2PREF[L.city]||L.pref;$("#lognote").textContent=`いま日本では約1億2,380万人が暮らしています · 出生地：${pf(L.birthPref||L.pref)} · 現在地：${homePref}`}
 function renderScene(){renderSceneCard()}
-function renderY7Story(){if(!G)return;let box=document.getElementById("y7StoryPanel");if(!box){box=document.createElement("section");box.id="y7StoryPanel";box.className="sheet";box.dataset.collapsed=window.matchMedia("(max-width:760px)").matches?"1":"0";const life=document.getElementById("life");if(!life)return;life.appendChild(box)}const Y=G.L.y7||{};const c=Y.contacts||{};const tags=[];if(Y.sapix)tags.push("SAPIXでの勉強経験");if(Y.studyTalk)tags.push("勉強の悩みを相談した経験");if(Y.teacherSpark||Y.teacherAsked)tags.push("先生の言葉から生まれた問い");if(Y.regionInterest)tags.push("地域みらい留学への関心");if(Y.localRoute)tags.push("地元での地域活動への関心");if(Y.localVisits)tags.push(`地域活動への参加 ${Y.localVisits}回`);if(Y.studyLink)tags.push("地域の疑問と学校の学びの接続");if(Y.projectStarted)tags.push("地域の人との企画・協働");if(Y.portfolioStrong)tags.push("経験を振り返り、言葉にした");if(Y.aoResult)tags.push(`進路の選択：${({pass:"総合型選抜に合格",fail:"総合型選抜に挑戦",tried:"総合型選抜に挑戦",general:"一般選抜を選択",designated:"指定校推薦を選択",explore:"進学以外も含めて検討"})[Y.aoResult]||Y.aoResult}`);if(Y.reunionHelp)tags.push("地域で出会った人との再会・相談");if(Y.aiPath)tags.push(`AI時代の学び：${({study:"専門性を積む",community:"地域の現場を知る",maker:"AIで試作する",interviews:"大人の仕事を聞く"})[Y.aiPath]||Y.aiPath}`);if(Y.aiAdultRole)tags.push(`大人になってから：${({expert:"専門性とAI",connector:"人と地域をつなぐ", "side-by-side":"本業と地域活動",pause:"暮らしを優先し学び直す"})[Y.aiAdultRole]||Y.aiAdultRole}`);const people=Object.entries(c).filter(([id,p])=>p.meet>0).map(([id,p])=>{const impact=({grandma:"野菜をきっかけに、知らない土地で挨拶できる相手ができた。",mentor:"知らない町で暮らし、人と関係をつくる最初の足場になった。",islandHost:"景色だけではわからない暮らしや仕事の手触りを教えてくれた。",dormCook:"一緒に料理し、食卓を囲んだ記憶が残った。",outsidePeer:"学校の外にも、一緒に何かを動かす同世代がいると知った。",localAdult:"地域の課題を、外から眺めるだけでなく一緒に考えるきっかけになった。",mizumoto:"一度の出会いが、時間をおいてからも自分の選択に影響することを知った."})[id]||({local:"現場で働く人の話から、外側から見るだけではわからない事情を知った。",peer:"自分とは違う考え方や選択肢に触れた。",mentor:"次の一歩を考えるとき、相談できる人がいると感じた。"})[p.kind]||"その人との出会いが、人生の一場面として残った。";return `<article style="border:1px solid var(--rule);border-radius:10px;padding:10px;margin:8px 0"><b>${p.name}</b><div class="note" style="margin:4px 0">${p.kind||"出会った人"} · 出会い ${p.meet}回 · 信頼 ${p.trust}/5</div><p style="margin:5px 0">${impact}</p></article>`});box.innerHTML=`<button type="button" class="y7-story-toggle" aria-expanded="${box.dataset.collapsed!=="1"}" onclick="toggleY7Story()"><span>人生の中で育ってきたもの</span><span class="y7-story-indicator">${box.dataset.collapsed==="1"?"開く ＋":"閉じる −"}</span></button><div class="y7-story-content"><p class="note">ルートは最初に決まるのではなく、経験や関係が生まれたときに少しずつ形になります。</p><div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0">${tags.length?tags.map(t=>`<span style="display:inline-block;border:1px solid var(--rule);border-radius:999px;padding:4px 9px;font-size:12px">${t}</span>`).join(""):'<span class="note">まだ大きな分岐は記録されていません。何気ない出来事が、あとから意味を持つこともあります。</span>'}</div>${people.length?`<h3 style="font-size:15px;margin-top:16px">出会った人と、その人から受け取ったもの</h3><p class="note">人生を変えるのは、大きな出来事だけとは限りません。名前を覚えた人、少し話した人、もう一度会った人。その関わりが心の支えになり、別の人を紹介してもらい、新しい問いや活動につながることもあります。人とのつながりから学ぶ楽しさも記録します。</p>${people.join("")}`:"<h3 style="font-size:15px;margin-top:16px">これから出会う人</h3><p class="note">まだ記録はありません。何気ない挨拶や、誘いを受ける・断るという小さな選択から、関係が始まることがあります。</p>"}</div>`;box.classList.toggle("y7-collapsed",box.dataset.collapsed==="1");box.hidden=false}
+function renderY7Story(){if(!G)return;let box=document.getElementById("y7StoryPanel");if(!box){box=document.createElement("section");box.id="y7StoryPanel";box.className="sheet";box.dataset.collapsed=window.matchMedia("(max-width:760px)").matches?"1":"0";const life=document.getElementById("life");if(!life)return;life.appendChild(box)}const Y=G.L.y7||{};const c=Y.contacts||{};const tags=[];if(Y.sapix)tags.push("SAPIXでの勉強経験");if(Y.studyTalk)tags.push("勉強の悩みを相談した経験");if(Y.teacherSpark||Y.teacherAsked)tags.push("先生の言葉から生まれた問い");if(Y.regionInterest)tags.push("地域みらい留学への関心");if(Y.localRoute)tags.push("地元での地域活動への関心");if(Y.localVisits)tags.push(`地域活動への参加 ${Y.localVisits}回`);if(Y.studyLink)tags.push("地域の疑問と学校の学びの接続");if(Y.projectStarted)tags.push("地域の人との企画・協働");if(Y.portfolioStrong)tags.push("経験を振り返り、言葉にした");if(Y.aoResult)tags.push(`進路の選択：${({pass:"総合型選抜に合格",fail:"総合型選抜に挑戦",tried:"総合型選抜に挑戦",general:"一般選抜を選択",designated:"指定校推薦を選択",explore:"進学以外も含めて検討"})[Y.aoResult]||Y.aoResult}`);if(Y.reunionHelp)tags.push("地域で出会った人との再会・相談");if(Y.aiPath)tags.push(`AI時代の学び：${({study:"専門性を積む",community:"地域の現場を知る",maker:"AIで試作する",interviews:"大人の仕事を聞く"})[Y.aiPath]||Y.aiPath}`);if(Y.aiAdultRole)tags.push(`大人になってから：${({expert:"専門性とAI",connector:"人と地域をつなぐ", "side-by-side":"本業と地域活動",pause:"暮らしを優先し学び直す"})[Y.aiAdultRole]||Y.aiAdultRole}`);const people=Object.values(c).filter(p=>p.meet>0).map(p=>`${p.name}（出会い ${p.meet}回・信頼 ${p.trust}/5）`);box.innerHTML=`<button type="button" class="y7-story-toggle" aria-expanded="${box.dataset.collapsed!=="1"}" onclick="toggleY7Story()"><span>人生の中で育ってきたもの</span><span class="y7-story-indicator">${box.dataset.collapsed==="1"?"開く ＋":"閉じる −"}</span></button><div class="y7-story-content"><p class="note">ルートは最初に決まるのではなく、経験や関係が生まれたときに少しずつ形になります。</p><div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0">${tags.length?tags.map(t=>`<span style="display:inline-block;border:1px solid var(--rule);border-radius:999px;padding:4px 9px;font-size:12px">${t}</span>`).join(""):'<span class="note">まだ大きな分岐は記録されていません。何気ない出来事が、あとから意味を持つこともあります。</span>'}</div>${people.length?`<h3 style="font-size:14px;margin-top:12px">関係が続いている人</h3><p class="note">${people.join(" · ")}</p>`:""}</div>`;box.classList.toggle("y7-collapsed",box.dataset.collapsed==="1");box.hidden=false}
 function toggleY7Story(){const box=document.getElementById("y7StoryPanel");if(!box)return;box.dataset.collapsed=box.dataset.collapsed==="1"?"0":"1";box.classList.toggle("y7-collapsed",box.dataset.collapsed==="1");const b=box.querySelector(".y7-story-toggle");if(b){b.setAttribute("aria-expanded",box.dataset.collapsed!=="1");const i=b.querySelector(".y7-story-indicator");if(i)i.textContent=box.dataset.collapsed==="1"?"開く ＋":"閉じる −"}}
 function renderAll(){if(!G)return;renderTop();renderId();renderSceneCard();renderStats();renderFocus();renderFam();renderMoney();renderPeers();renderJMap();renderCurve();renderLogNote();renderY7Story()}
 setInterval(()=>{if(G&&!G.still&&$("#scv")){G.frame=(G.frame||0)+1;drawScene($("#scv"))}},500);
@@ -3567,36 +3560,6 @@ function soumato(age){if(G.auto||matchMedia("(prefers-reduced-motion: reduce)").
 /* 更新情報 */
 const Y7_PREF_CASES=[{"pref": "北海道", "name": "東川町の写真文化と移住・交流", "desc": "写真文化を軸に町外の人と関係をつくる"}, {"pref": "青森県", "name": "田舎館村の田んぼアート", "desc": "農業と観光を結び、地域の風景を発信する"}, {"pref": "岩手県", "name": "紫波町オガールプロジェクト", "desc": "公共施設と民間事業を組み合わせて駅前を再生する"}, {"pref": "宮城県", "name": "東松島のブルーインパルス・震災復興交流", "desc": "復興の経験を伝え、交流や産業につなげる"}, {"pref": "秋田県", "name": "五城目町の住民主体の小さな拠点", "desc": "買い物や交流の場を住民が支える"}, {"pref": "山形県", "name": "川西町きらりよしじまネットワーク", "desc": "住民組織が地域課題を話し合い活動する"}, {"pref": "福島県", "name": "会津若松のスマートシティ", "desc": "データを使って暮らしや地域産業の課題を考える"}, {"pref": "茨城県", "name": "取手市の起業家タウン", "desc": "起業相談や人のつながりから事業を育てる"}, {"pref": "栃木県", "name": "那須地域の観光・農産物連携", "desc": "地域資源を商品や仕事につなげる"}, {"pref": "群馬県", "name": "上野村の森林資源活用", "desc": "木材や地域資源を使い仕事をつくる"}, {"pref": "埼玉県", "name": "小川町の有機農業と地域資源PR", "desc": "農産物と地域の魅力を伝え、販路を開く"}, {"pref": "千葉県", "name": "いすみ市の有機米給食", "desc": "農業と学校給食をつなぎ地域内の循環をつくる"}, {"pref": "東京都", "name": "立川のシーズ立川", "desc": "子育てと仕事を両立できる場を市民活動から事業化する"}, {"pref": "神奈川県", "name": "横浜の地域課題解決型市民活動", "desc": "行政・企業・市民が連携して課題に取り組む"}, {"pref": "新潟県", "name": "十日町の大地の芸術祭", "desc": "アートをきっかけに地域を歩き、人と出会う"}, {"pref": "富山県", "name": "氷見の魚食文化と地域ブランド", "desc": "地元の食材と担い手をつなぐ"}, {"pref": "石川県", "name": "能登の里山里海の地域活動", "desc": "自然や暮らしの知恵を次世代へつなぐ"}, {"pref": "福井県", "name": "鯖江市の市民協働・ものづくり", "desc": "眼鏡産業などの技術と若い担い手を結ぶ"}, {"pref": "山梨県", "name": "小菅村の源流・観光まちづくり", "desc": "自然環境を守りながら交流や仕事を生む"}, {"pref": "長野県", "name": "塩尻市のテレワーク・地域人材育成", "desc": "デジタル環境を使って働き方の選択肢を増やす"}, {"pref": "岐阜県", "name": "飛騨市の広葉樹活用", "desc": "使われにくい木材に価値を見出し商品化する"}, {"pref": "静岡県", "name": "浜松の中山間地域の小さな拠点", "desc": "移動・買い物・交流の困りごとに地域で向き合う"}, {"pref": "愛知県", "name": "豊田市の山村地域の仕事づくり", "desc": "都市と山村をつなぎ、地域資源の活用を試す"}, {"pref": "三重県", "name": "尾鷲の林業・地域資源活用", "desc": "森の手入れを仕事や地域の将来につなぐ"}, {"pref": "滋賀県", "name": "近江八幡の水辺・町並み保全", "desc": "観光と暮らしの両立を考える"}, {"pref": "京都府", "name": "南丹市美山のかやぶき集落保全", "desc": "景観と生活を守りながら来訪者を受け入れる"}, {"pref": "大阪府", "name": "大阪の商店街空き店舗活用", "desc": "小さな商いと交流の場を生む"}, {"pref": "兵庫県", "name": "豊岡のコウノトリと農業", "desc": "環境保全と農産物の価値をつなぐ"}, {"pref": "奈良県", "name": "川上村の森林と水源保全", "desc": "森を守る仕事と下流の暮らしを結ぶ"}, {"pref": "和歌山県", "name": "田辺・熊野古道の地域ガイド", "desc": "文化や自然を伝える仕事をつくる"}, {"pref": "鳥取県", "name": "智頭町の森のようちえん・森林資源", "desc": "子育てや森林を地域の価値として活かす"}, {"pref": "島根県", "name": "海士町の島留学と地域づくり", "desc": "外から来た若者と地域の人が一緒に学ぶ"}, {"pref": "岡山県", "name": "西粟倉村の百年の森林構想", "desc": "森林資源から小さな事業や雇用を生み出す"}, {"pref": "広島県", "name": "東広島・ファームおだ", "desc": "農業と地域活動を組み合わせ集落を支える"}, {"pref": "山口県", "name": "萩の町並み保存と観光", "desc": "地域の歴史を守り、訪れる人との接点をつくる"}, {"pref": "徳島県", "name": "上勝町の葉っぱビジネス", "desc": "身近な葉を商品にし、高齢者も担い手になる"}, {"pref": "香川県", "name": "東かがわ市五名の地域活動", "desc": "地域住民が資源を持ち寄り暮らしを支える"}, {"pref": "愛媛県", "name": "内子町の町並み保存と農産物直売", "desc": "景観や農産物を地域の仕事につなげる"}, {"pref": "高知県", "name": "梼原町の集落活動センター", "desc": "集落の困りごとを住民が協力して解決する"}, {"pref": "福岡県", "name": "那珂川の南畑ぼうぶら会議", "desc": "住民と外から来る人が地域の魅力を形にする"}, {"pref": "佐賀県", "name": "有田焼の産地継承と新商品づくり", "desc": "伝統技術を次の世代や新しい市場につなぐ"}, {"pref": "長崎県", "name": "五島の移住・島の仕事づくり", "desc": "島の暮らしと仕事を実際に体験して考える"}, {"pref": "熊本県", "name": "水俣の環境再生と地域づくり", "desc": "公害の経験から環境と産業のあり方を問い直す"}, {"pref": "大分県", "name": "豊後高田の昭和の町", "desc": "商店街の歴史や店主の物語をまち歩きにつなぐ"}, {"pref": "宮崎県", "name": "椎葉村の地域資源と小さな事業", "desc": "山村の資源から暮らしを支える仕事を考える"}, {"pref": "鹿児島県", "name": "三島村の焼酎蔵プロジェクト", "desc": "地域の産品を事業にし、地域内の仕事をつくる"}, {"pref": "沖縄県", "name": "久米島の海洋深層水活用", "desc": "島の自然資源を産業に活かす一方、持続可能性も考える"}];
 const NEWS=[
- {v:23,d:"2026年10月20日",t:"人生の最後に『出会いから学びが生まれた道筋』を可視化",g:[
-  ["街に出る・人と出会う・もっと知りたくなる",[
-   "人生の結果画面に、記録された出会いの人数と回数、地域活動への参加回数、そして問い・現場経験・学び直し・協働のつながりを振り返る欄を追加しました。",
-   "数値で人間関係の価値を採点するのではなく、誰かとの出会いが心の支えになったり、別の人を紹介してもらったり、新しい問いや活動が生まれたりする流れを見えるようにするための試作です。記録が少ない人生を失敗と扱わず、学習をより楽しくするというサービス本来の目的につなげます。"
-  ]]
- ]},
- {v:22,d:"2026年10月20日",t:"『街に出会い、学びたいことを見つける』を中心メッセージに",g:[
-  ["興味の外にある世界が、学ぶ理由をつくる",[
-   "やりたいことが見つからないのは、本人の中に意欲がないからとは限りません。興味のあることだけを選んでいると、まだ知らない世界に触れる機会が少ないのかもしれません。地域に出て人と会い、自分とは違う仕事や生き方を知ることで、『こんなのもあるんだ』『もっと知りたい』という問いが生まれる流れを、スタート画面で明確にしました。",
-   "街へ行くきっかけは何でもよく、学校の課題や親・先生の勧め、友達の誘いなど、自分から望んでいなかった参加も刺激になり得ます。ただし、強制を無条件に正当化せず、参加した先で本人が何を感じ、何を選ぶかを大切にします。地域で生まれた疑問が勉強につながり、学んだ知識が次の行動につながる——学習をより楽しくするというサービス本来の目的を中心に据えます。"
-  ]]
- ]},
- {v:21,d:"2026年10月20日",t:"人とのつながりを、学習を楽しくする仕組みの中心に位置づけ",g:[
-  ["出会い・紹介・新しい挑戦がつながる",[
-   "人との出会いは、人生の記録を彩るだけでなく、心の支えになったり、知らない考え方に触れたり、一緒に何かを試す入口になったりします。出会った人が別の人を紹介してくれることで、つながりが広がり、新しい活動や問いが生まれる流れを大切にします。",
-   "このプロトタイプの土台にある目的は、学習をより楽しくすることです。知識を覚えることだけを学習とせず、人との会話、現場での試行錯誤、紹介から生まれる協働、経験を振り返って必要なことを学び直す過程も、学びとして体験できるようにします。学校の勉強か社会経験かの二択にせず、両者が出会って学びが広がる設計を目指します。"
-  ]]
- ]},
- {v:20,d:"2026年10月20日",t:"人生の記録に『出会った人と、その人から受け取ったもの』を追加",g:[
-  ["人との出会いを人生の中心に",[
-   "人生の振り返り欄に、出会った人の名前・関わった回数・信頼度に加え、その人との関係から何を知ったかを表示するようにしました。地域のおばあちゃん、寮の仲間、地域の案内人、現場で働く人など、選択によって出会いの記録が育ちます。",
-   "実在の人の人生や活動を参考にしつつ、ゲーム内では架空の人物として描きます。実在人物本人の発言・行動だと誤解させず、出会いから主人公が何を感じ、次にどう動いたかを物語の中心に置きます。"
-  ]]
- ]},
- {v:19,d:"2026年10月20日",t:"プロトタイプの中心メッセージを、スタート画面に明示",g:[
-  ["このゲームで伝えたいこと",[
-   "スタート画面に『答えを当てるより、自分で問いを見つけよう』というメッセージを追加しました。社会には問題文も正解もないこと、人の話を聞き、仲間と試し、失敗から考え直すこと、必要な知識をそのとき学ぶことを正面から伝えます。",
-   "学校の勉強を否定するだけでも、社会経験を唯一の正解にするのでもなく、勉強する・現場に出る・立ち止まる道のそれぞれを選び、その結果を体験するプロトタイプとして位置づけました。"
-  ]]
- ]},
  {v:18,d:"2026年10月20日",t:"GoatCounterで実サイトのアクセス計測とカウンター表示を追加",g:[
   ["サイトのアクセス数",["GoatCounter（https://nunnun.goatcounter.com/）の計測スクリプトを追加しました。画面に累計ページ閲覧数と今日のページ閲覧数を表示し、日別推移などはGoatCounterの解析画面から確認できます。","公開カウンター表示にはGoatCounterのサイト設定で『Allow adding visitor counts on your website』を有効にする必要があります。GitHub Pagesへ変更を反映した後、表示と計測を実際の公開サイトで確認してください。"]]
  ]},
@@ -3749,22 +3712,6 @@ function lifeSummary(){const L=G.L;const s=[];if(L.pro)s.push(`${L.pro.league}�
   if(L.kids.length)s.push(`${L.kids.length}人の子を育て`);
   if(L.grand)s.push(`${L.grand}人の孫に恵まれ`);
   return s.join("、")}
-function learningJourneyHTML(L){
-  const Y=L.y7||{}, contacts=Y.contacts||{};
-  const people=Object.values(contacts).filter(p=>p&&p.meet>0);
-  const visits=Number(Y.localVisits||0), projects=Number(Y.projectStarted?1:0)+Number(Y.communityProject?1:0)+Number(Y.cafeStarted?1:0);
-  const links=[];
-  if(Y.teacherSpark||Y.teacherAsked||Y.studyTalk)links.push(["問いの芽","誰かの言葉や会話から、これまで当たり前だと思っていたことを考え直した"]);
-  if(visits>0||Y.localRoute||Y.regionInterest)links.push(["街に出る","学校の外で地域の人や暮らしに触れ、知らなかった現実を知った"]);
-  if(Y.studyLink||Y.aiPath||Y.portfolioStrong)links.push(["もっと知りたい","現場で生まれた疑問を、調べる・学び直すことにつなげた"]);
-  if(projects>0||Y.projectStarted||Y.reunionHelp)links.push(["誰かと試す","出会いや経験を、協力や小さな行動につなげた"]);
-  const totalMeet=people.reduce((n,p)=>n+(Number(p.meet)||0),0);
-  const unique=people.length;
-  const stats=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin:12px 0"><div style="border:1px solid var(--rule);border-radius:10px;padding:10px"><b style="font-size:24px">${unique}</b><div class="note">記録された出会い</div></div><div style="border:1px solid var(--rule);border-radius:10px;padding:10px"><b style="font-size:24px">${totalMeet}</b><div class="note">出会いの回数</div></div><div style="border:1px solid var(--rule);border-radius:10px;padding:10px"><b style="font-size:24px">${visits}</b><div class="note">地域での参加</div></div></div>`;
-  const path=links.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px">${links.map((x,i)=>`<div style="border:1px solid var(--rule);border-radius:10px;padding:10px"><div class="note">STEP ${i+1}</div><b>${x[0]}</b><p style="margin:6px 0 0;font-size:13px">${x[1]}</p></div>`).join("")}</div>`:`<p class="note">この人生では、学びにつながる道筋を十分には記録できませんでした。出会いや疑問がなかったという意味ではありません。記録されなかった経験も、人生にはあります。</p>`;
-  const peopleHTML=people.length?`<h4>この人生で出会った人</h4><ul class="tl">${people.map(p=>`<li><span>${Number(p.meet)}回</span><div><b>${esc(p.name||"出会った人")}</b><br><small>${esc(p.kind||"")}</small><br>${({grandma:"何気ない親切が、知らない土地での安心につながった。",mentor:"知らない場所で人と関係をつくる入口になった。",islandHost:"仕事や暮らしの手触りを、話だけでなく経験から知った。",dormCook:"一緒に食卓を囲み、日々を支え合う関係ができた。",outsidePeer:"学校の外にも、一緒に何かを面白がれる同世代がいると知った。",localAdult:"地域の課題を、外から眺めるだけでなく一緒に考えるきっかけになった。",mizumoto:"一度の出会いが、時間をおいてからも選択に影響することを知った."})[Object.keys(contacts).find(k=>contacts[k]===p)]||"この人との関わりが、新しい視点や次の行動につながった可能性がある。"}</div></li>`).join("")}</ul>`:`<p class="note">この人生では、出会った人の記録が残っていません。人とのつながりがなかったと決めつけず、これから記録の仕組みを育てていきます。</p>`;
-  return `<section class="rev" style="margin-top:18px"><h4>この人生で、何が学びを生んだ？</h4><p>やりたいことは、最初から決まっているとは限らない。街に出て、人と出会い、知らない仕事や考え方に触れる。そこで生まれた「もっと知りたい」が、学ぶ理由になる。</p>${stats}${path}${peopleHTML}<p class="note" style="margin-top:12px">これは成功・失敗の採点ではありません。記録された出会いと行動から見える、この人生の一つの道筋です。興味がなかった場所へ行ったことや、すぐに結果が出なかった経験も、後になって意味を持つことがあります。</p></section>`;
-}
 function finish(a){const c=document.querySelector(".ctrl");if(c)c.hidden=true;
   const L=G.L,diff=a-Math.round(L.prefLE),v=statVals();
   const my=store.get("oi.myPref","");const myP=PREFS.find(p=>p[0]===my);
@@ -3788,7 +3735,6 @@ function finish(a){const c=document.querySelector(".ctrl");if(c)c.hidden=true;
     ${(()=>{if(a<1||/戦死|抑留|空襲|原子爆弾|沖縄戦/.test(L.cause))return"";const row=CAUSE_T.find(r=>a<r[0]).slice(1);const w=row.map((v,i)=>[CAUSE_N[i],v*(L.sex==="F"&&(i===6||i===7)?0.5:1)]).filter(x=>x[0]!=="その他の病気").sort((x,y)=>y[1]-x[1]).slice(0,3);return `<p class="note">参考：${a}歳前後の日本の${L.sex==="M"?"男性":"女性"}に多い死因は、${w.map(x=>x[0]).join("、")}（人口動態統計）。</p>`})()}
     ${G.sharedRes?compareHTML(G.sharedRes,lifeSnap(G),"シェアした人の人生とくらべる","シェアした人","あなた"):""}
     ${G.prev?compareHTML(G.prev,lifeSnap(G)):""}
-    ${learningJourneyHTML(L)}
     ${reviewHTML(L)}
     ${cmp}
     ${L.stars.length?`<span class="label">☆をつけた瞬間</span><ul class="stars">${L.stars.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:""}
