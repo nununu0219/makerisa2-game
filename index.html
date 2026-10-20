@@ -51,6 +51,19 @@
 .tl .pct{display:block;color:var(--muted);font-size:11.5px;font-weight:400}
 .report{margin:8px 0;font-size:13px}.report summary{cursor:pointer;color:var(--muted)}.report textarea{width:100%;box-sizing:border-box;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);margin-top:6px}
 .cmpPrev{margin:12px 0}.cmpPrev h4{margin:0 0 6px}.cmp .chg{color:var(--crimson)}
+.life-reflection{margin:16px 0;padding:18px;border:1px solid var(--line);border-left:4px solid var(--crimson);border-radius:8px;background:var(--soft);gap:14px}
+.life-reflection h3{font-size:18px;line-height:1.5}
+.life-reflection .reflection-lead{font-family:var(--display);font-size:clamp(21px,4vw,29px);font-weight:800;line-height:1.45;text-wrap:balance}
+.life-reflection .reflection-intro{font-size:14px;line-height:1.9}
+.life-reflection .reflection-person{padding:12px 0;border-top:1px solid var(--line)}
+.life-reflection .reflection-person h4{font-size:15px;margin:0 0 4px}
+.life-reflection .reflection-meta{font-size:11.5px;color:var(--muted);margin-bottom:5px}
+.life-reflection .reflection-person p{font-size:13px;line-height:1.8}
+.life-reflection .reflection-path{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px;margin-top:8px}
+.life-reflection .reflection-step{border:1px solid var(--line);border-radius:7px;padding:10px;font-size:12.5px;line-height:1.7;background:var(--paper)}
+.life-reflection .reflection-step b{display:block;color:var(--teal);margin-bottom:3px}
+.life-reflection .reflection-foot{font-size:12px;color:var(--muted);line-height:1.8}
+
 .soumato{position:fixed;inset:0;z-index:50;background:rgba(10,10,18,.97);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .6s;color:#f2efe6}
 .soumato.in{opacity:1}.soumato.out{opacity:0}
 .soumato .sm-in{max-width:520px;padding:24px;text-align:center;opacity:0;transform:translateY(8px);transition:opacity .45s,transform .45s}
@@ -3712,6 +3725,54 @@ function lifeSummary(){const L=G.L;const s=[];if(L.pro)s.push(`${L.pro.league}�
   if(L.kids.length)s.push(`${L.kids.length}人の子を育て`);
   if(L.grand)s.push(`${L.grand}人の孫に恵まれ`);
   return s.join("、")}
+/* 人生の最後に、実際に経験した出会い・学び・次の行動を振り返る。
+   ステータスから架空の成功談を作らず、プレイ中に記録されたフラグだけを文章化する。 */
+function lifeReflectionHTML(L,a){
+  const Y=L.y7||{}, C=Y.contacts||{}, cards=[];
+  if(Y.grandmaVegetableEvent){
+    let body="野菜をくれたおばあちゃんとの出会いは、名前も知らない人からの何気ない親切から始まった。";
+    if(Y.grandmaVegetables)body+="野菜を寮に持ち帰り、みんなで料理した。おばあちゃんの名前は知らないままでも、一人の親切が寮生たちの忘れにくい食卓につながった。";
+    else if(Y.grandmaMet)body+="お礼を伝え、野菜や畑の話を聞いた。長い会話ではなかったけれど、知らない人が、次に会えば挨拶できる顔見知りになった。";
+    else if(Y.grandmaDeclined)body+="今回は野菜を受け取らなかった。出会いが深まったわけではない。それでも、断ることも含めて自分で選んだ経験として残った。";
+    else body+="その場で何を選んだかは、記録に残っていない。";
+    cards.push(`<div class="reflection-person"><h4>野菜をくれた地域のおばあちゃん</h4><div class="reflection-meta">${Y.grandmaVegetables?"16歳ごろ · 親切が寮の仲間との時間へ":Y.grandmaMet?"16歳ごろ · お礼と畑の話":"16歳ごろ · 受け取るかどうかの選択"}</div><p>${esc(body)}</p></div>`);
+  }
+  if(Y.mizuRoomCheck||Y.mizuOlderBrother||Y.mizuReunion||Y.mizuLightReunion||Y.mizuMissedReunion){
+    let body="寮の部屋点検をきっかけに、水本さんとの関係が始まった。最初から特別な存在だったわけではない。";
+    if(Y.mizuRoomCheckResponse==='apologize')body+="素直に謝り、次の点検日をメモした。叱られた経験を、次の工夫に変えた。";
+    else if(Y.mizuRoomCheckResponse==='defensive')body+="その場では言い訳をして、少し気まずくなった。関係は自動で深まるものではなく、話し直すことも必要だと知るきっかけになった。";
+    else if(Y.mizuRoomCheckResponse==='talk')body+="片づけを手伝ってもらいながら、学校や寮での悩みも話した。失敗が、相談できる関係を育てる入口になった。";
+    if(Y.mizuWorkInterest)body+=" 写真や地域の仕事について聞き、一人の大人にもいくつもの顔や関わり方があると知った。";
+    if(Y.mizuAskedForHelp)body+=" 困ったときに相談し、一緒に考えてもらった経験が残った。";
+    if(Y.mizuCollaboration)body+=" 数年後には再会し、今度は対等な立場で地域の企画や写真の仕事を一緒に考えた。昔のつながりが、新しい挑戦の入口になった。";
+    else if(Y.mizuLightReunion)body+=" 数年後に近況を伝えた。今すぐ一緒に何かをしなくても、困ったときに思い出せる人がいる。";
+    else if(Y.mizuMissedReunion)body+=" 数年後の連絡には返事をせず、関係は少し遠のいた。つながりはいつも自動で続くわけではない。それでも、一緒に過ごした記憶まで消えるわけではない。";
+    else if(Y.mizuEveryday)body+=" 大きな相談をしなくても、日々の挨拶や会話が少しずつ関係をつくった。";
+    cards.push(`<div class="reflection-person"><h4>水本さん</h4><div class="reflection-meta">寮生活での出会い${Y.mizuReunion||Y.mizuLightReunion||Y.mizuMissedReunion?" · 数年後のつながりも記録":" · 日常の関わり"}</div><p>${esc(body)}</p></div>`);
+  }
+  const excluded=new Set(['grandma','mizu','dormCook']);
+  const otherPeople=Object.entries(C).filter(([id,p])=>!excluded.has(id)&&p&&p.meet>0);
+  if(otherPeople.length){
+    cards.push(`<div class="reflection-person"><h4>ほかに出会った人たち</h4><div class="reflection-meta">記録された接点 · ${otherPeople.length}種類</div><p>${otherPeople.map(([id,p])=>`${esc(p.name)}（${esc(p.kind||'出会い')}・接点${p.meet}回${Number.isFinite(+p.trust)?`・信頼 ${p.trust}/5`:''}）`).join('、')}</p><p class="reflection-foot">出会った回数が多いほど、必ず深い関係になるわけではありません。ここでは、ゲーム内で記録された接点をそのまま残しています。</p></div>`);
+  }
+  const learn=[];
+  if(Y.grandmaMet||Y.grandmaVegetables||Y.islandWorkExperience||Y.islandWork||Y.localVisits)learn.push(['経験','地域の暮らしや人の親切に、実際に触れた']);
+  if(Y.studyLink)learn.push(['問い・学び','現場で感じた疑問を、学校の知識や調べることにつなげた']);
+  if(Y.aiPath==='community')learn.push(['自分で確かめる','AIや外からの情報だけではわからない現場の声を聞きに行った']);
+  if(Y.aiPath==='maker')learn.push(['試して、直す','AIを道具にして試作し、情報や使いやすさを確かめる必要を知った']);
+  if(Y.aiPath==='study')learn.push(['学び直し','知識を覚えるだけでなく、わからないことを調べ、根拠を確かめる方向へ進んだ']);
+  if(Y.aiPath==='interviews')learn.push(['仕事を知る','違う仕事をする大人の話から、職業名だけでは見えない仕事の中身に触れた']);
+  if(Y.projectStarted||Y.youthProposalResult==='pilot')learn.push(['行動・協働','考えを実際に試し、うまくいかない点を人と一緒に見直した']);
+  if(Y.portfolioStrong)learn.push(['振り返り','経験を言葉にして、自分の問いや考えの変化を記録した']);
+  const hasLearning=learn.length>0;
+  let circulation='出会いを受け取ったあと、誰かのきっかけをつくる側になる人生もある。すべての人生がそこにたどり着くわけではない。';
+  if(Y.aiAdultRole==='connector'||Y.becomesSupporter||Y.reunionHelp)circulation='この人生では、受け取ったつながりを別の人や活動へつなぐ場面も生まれた。かつて刺激をもらった人が、今度は誰かのきっかけや支えになる。';
+  else if(Y.aiAdultRole==='side-by-side')circulation='この人生では、本業と地域との関わりを並行して続ける道を選んだ。人生のすべてを一つの仕事にかけなくても、経験を別の場所へ持ち運ぶことはできる。';
+  else if(Y.aiAdultRole==='pause')circulation='この人生では、暮らしを優先し、立ち止まったり学び直したりする道も選んだ。誰かを支える側になる時期も、ならない時期もあっていい。';
+  const path=hasLearning?`<div class="reflection-path">${learn.map(([h,t])=>`<div class="reflection-step"><b>${esc(h)}</b>${esc(t)}</div>`).join('')}</div>`:`<p class="reflection-foot">この人生では、経験から学び直しや新しい行動へ進んだことを示す記録は多くなかった。それも一つの人生のかたち。今すぐ「やりたいこと」が見つからなくても、これから経験を重ねる余地は残っている。</p>`;
+  return `<section class="card life-reflection" aria-labelledby="lifeReflectionTitle"><span class="label">人生の記録 · 出会いと学び</span><h3 id="lifeReflectionTitle">やりたいことは、最初から決まっていなくてもいい。</h3><p class="reflection-intro">知らない場所に行く。自分とは違う人に会う。何かをやってみて、うまくいかなかったり、知らないことが悔しくなったりする。そんな経験から「もっと知りたい」という問いが生まれ、学ぶ理由が見えてくることがある。${Y.regionInterest||Y.localVisits?"この人生では、地域での経験もその入口になった。":"この人生で何がきっかけになったのかは、下の記録に残っている。"}</p>${cards.length?`<h4>この人生で出会った人</h4>${cards.join('')}`:`<p class="reflection-foot">この人生では、個別の人物との出会いを詳しく記録できるイベントは発生しなかった。出会いがなかったと決めつけず、記録された経験をもとに振り返る。</p>`}<h4>経験から、何が生まれたか</h4>${path}<p class="reflection-intro">${esc(circulation)}</p><p class="reflection-foot">AIが知識や正解を出せる時代でも、「何を問うか」「誰の声を聞くか」「何を試し、誰と実現するか」は、人が現場に出て考え、行動することで見えてくる。この人生は、1億2,300万分の1の、ほかの誰とも同じではない人生です。</p></section>`;
+}
+
 function finish(a){const c=document.querySelector(".ctrl");if(c)c.hidden=true;
   const L=G.L,diff=a-Math.round(L.prefLE),v=statVals();
   const my=store.get("oi.myPref","");const myP=PREFS.find(p=>p[0]===my);
@@ -3732,6 +3793,7 @@ function finish(a){const c=document.querySelector(".ctrl");if(c)c.hidden=true;
     <p>${story}${pf(L.pref)}の${L.sex==="M"?"男性":"女性"}の平均寿命より${Math.abs(diff)}年${diff>=0?"長く":"短く"}生きました。${a>=22?`最後の貯金は${Math.round(L.savings+L.invest).toLocaleString()}万円。`:""}</p>
     <p class="note">最期の状態：健康 ${Math.round(v.health)} · 幸福 ${Math.round(v.happy)} · 知識 ${Math.round(v.know)} · 人間関係 ${Math.round(v.rel)}</p>
     <p class="note">同じ日に生まれた3人：${peersTxt}。</p>
+    ${lifeReflectionHTML(L,a)}
     ${(()=>{if(a<1||/戦死|抑留|空襲|原子爆弾|沖縄戦/.test(L.cause))return"";const row=CAUSE_T.find(r=>a<r[0]).slice(1);const w=row.map((v,i)=>[CAUSE_N[i],v*(L.sex==="F"&&(i===6||i===7)?0.5:1)]).filter(x=>x[0]!=="その他の病気").sort((x,y)=>y[1]-x[1]).slice(0,3);return `<p class="note">参考：${a}歳前後の日本の${L.sex==="M"?"男性":"女性"}に多い死因は、${w.map(x=>x[0]).join("、")}（人口動態統計）。</p>`})()}
     ${G.sharedRes?compareHTML(G.sharedRes,lifeSnap(G),"シェアした人の人生とくらべる","シェアした人","あなた"):""}
     ${G.prev?compareHTML(G.prev,lifeSnap(G)):""}
