@@ -56,6 +56,7 @@
 .life-reflection .reflection-lead{font-family:var(--display);font-size:clamp(21px,4vw,29px);font-weight:800;line-height:1.45;text-wrap:balance}
 .life-reflection .reflection-intro{font-size:14px;line-height:1.9}
 .life-reflection .reflection-person{padding:12px 0;border-top:1px solid var(--line)}
+.life-reflection details.reflection-person>summary{cursor:pointer;font-weight:700;font-size:15px;padding:2px 0 6px}
 .life-reflection .reflection-person h4{font-size:15px;margin:0 0 4px}
 .life-reflection .reflection-meta{font-size:11.5px;color:var(--muted);margin-bottom:5px}
 .life-reflection .reflection-person p{font-size:13px;line-height:1.8}
@@ -63,6 +64,13 @@
 .life-reflection .reflection-step{border:1px solid var(--line);border-radius:7px;padding:10px;font-size:12.5px;line-height:1.7;background:var(--paper)}
 .life-reflection .reflection-step b{display:block;color:var(--teal);margin-bottom:3px}
 .life-reflection .reflection-foot{font-size:12px;color:var(--muted);line-height:1.8}
+.life-reflection .reflection-timeline{margin:12px 0;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+.life-reflection .reflection-timeline summary{cursor:pointer;padding:12px;font-size:13px;font-weight:700}
+.life-reflection .reflection-timeline ol{margin:0;padding:0 16px 12px 34px}
+.life-reflection .reflection-timeline li{padding:10px 0;border-top:1px solid var(--line);line-height:1.8;font-size:13px;overflow-wrap:anywhere}
+.life-reflection .reflection-timeline li p{margin:4px 0}
+.life-reflection .reflection-person details{margin-top:8px}
+@media(max-width:600px){.life-reflection{padding:13px}.life-reflection .reflection-path{grid-template-columns:1fr}.life-reflection .reflection-timeline ol{padding-right:10px}}
 
 .soumato{position:fixed;inset:0;z-index:50;background:rgba(10,10,18,.97);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .6s;color:#f2efe6}
 .soumato.in{opacity:1}.soumato.out{opacity:0}
@@ -1913,10 +1921,24 @@ function events(a){const L=G.L;const k=L.know,rel=L.rel;war(a);if(L.forceDie)ret
 /* ================= マケリサY7：小さな行動が後年の選択肢を生む物語 =================
    ルートは最初に選ばせない。SAPIX・学校・地域・人間関係が、年齢と経験に応じて交差する。 */
 function makerisaStory(a){
-  const L=G.L, y=YEAR0+a, ch=p=>R()<p, say=line;
+  const L=G.L, y=YEAR0+a, ch=p=>R()<p;
   L.y7=L.y7||{};
   const Y=L.y7;
   Y.contacts=Y.contacts||{};
+  // 選択確定後に表示される実際のイベント文を、人生の記録として保存する。
+  // 既存の状態・分岐・年齢進行は変更せず、文章と年齢だけを追加記録する。
+  Y.lifeEvents=Array.isArray(Y.lifeEvents)?Y.lifeEvents:[];
+  const say=(text,cls)=>{
+    if(typeof text==='string' && text.trim()){
+      const plain=text.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+      const key=`${a}|${plain}`;
+      if(!Y.lifeEvents.some(e=>e.key===key)){
+        const people=Object.entries(Y.contacts).filter(([id,p])=>p&&p.name&&plain.includes(p.name)).map(([id])=>id);
+        Y.lifeEvents.push({key,age:a,year:y,text:plain,people,source:'makerisaStory'});
+      }
+    }
+    return line(text,cls);
+  };
   // 2026-10-20追加：資産形成と人生設計を、年齢ごとの意思決定として体験する。
   // 金額はゲーム内の概算であり、個別の投資・税務助言ではない。
   // 18歳の進路選択は、別イベントが同じ年に出ても消えないよう独立したY7イベントとして保持。
@@ -3735,7 +3757,7 @@ function lifeReflectionHTML(L,a){
     else if(Y.grandmaMet)body+="お礼を伝え、野菜や畑の話を聞いた。長い会話ではなかったけれど、知らない人が、次に会えば挨拶できる顔見知りになった。";
     else if(Y.grandmaDeclined)body+="今回は野菜を受け取らなかった。出会いが深まったわけではない。それでも、断ることも含めて自分で選んだ経験として残った。";
     else body+="その場で何を選んだかは、記録に残っていない。";
-    cards.push(`<div class="reflection-person"><h4>野菜をくれた地域のおばあちゃん</h4><div class="reflection-meta">${Y.grandmaVegetables?"16歳ごろ · 親切が寮の仲間との時間へ":Y.grandmaMet?"16歳ごろ · お礼と畑の話":"16歳ごろ · 受け取るかどうかの選択"}</div><p>${esc(body)}</p></div>`);
+    cards.push(`<details class="reflection-person"><summary>野菜をくれた地域のおばあちゃん</summary><div class="reflection-meta">${Y.grandmaVegetables?"16歳ごろ · 親切が寮の仲間との時間へ":Y.grandmaMet?"16歳ごろ · お礼と畑の話":"16歳ごろ · 受け取るかどうかの選択"}</div><p>${esc(body)}</p></details>`);
   }
   if(Y.mizuRoomCheck||Y.mizuOlderBrother||Y.mizuReunion||Y.mizuLightReunion||Y.mizuMissedReunion){
     let body="寮の部屋点検をきっかけに、水本さんとの関係が始まった。最初から特別な存在だったわけではない。";
@@ -3748,13 +3770,15 @@ function lifeReflectionHTML(L,a){
     else if(Y.mizuLightReunion)body+=" 数年後に近況を伝えた。今すぐ一緒に何かをしなくても、困ったときに思い出せる人がいる。";
     else if(Y.mizuMissedReunion)body+=" 数年後の連絡には返事をせず、関係は少し遠のいた。つながりはいつも自動で続くわけではない。それでも、一緒に過ごした記憶まで消えるわけではない。";
     else if(Y.mizuEveryday)body+=" 大きな相談をしなくても、日々の挨拶や会話が少しずつ関係をつくった。";
-    cards.push(`<div class="reflection-person"><h4>水本さん</h4><div class="reflection-meta">寮生活での出会い${Y.mizuReunion||Y.mizuLightReunion||Y.mizuMissedReunion?" · 数年後のつながりも記録":" · 日常の関わり"}</div><p>${esc(body)}</p></div>`);
+    cards.push(`<details class="reflection-person"><summary>水本さん</summary><div class="reflection-meta">寮生活での出会い${Y.mizuReunion||Y.mizuLightReunion||Y.mizuMissedReunion?" · 数年後のつながりも記録":" · 日常の関わり"}</div><p>${esc(body)}</p></details>`);
   }
   const excluded=new Set(['grandma','mizu','dormCook']);
   const otherPeople=Object.entries(C).filter(([id,p])=>!excluded.has(id)&&p&&p.meet>0);
   if(otherPeople.length){
-    cards.push(`<div class="reflection-person"><h4>ほかに出会った人たち</h4><div class="reflection-meta">記録された接点 · ${otherPeople.length}種類</div><p>${otherPeople.map(([id,p])=>`${esc(p.name)}（${esc(p.kind||'出会い')}・接点${p.meet}回${Number.isFinite(+p.trust)?`・信頼 ${p.trust}/5`:''}）`).join('、')}</p><p class="reflection-foot">出会った回数が多いほど、必ず深い関係になるわけではありません。ここでは、ゲーム内で記録された接点をそのまま残しています。</p></div>`);
+    cards.push(`<details class="reflection-person"><summary>ほかに出会った人たち（${otherPeople.length}種類）</summary><div class="reflection-meta">記録された接点</div><p>${otherPeople.map(([id,p])=>`${esc(p.name)}（${esc(p.kind||'出会い')}・接点${p.meet}回${Number.isFinite(+p.trust)?`・信頼 ${p.trust}/5`:''}）`).join('、')}</p><p class="reflection-foot">出会った回数が多いほど、必ず深い関係になるわけではありません。ここでは、ゲーム内で記録された接点をそのまま残しています。</p></details>`);
   }
+  const lifeEvents=(Array.isArray(Y.lifeEvents)?Y.lifeEvents:[]).filter(e=>e&&typeof e.text==='string').sort((x,y)=>(x.age||0)-(y.age||0));
+  const eventTimeline=lifeEvents.length?`<details class="reflection-timeline"><summary>この人生で実際に起きた出来事（${lifeEvents.length}件）</summary><ol>${lifeEvents.map(e=>`<li><span class="reflection-meta">${Number.isFinite(+e.age)?`${esc(e.age)}歳`:'時期不明'}${Number.isFinite(+e.year)?`・${esc(e.year)}年`:''}</span><p>${esc(e.text)}</p>${Array.isArray(e.people)&&e.people.length?`<p class="reflection-meta">関連人物：${e.people.map(id=>esc(Y.contacts?.[id]?.name||id)).join('、')}</p>`:''}</li>`).join('')}</ol></details>`:'';
   const learn=[];
   if(Y.grandmaMet||Y.grandmaVegetables||Y.islandWorkExperience||Y.islandWork||Y.localVisits)learn.push(['経験','地域の暮らしや人の親切に、実際に触れた']);
   if(Y.studyLink)learn.push(['問い・学び','現場で感じた疑問を、学校の知識や調べることにつなげた']);
@@ -3770,7 +3794,7 @@ function lifeReflectionHTML(L,a){
   else if(Y.aiAdultRole==='side-by-side')circulation='この人生では、本業と地域との関わりを並行して続ける道を選んだ。人生のすべてを一つの仕事にかけなくても、経験を別の場所へ持ち運ぶことはできる。';
   else if(Y.aiAdultRole==='pause')circulation='この人生では、暮らしを優先し、立ち止まったり学び直したりする道も選んだ。誰かを支える側になる時期も、ならない時期もあっていい。';
   const path=hasLearning?`<div class="reflection-path">${learn.map(([h,t])=>`<div class="reflection-step"><b>${esc(h)}</b>${esc(t)}</div>`).join('')}</div>`:`<p class="reflection-foot">この人生では、経験から学び直しや新しい行動へ進んだことを示す記録は多くなかった。それも一つの人生のかたち。今すぐ「やりたいこと」が見つからなくても、これから経験を重ねる余地は残っている。</p>`;
-  return `<section class="card life-reflection" aria-labelledby="lifeReflectionTitle"><span class="label">人生の記録 · 出会いと学び</span><h3 id="lifeReflectionTitle">やりたいことは、最初から決まっていなくてもいい。</h3><p class="reflection-intro">知らない場所に行く。自分とは違う人に会う。何かをやってみて、うまくいかなかったり、知らないことが悔しくなったりする。そんな経験から「もっと知りたい」という問いが生まれ、学ぶ理由が見えてくることがある。${Y.regionInterest||Y.localVisits?"この人生では、地域での経験もその入口になった。":"この人生で何がきっかけになったのかは、下の記録に残っている。"}</p>${cards.length?`<h4>この人生で出会った人</h4>${cards.join('')}`:`<p class="reflection-foot">この人生では、個別の人物との出会いを詳しく記録できるイベントは発生しなかった。出会いがなかったと決めつけず、記録された経験をもとに振り返る。</p>`}<h4>経験から、何が生まれたか</h4>${path}<p class="reflection-intro">${esc(circulation)}</p><p class="reflection-foot">AIが知識や正解を出せる時代でも、「何を問うか」「誰の声を聞くか」「何を試し、誰と実現するか」は、人が現場に出て考え、行動することで見えてくる。この人生は、1億2,300万分の1の、ほかの誰とも同じではない人生です。</p></section>`;
+  return `<section class="card life-reflection" aria-labelledby="lifeReflectionTitle"><span class="label">人生の記録 · 出会いと学び</span><h3 id="lifeReflectionTitle">やりたいことは、最初から決まっていなくてもいい。</h3><p class="reflection-intro">知らない場所に行く。自分とは違う人に会う。何かをやってみて、うまくいかなかったり、知らないことが悔しくなったりする。そんな経験から「もっと知りたい」という問いが生まれ、学ぶ理由が見えてくることがある。${Y.regionInterest||Y.localVisits?"この人生では、地域での経験もその入口になった。":"この人生で何がきっかけになったのかは、下の記録に残っている。"}</p>${cards.length?`<h4>この人生で出会った人</h4>${cards.join('')}`:`<p class="reflection-foot">この人生では、個別の人物との出会いを詳しく記録できるイベントは発生しなかった。出会いがなかったと決めつけず、記録された経験をもとに振り返る。</p>`}${eventTimeline}<h4>経験から、何が生まれたか</h4>${path}<p class="reflection-intro">${esc(circulation)}</p><p class="reflection-foot">AIが知識や正解を出せる時代でも、「何を問うか」「誰の声を聞くか」「何を試し、誰と実現するか」は、人が現場に出て考え、行動することで見えてくる。この人生も、約1億2,300万人の中の一つだけの人生です。</p></section>`;
 }
 
 function finish(a){const c=document.querySelector(".ctrl");if(c)c.hidden=true;
