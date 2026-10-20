@@ -1014,7 +1014,7 @@ const BARC={health:"var(--s1)",happy:"var(--s2)",know:"var(--s3)",rel:"var(--s4)
 function renderStats(){const v=statVals(),last=G.lastStats;
   $("#bars").innerHTML=[["health","健康"],["happy","幸福"],["know","知識"],["rel","人間関係"]].map(([k,n])=>{const d=last?Math.round(v[k])-Math.round(last[k]):0;
     return `<div class="r"><span>${n}</span><div class="t"><i style="width:${v[k]}%;background:${BARC[k]}"></i></div><b>${Math.round(v[k])}${d?`<span class="d ${d>0?"up":"down"}">${d>0?"+":""}${d}</span>`:""}</b></div>`}).join("");
-  const L=G.L,net=Math.round(L.savings+L.invest);
+  const L=G.L,net=Math.round(L.savings+L.invest-((L.y7&&L.y7.businessDebt)||0));
   $("#fin").innerHTML=`<div>純資産<b>${net<0?"−":""}${Math.abs(net).toLocaleString()}万円</b>${G.age<18?"まだ親の家で暮らしています":L.loan>0?`住宅ローン残り${L.loan}年`:""}</div>
    <div>${L.pension>0?"年金":"年収"}<b>${L.pension>0?L.pension+"万円":L.income>0?Math.round(L.income/10)*10+"万円":"—"}</b>生まれた家庭 5段階中${Math.ceil(L.dec/2)}</div>`;
   G.lastStats=v}
@@ -1046,7 +1046,7 @@ function peerStatus(P,a){if(a>P.death)return `${P.death}歳で死去`;const last
   if(a<6)return"未就学";if(a<18)return"在学中";if(a>=65)return"引退";if(last&&last[1]==="大学に進む"&&a<22)return"大学生";return"働いている"}
 function renderPeers(){const a=G.age;$("#peers").innerHTML=G.peers.map(P=>`<div class="peer${a>P.death?" dead":""}"><div><b>${P.name}</b><span>${pf(P.pref)} · ${P.sex==="M"?"男":"女"}</span></div><span class="st">${peerStatus(P,a)}</span></div>`).join("")}
 function renderMoney(){const L=G.L,a=G.age,box=$("#moneyBox");if(!box)return;const sv=Math.round(L.savings);const can=a>=18&&!G.dead&&!warYear();
-  box.innerHTML=`${ERA.key!=="now"?`<p class="note">金額はすべて、いまの物価に換算しています。</p>`:""}<div class="kv"><div><span>貯金</span><span>${sv.toLocaleString()}万円</span></div><div><span>つみたて投資</span><span>${Math.round(L.invest).toLocaleString()}万円</span></div>${L.income>0?`<div><span>手取り</span><span>年${Math.round(L.income*0.78/10)*10}万円</span></div>`:""}</div>
+  box.innerHTML=`${ERA.key!=="now"?`<p class="note">金額はすべて、いまの物価に換算しています。</p>`:""}<div class="kv"><div><span>貯金</span><span>${sv.toLocaleString()}万円</span></div><div><span>つみたて投資</span><span>${Math.round(L.invest).toLocaleString()}万円</span></div>${L.income>0?`<div><span>手取り</span><span>年${Math.round(L.income*0.78/10)*10}万円</span></div>`:""}${L.y7?.businessDebt?`<div><span>事業の借入残高</span><span>${Math.round(L.y7.businessDebt)}万円</span></div>`:""}</div>
    <div class="acts">
     <button data-m="trip" ${can&&sv>=30?"":"disabled"}>旅行に行く（30万円）<small>幸福が上がる</small></button>
     <button data-m="study" ${can&&sv>=20&&a<65?"":"disabled"}>自分に投資する（20万円）<small>講座や資格。知識が上がる</small></button>
@@ -1866,6 +1866,76 @@ function makerisaStory(a){
   L.y7=L.y7||{};
   const Y=L.y7;
   Y.contacts=Y.contacts||{};
+  // 2026-10-20追加：資産形成と人生設計を、年齢ごとの意思決定として体験する。
+  // 金額はゲーム内の概算であり、個別の投資・税務助言ではない。
+  if(a===18&&y>=2000&&!Y.moneyBasics&&!L.used.has('y7:money-basics')){
+    Y.moneyBasics=true;L.used.add('y7:money-basics');
+    ask({title:'18歳：初めて自分のお金を管理する',text:'進学や就職で、使えるお金と自分で払う費用が変わる。奨学金は借りるお金で、卒業後に返済が必要なものもある。手取りは額面給与より少なく、家賃や食費を払った残りが生活を支える。何を優先する？',opts:[
+      {t:'毎月の収入・支出を書き出し、少額でも貯める',sub:'家計の見える化と緊急時の備え',w:3,go(){Y.moneyHabit='budget';L.savings+=10;L.know+=3;L.action=(L.action||0)+1;say('家賃、食費、交通費、学費などを紙に書き出す。余ったら貯めるのではなく、少額を先に取り分ける習慣を始めた。急な出費への備えが少しできた。','big')}} ,
+      {t:'学びや資格にお金を使い、将来の選択肢を増やす',sub:'自己投資にも費用と時間がかかる',w:2,go(){Y.moneyHabit='learning';L.savings-=Math.min(15,Math.max(0,L.savings));L.know+=4;L.action=(L.action||0)+2;say('講座や教材にお金と時間を使う。すぐに収入が増える保証はないが、学んだことを試す場を探すことにした。')}} ,
+      {t:'今しかできない経験を優先する',sub:'経験も大切。ただし支払いと借入は確認する',w:2,go(){Y.moneyHabit='experience';L.hp+=3;L.happy+=2;L.savings-=Math.min(10,Math.max(0,L.savings));say('友人との経験や新しい場所へ行くことにお金を使う。思い出はできたが、毎月の固定費を把握しておく必要も感じた。')}}
+    ]});return;
+  }
+  if(a===23&&y>=2000&&!Y.investingChoice&&!L.used.has('y7:investing-choice')){
+    Y.investingChoice=true;L.used.add('y7:investing-choice');
+    ask({title:'23歳：貯金だけ？ 投資もする？',text:'働き始め、少しずつ余裕が出てきた。預金は値動きが小さく、すぐ使うお金や生活防衛資金に向く。一方、投資は値下がりし、元本割れすることもある。長期・積立・分散はリスクを消す方法ではないが、偏りを抑える考え方になる。',opts:[
+      {t:'まず生活費の備えを確保してから、少額で分散投資を学ぶ',sub:'余裕資金だけで、手数料とリスクも確認',w:3,go(){Y.investingChoice='gradual';L.savings+=20;L.invest+=Math.min(30,Math.max(0,L.savings-20));L.know+=4;say('まず生活費の備えを残し、無理のない金額で長期・積立・分散を学ぶ。投資額が増えても、値下がりする可能性はなくならないと覚えておく。','big')}} ,
+      {t:'今は投資せず、貯金と家計管理を優先する',sub:'投資しない選択も、目的に合っていればよい',w:3,go(){Y.investingChoice='cash';L.savings+=20;L.know+=2;say('転職や引っ越しの予定もあるため、今は現金の備えを優先する。投資を始める時期より、必要なときに使えるお金を持つことを大切にした。')}} ,
+      {t:'短期間で大きく増やそうと、余裕資金以上を投じる',sub:'値下がり時に生活費まで不足する危険がある',w:1,go(){Y.investingChoice='overrisk';const loss=Math.min(L.savings,Math.round(Math.max(10,L.savings*.25)));L.savings-=loss;L.invest+=loss;L.know+=1;say('値上がりを期待して投資額を増やした。短期的に増えることもあるが、相場が下がれば生活に必要なお金まで影響を受ける。後からリスクと資金配分を見直す必要が出てくる。')}}
+    ]});return;
+  }
+  // 実在事例を追体験する「居場所づくり」。資産を使う前に需要・仲間・固定費を確かめる。
+  if(a>=30&&a<=48&&y>=2000&&!Y.communityHubStart&&!L.used.has('y7:community-hub-start')&&(L.savings>=25||Y.adultRealCaseChallenge||Y.localSuccessionChoice||Y.becomesSupporter||Y.cityRegionBridge||Y.lifeDirection==='youth-support')){
+    Y.communityHubStart=true;L.used.add('y7:community-hub-start');
+    ask({title:'30代以降：貯めたお金で、地域の居場所をつくれる？',text:'仕事や暮らしを続ける中で、地域に気軽に立ち寄れる場所が足りないと感じる。コミュニティカフェや交流スペースをつくれば、人がつながるきっかけになるかもしれない。でも、物件を借りるだけでは続かない。誰が必要としているのか、毎月の固定費を払えるのか、運営を一人で抱えないか。まず何から始めよう？',opts:[
+      {t:'まず地域の人に聞き、月1回の小さな集まりを試す',sub:'町田「陽だまりカフェ」のように、小さな活動から必要性を確かめる',w:3,go(){Y.communityHubStart='listen-first';Y.communityHubCase='hidamari';Y.communityListening=true;L.know+=4;L.action+=3;L.rel+=3;say('まず住民や商店、子育て世帯、高齢者などに話を聞き、何があれば立ち寄りやすいかを確かめた。いきなり物件を契約せず、借りられる場所で月1回の交流会を試す。来た人数だけでなく、来られなかった人の理由や運営側の負担も記録する。必要とされる場の形は、思い込みだけでは決められない。','big')}},
+      {t:'空き店舗や既存施設を探し、仲間と運営案をつくる',sub:'越谷「CAFE803」の事前調査・準備期間を参考にする',w:3,go(){Y.communityHubStart='partner-plan';Y.communityHubCase='cafe803';Y.communityListening=true;L.know+=3;L.action+=3;L.rel+=2;say('空き店舗や公共施設、既存の店の空き時間を調べ、地域の団体や商店会に相談した。場所を決める前に、誰が来るか、何を提供するか、営業日、必要な設備、運営する人を整理する。開業前から協力者や利用者候補とつながることが、続く場の土台になると気づいた。','big')}},
+      {t:'貯蓄を使って、自分の理想のカフェをすぐに開業する',sub:'資産が減り、家賃・人件費・仕入れなどの固定費が始まる',w:1,go(){Y.communityHubStart='open-fast';Y.communityHubRisk='high';const cost=Math.min(Math.max(0,L.savings),35);L.savings-=cost;L.know+=1;L.action+=2;say('貯蓄から開業費を出し、物件を借りて内装や備品をそろえた。自分の理想を形にできた一方、開店した日から家賃や光熱費、仕入れ、保険などの支払いが続く。来店が少ない月も支出は止まらない。思いだけでなく、月ごとの収支と撤退条件を決める必要がある。','big')}},
+      {t:'自分が所有者になるのではなく、既存の居場所を手伝う',sub:'運営の実際を知ってから、自分が担う役割を考える',w:3,go(){Y.communityHubStart='join-existing';Y.communityHubCase='learn-first';L.rel+=3;L.know+=3;L.action+=1;say('すでに活動している居場所やカフェを訪ね、準備、会計、片づけ、ボランティアの調整を手伝うことにした。利用者が喜ぶ瞬間だけでなく、休む人の代わりを探すことや、衛生・安全の確認、毎月の収支を管理することも見えてきた。場所をつくる前に、運営を知る時間を持つことにした。','big')}}
+    ]});return;
+  }
+  if(a>=31&&a<=49&&y>=2000&&!Y.communityHubPlan&&!L.used.has('y7:community-hub-plan')&&(Y.communityHubStart==='listen-first'||Y.communityHubStart==='partner-plan'||Y.communityHubStart==='open-fast'||Y.communityHubStart==='join-existing')){
+    Y.communityHubPlan=true;L.used.add('y7:community-hub-plan');
+    ask({title:'居場所づくり：お金と仲間をどう組み合わせる？',text:'現場で話を聞き、居場所の運営には家賃や設備費だけでなく、日々の人手、会計、食の衛生、安全、広報、休める体制が必要だとわかった。立川の「シーズ立川」はNPOや市民活動を経て、クラウドファンディング、日本政策金融公庫の運転資金、信用金庫の設備融資などを組み合わせた。町田の「陽だまりカフェ」は自宅で月1回の活動から始まり、協力ボランティアを募って常設の場へ進んだ。自分ならどう進める？',opts:[
+      {t:'数か月の試行を続け、利用者と協力者を増やしてから借りる',sub:'小さく検証し、必要な規模を見極める',w:3,go(){Y.communityHubPlan='pilot';Y.communityHubCase='hidamari';Y.communityHubSustainable=true;L.savings+=0;L.know+=4;L.action+=3;L.rel+=3;say('定期的な試行を続け、利用者の声と毎回の収支、準備・片づけの時間を記録する。参加者の中から企画を手伝う人も現れ、必要な設備や開ける頻度が具体的になった。常設施設を持つことを急がず、需要と運営体制が見えてから次の判断をする。','big')}},
+      {t:'寄付・クラウドファンディング・助成金を調べ、支援者と計画を共有する',sub:'資金だけでなく、何を実現するか説明する責任も生まれる',w:3,go(){Y.communityHubPlan='community-funding';Y.communityHubFunding='crowdfunding';Y.knowTaxBasics=true;L.know+=4;L.rel+=3;L.action+=2;say('何にいくら必要か、誰にどんな価値があるか、集まったお金を何に使うかを整理して公開した。応援は資金だけでなく、利用者や協力者との出会いにもつながる。一方、目標を達成しても毎月の運営費が自動的に賄えるわけではない。支援者への報告と、継続収入の計画を両方考える。','big')}},
+      {t:'融資を検討し、返済可能な収支計画を専門窓口と確認する',sub:'借入は使える資金を増やすが、返済義務も生む',w:2,go(){Y.communityHubPlan='loan-review';Y.communityHubFunding='loan';L.know+=4;L.action+=2;say('金融機関や創業支援窓口に相談し、初期費用と運転資金を分けて計算する。売上が計画を下回る場合も返済できるか、自己資金をどこまで残すか、借入以外の方法はないかを確かめる。融資は夢をかなえる魔法ではなく、返済の責任を伴う選択だと理解した。','big')}},
+      {t:'空き店舗を借りず、既存施設の一角や間借りで続ける',sub:'固定費を抑え、運営の仕組みを育てる',w:3,go(){Y.communityHubPlan='shared-space';Y.communityHubFunding='low-fixed-cost';Y.communityHubSustainable=true;L.savings+=5;L.know+=3;L.rel+=2;say('常設店舗は持たず、既存の店や施設の空き時間を借りて活動することにした。使える日や設備には制約があるが、毎月の家賃負担を抑えられる。自分の資産をすべて場所に注ぎ込まず、運営の仕組みと仲間を育てながら、必要なら後から規模を変えられる形を選んだ。','big')}}
+    ]});return;
+  }
+  if(a>=33&&a<=52&&y>=2000&&!Y.communityHubReality&&!L.used.has('y7:community-hub-reality')&&(Y.communityHubPlan||Y.communityHubStart==='open-fast')){
+    Y.communityHubReality=true;L.used.add('y7:community-hub-reality');
+    ask({title:'居場所を続ける：来てくれる人がいるだけでは足りない',text:'開いた場所には少しずつ人が来るようになった。でも、売上だけでは家賃や光熱費を賄えない月があり、運営メンバーも疲れている。無料で開く時間と有料サービスの線引き、ボランティアに頼りすぎない運営、衛生・安全、会計、休業や縮小の条件を考える必要がある。場所を続けることと、運営する人の暮らしを守ることをどう両立する？',opts:[
+      {t:'収支と作業時間を見える化し、営業日や内容を見直す',sub:'続けられる規模に整える',w:3,go(){Y.communityHubOutcome='adjust';Y.communityHubSustainable=true;L.know+=4;L.action+=2;L.hp+=1;say('家賃、光熱費、仕入れ、保険、修繕、売上、寄付、スタッフの作業時間を一覧にした。利用が少ない時間帯を閉め、イベントを月数回に絞り、休める担当体制をつくる。小さくするのは失敗ではない。場所と人の両方が長く続くように、運営方法を変えることにした。','big')}},
+      {t:'利用者・近隣住民・協力団体と話し、役割を分ける',sub:'一人の善意に依存しない',w:3,go(){Y.communityHubOutcome='shared';Y.becomesSupporter=true;L.rel+=4;L.action+=3;L.know+=2;say('利用者や近隣の人、協力団体と話し、受付、会計、企画、掃除、広報などの役割を小さく分けた。得意なことや参加できる時間は人によって違う。無償の手伝いを当然と思わず、負担を確認し、必要な仕事には予算をつける。場所は所有者一人の熱意だけではなく、関わる人との約束で支えられる。','big')}},
+      {t:'無理に続けず、一時休業・縮小・終了も含めて話し合う',sub:'人の暮らしや資産を守るための撤退判断',w:3,go(){Y.communityHubOutcome='pause-or-close';Y.communityHubSustainable=false;L.know+=3;L.hp+=2;say('運営する人の疲労や赤字を隠さず共有し、休業や縮小も選択肢に入れた。地域に必要な場所でも、特定の人が生活や健康を犠牲にしてまで続けることはできない。終了する場合も、利用者への案内、会計や契約の整理、残った資金の扱いを確認し、協力してくれた人に経緯を伝える。','big')}},
+      {t:'別の仕事で収入を確保し、週末だけの活動として続ける',sub:'本業と地域活動を組み合わせる',w:3,go(){Y.communityHubOutcome='side-project';Y.communityHubSustainable=true;L.savings+=3;L.hp+=1;L.rel+=2;say('カフェだけで生活費を稼ぐことは難しいと判断し、本業や別の収入源を保ちながら、開く日を週末や月数回に絞った。自分の収入と活動の会計を混ぜず、続けるための時間と費用を決める。地域の居場所は、必ずしも一つの大きな事業でなければならないわけではない。','big')}}
+    ]});return;
+  }
+  if(a===30&&y>=2000&&!Y.taxBusiness&&!L.used.has('y7:tax-business')){
+    Y.taxBusiness=true;L.used.add('y7:tax-business');
+    ask({title:'30歳：副業・起業の売上は、そのまま利益？',text:'地域で小さな仕事を頼まれ、事業にできそうだ。売上があっても、材料費・交通費・保険・税金・入金までの時間がある。売上と利益、利益と手元資金は同じではない。会社員の副業でも、収入や経費、申告の要否は状況で変わる。',opts:[
+      {t:'小さく試し、売上・経費・入金日を記録する',sub:'固定費を抑え、撤退条件も決める',w:3,go(){Y.taxBusiness='records';L.know+=4;L.action=(L.action||0)+3;L.savings-=Math.min(10,Math.max(0,L.savings));say('小さな試作品から始め、売上だけでなく原価や交通費、入金日を記録する。続ける条件と撤退する条件も決めた。数字を確認することで、思いだけでは見えなかった課題がわかる。','big')}} ,
+      {t:'仕事を受ける前に、税務・契約・保険を専門窓口で確認する',sub:'条件は働き方や収入、地域によって異なる',w:3,go(){Y.taxBusiness='advice';L.know+=4;L.rel+=1;say('契約内容や経費の扱い、税務申告、必要な保険を自治体や税務署などの窓口で確認する。わからないことを専門家に聞くのも、事業を続けるための力だ。','big')}} ,
+      {t:'売上が見込めそうなので、借入や固定費を一気に増やす',sub:'売上予測が外れると返済と固定費が残る',w:1,go(){Y.taxBusiness='overexpand';Y.businessDebt=(Y.businessDebt||0)+Math.min(100,Math.max(20,Math.round((L.income||200)*.15)));L.savings-=Math.min(10,Math.max(0,L.savings));L.know+=1;say('売上が伸びると見込んで先に設備や固定費を増やした。しかし入金が遅れたり需要が続かなかったりすると、売上があっても返済資金が足りなくなる。資金繰りを見直すことになった。')}}
+    ]});return;
+  }
+  if(a===40&&y>=2000&&!Y.lifeInsurance&&!L.used.has('y7:life-insurance')){
+    Y.lifeInsurance=true;L.used.add('y7:life-insurance');
+    ask({title:'40歳：家族・住まい・老後のお金を考える',text:'家族の状況や働き方が変わり、教育費、住居費、介護、病気、老後など、必要なお金の時期が見え始めた。すべてに保険をかけるのではなく、公的保障・貯蓄・民間保険の役割を整理し、家計に合う備えを考えたい。',opts:[
+      {t:'家計と公的保障を確認し、必要な保障だけ検討する',sub:'保険料と保障内容を比較し、定期的に見直す',w:3,go(){Y.lifeInsurance='review';L.know+=3;L.savings-=Math.min(5,Math.max(0,L.savings));say('毎月の固定費、健康保険や年金などの公的制度、貯蓄で対応できる範囲を確認する。足りない部分だけ民間の保障を検討し、契約内容を定期的に見直すことにした。','big')}} ,
+      {t:'教育・介護・住まいなど、数年以内の支出を先に積み立てる',sub:'使う時期が近い資金は値動きの大きい投資に寄せすぎない',w:3,go(){Y.lifeInsurance='goals';L.savings+=20;L.know+=3;say('何年後に何へ使うお金なのかを書き分け、近いうちに必要な資金は値動きの小さい形で準備する。長期資金と短期資金を同じ扱いにしないことにした。','big')}} ,
+      {t:'将来の不安から、内容をよく見ずに契約を増やす',sub:'保障の重複や家計を圧迫する保険料に注意',w:1,go(){Y.lifeInsurance='overinsured';L.savings-=Math.min(15,Math.max(0,L.savings));L.know+=1;say('不安から契約を増やしたが、保険料が毎月の家計を圧迫し始める。保障の重複や解約条件を確認し、自分に必要なものを見直すことになった。')}}
+    ]});return;
+  }
+  if(a===60&&y>=2000&&!Y.retirementPlan&&!L.used.has('y7:retirement-plan')){
+    Y.retirementPlan=true;L.used.add('y7:retirement-plan');
+    ask({title:'60歳：年金だけで暮らせる？',text:'退職や働き方の変化が近づく。公的年金の見込み額、住居費、医療・介護費、働く期間、貯蓄の取り崩し方を確認する。年金額や受給条件は加入歴などで異なり、制度も変わるため、自分の記録に基づいて考える必要がある。',opts:[
+      {t:'ねんきん定期便などで見込みを確認し、支出計画を立てる',sub:'不足額を把握して、働き方や取り崩しを調整',w:3,go(){Y.retirementPlan='estimate';L.know+=4;L.action=(L.action||0)+1;say('年金の見込みと毎月の支出を照らし合わせ、必要なら働く期間や生活費、資産の取り崩し方を調整することにした。漠然とした不安が、考えられる課題に変わった。','big')}} ,
+      {t:'健康を保ち、無理のない範囲で働き続ける選択肢を持つ',sub:'収入だけでなく、健康と暮らしの質も考える',w:3,go(){Y.retirementPlan='work';L.hp+=2;L.know+=2;say('体調と相談しながら、短時間の仕事や経験を活かせる役割を探す。働くことは収入だけでなく、人とのつながりや生活のリズムにもなるが、休む時間も確保する。','big')}} ,
+      {t:'資産の運用益だけで生活できると考え、計画を立てない',sub:'市場の下落や物価上昇で計画が崩れることも',w:1,go(){Y.retirementPlan='unplanned';L.know+=1;say('資産運用に期待していたが、相場や物価は思いどおりにならない。必要な生活費と資産の取り崩しペースを把握していなかったため、計画を立て直すことになった。')}}
+    ]});return;
+  }
   // 地域未来留学を選んだ直後に、到着イベントを最優先で発生させる。
   if(Y.highRoute==="LOCAL_RYUGAKU"&&!Y.arrivalStory&&!L.used.has('y7:arrival-story')){
     Y.arrivalStory=true;L.used.add('y7:arrival-story');
@@ -1899,6 +1969,39 @@ function makerisaStory(a){
     return p;
   };
   const trust=(id)=>Y.contacts[id]?.trust||0;
+  // 2026-10-20追加：画像参考の「日常の手伝い→人との関係→失敗→将来への接続」を複数年に分けて描く。
+  if(a===16&&y>=2000&&!Y.islandWorkExperience&&!L.used.has('y7:island-work-experience')&&Y.highRoute==='LOCAL_RYUGAKU'){
+    Y.islandWorkExperience=true;L.used.add('y7:island-work-experience');
+    ask({title:'16歳：島の暮らしは、観光パンフレットと違う',text:'休日、地域の人から「畑の片づけを少し手伝ってみる？」と声をかけられた。海も景色もきれい。でも暮らしは、天気や船の時間、買い物、働く人の都合に左右される。島留学は、珍しい体験を集めるだけではない。暮らしの手間も含めて、ここで生きる人の毎日を知る時間なのかもしれない。',opts:[
+      {t:'畑や作業場に行き、言われた仕事をやってみる',sub:'役に立てるかはわからない。まず一緒に動いてみる',w:3,go(){Y.islandWorkExperience='hands-on';Y.localVisits=(Y.localVisits||0)+1;Y.islandWork=true;L.action=(L.action||0)+3;L.rel+=2;const p=meet('islandHost','暮らしの仕事を教えてくれる地域の人','localHost');say('道具の置き場所も、作業の段取りもわからず、何度も聞き直す。思ったより時間がかかった。それでも終わるころ、地域の人が「次はこっちも頼むね」と言ってくれた。景色を見ているだけでは知らなかった暮らしの手触りと、誰かと一緒に働く安心感が少し見えてきた。','big')}},
+      {t:'作業のあとにお茶を飲み、暮らしの話を聞く',sub:'仕事の背景や、その人の人生に触れる',w:3,go(){Y.islandWorkExperience='conversation';Y.localVisits=(Y.localVisits||0)+1;L.know+=2;L.rel+=2;const p=meet('islandHost','暮らしの仕事を教えてくれる地域の人','localHost');say('作業は少しだけ手伝い、そのあとお茶を飲みながら話を聞いた。便利なものが少ない不便さもあれば、困ったときに顔が浮かぶ人がいる心強さもある。地域の魅力は景色だけではなく、人と人の間にあるのかもしれない。','big')}},
+      {t:'今日は休みたいと伝え、自分の時間を過ごす',sub:'いつも参加しなくてもいい',w:3,go(){Y.islandWorkExperience='rest';say('今日は自分の時間を過ごすことにした。誘いを断ったからといって、関係が終わるわけではない。寮でゆっくりしていると、同級生が手伝い先で聞いた面白い話を教えてくれた。自分のペースで関わる方法もある。')}}
+    ]});return;
+  }
+  if(a>=17&&a<=18&&y>=2000&&!Y.islandFriction&&!L.used.has('y7:island-friction')&&Y.highRoute==='LOCAL_RYUGAKU'&&(Y.islandWorkExperience||Y.localVisits||Y.arrivalAction)){
+    Y.islandFriction=true;L.used.add('y7:island-friction');
+    ask({title:'17歳：手伝いたい気持ちだけでは、うまくいかない',text:'地域イベントの準備に参加した。自分たちは「若者向けの企画ならSNSで告知すれば人が来る」と考えたが、地域の人から「誰に来てほしいの？」「当日の片づけは誰がする？」と聞かれて言葉に詰まる。島根県の隠岐島前高校の魅力化も、学校だけでなく自治体・地域住民・学習センターなどが長い時間をかけて協働してきた取り組みだ。ひとつのアイデアだけでは続かない。',opts:[
+      {t:'来てほしい人に話を聞き、企画を小さくやり直す',sub:'相手の声と現場の条件から考え直す',w:3,go(){Y.islandFriction='listen';Y.communityListening=true;Y.studyLink=true;L.action=(L.action||0)+3;L.know+=2;L.rel+=2;say('高校生だけで決めず、地域の人や参加してほしい相手に話を聞き直した。すると、必要なのは派手な企画ではなく、参加しやすい時間や移動手段、誰かが安心して来られる雰囲気だとわかった。思いつきを通すより、相手の暮らしに合わせる方がずっと難しく、ずっと面白い。','big')}},
+      {t:'隠岐島前高校の取り組みを手がかりに、役割分担を考える',sub:'学校・地域・行政・学びの場がどう協力しているかを見る',w:3,go(){Y.islandFriction='collaboration';Y.studyLink=true;L.know+=4;L.action=(L.action||0)+2;say('学校だけで全部を背負うのではなく、地域や行政、学びの場がそれぞれ役割を持つ仕組みを調べ、関係者と相談してみる。隠岐島前の取り組みも、ひとりの英雄が町を救った話ではない。意見が違う人たちが、長い時間をかけて続けてきた挑戦なのだと見えてきた。','big')}},
+      {t:'自分には荷が重いと感じ、いったん離れる',sub:'関わってみたからこそ、負担や相性がわかる',w:3,go(){Y.islandFriction='step-back';Y.localDistance=true;say('企画を進める責任や細かな調整に、思った以上に疲れてしまった。いったん離れることにした。やる気がないからではなく、今の自分には別のことを大切にしたい気持ちもある。地域活動は、いつも楽しいわけでも、誰にでも合うわけでもないと実感した。')}}
+    ]});return;
+  }
+  if(a>=20&&a<=22&&y>=2000&&!Y.microStayEncounter&&!L.used.has('y7:micro-stay')&&(Y.highRoute==='LOCAL_RYUGAKU'||Y.localVisits||Y.fieldExperience||Y.studyLink)){
+    Y.microStayEncounter=true;L.used.add('y7:micro-stay');
+    ask({title:'20代前半：移住でも観光でもない「微住」',text:'地域で出会った人から、山形県金山町などで行われている「微住」の話を聞く。1〜2週間ほど地域に滞在し、観光名所を回るだけでなく、町の人と話し、日常の仕事や催しに少し関わりながら暮らしを知る試みだという。移住する覚悟はまだない。でも、短い滞在でも関係をつくれるなら、もう一度知らない土地に飛び込んでみたい気がした。',opts:[
+      {t:'金山町の微住を参考に、地元の人と一緒に催しを手伝う',sub:'お客さんではなく、少しだけ地域の一員になる',w:3,go(){Y.microStay='participate';Y.localVisits=(Y.localVisits||0)+1;Y.fieldExperience=true;L.action=(L.action||0)+4;L.rel+=3;const p=meet('microStayHost','微住先で出会った案内人','localHost');say('町の人に案内してもらい、催しの準備や片づけを手伝った。観光客として訪れたら見過ごしていた店や、いつも集まる人たちの会話に混ぜてもらう。数日で町のことをわかったつもりにはなれない。それでも「また来たら声をかけて」と言われ、次に戻る理由ができた。','big')}},
+      {t:'地域の喫茶店や商店に通い、店の人の話を聞く',sub:'有名な場所より、日常の中にいる人と出会う',w:3,go(){Y.microStay='listen';Y.communityListening=true;L.know+=3;L.rel+=2;const p=meet('microStayHost','微住先で出会った案内人','localHost');say('毎日同じ店に顔を出すと、店主が近所の人を紹介してくれた。地域の魅力はパンフレットに載る名所だけではなく、誰が誰を気にかけ、何を大切にしているかにもある。知らない町が、少しだけ「また帰ってきてもいい場所」に見えてきた。','big')}},
+      {t:'今は滞在せず、仕事や暮らしを優先する',sub:'地域との関係は、住むことだけで続くわけではない',w:3,go(){Y.microStay='defer';say('今は滞在を見送ることにした。時間もお金も限られている。地域に住むことだけが関わり方ではないし、必要なときに連絡を取ったり、できる範囲で応援したりする方法もある。')}}
+    ]});return;
+  }
+  if(a>=22&&a<=25&&y>=2000&&!Y.adultIslandPath&&!L.used.has('y7:adult-island-path')&&(Y.microStay==='participate'||Y.microStay==='listen'||Y.fieldExperience||Y.caseStudyChoice==='compare')){
+    Y.adultIslandPath=true;L.used.add('y7:adult-island-path');
+    ask({title:'卒業後：もう一度、島で暮らしながら働く？',text:'隠岐島前地域では、高校の島留学だけでなく、20代前後の若者が一定期間、島で暮らしながら仕事を体験する「大人の島留学」も行われている。高校生のときに見た島の暮らしを、今度は働く側から見てみる選択肢だ。ただし、好きな場所でも、仕事の責任や生活費、人間関係は現実としてある。',opts:[
+      {t:'期間を決めて島で働き、暮らしの現実を確かめる',sub:'移住を即決せず、仕事と生活の両方を体験する',w:3,go(){Y.adultIslandPath='work-trial';Y.localVisits=(Y.localVisits||0)+1;Y.fieldExperience=true;L.action=(L.action||0)+4;L.know+=2;L.rel+=2;const p=meet('adultIslandColleague','島で働く同僚','colleague');say('一定期間、島の事業所で働いてみる。やりがいはあるが、忙しい日も、意見が合わない日もある。高校生のころは見えなかった収支や人手の問題にも向き合う。好きという気持ちだけでは続かない一方、働く人の工夫を知ったことで、この場所への見方が深くなった。','big')}},
+      {t:'都市の仕事を続けながら、プロジェクト単位で関わる',sub:'二拠点・副業・短期滞在などを組み合わせる',w:3,go(){Y.adultIslandPath='project';Y.cityRegionBridge=true;L.action=(L.action||0)+3;L.know+=3;say('島に移住するのではなく、都市での仕事を続けながら、時々現地に行ってプロジェクトを手伝うことにした。関わる頻度が少ないからこそ、現地の人に任せきりにせず、できることとできないことを先に伝える。距離を越えて関係を続けるには、熱意だけでなく約束を守ることが大切だと感じた。','big')}},
+      {t:'今の進路を選び、島での経験は別の仕事に活かす',sub:'戻らなくても、経験の意味は消えない',w:3,go(){Y.adultIslandPath='other-career';Y.studyLink=true;L.know+=3;say('今は別の仕事や学びを選ぶことにした。島に戻らなくても、現場で人の話を聞いたこと、うまくいかない企画を一緒に直したことは、仕事の進め方に残っている。経験を一つの職業に閉じ込めず、必要な場所で活かしていこうと思う。','big')}}
+    ]});return;
+  }
   // AI時代の学び：勉強を否定せず、知識以外の経験も将来の選択肢につなぐ。
   if(a>=16&&a<=18&&y>=2020&&!Y.aiFutureQuestion&&!L.used.has('y7:ai-future-question')&&L.school){
     Y.aiFutureQuestion=true;L.used.add('y7:ai-future-question');
@@ -1942,6 +2045,16 @@ function makerisaStory(a){
       {t:'学校生活や進路を優先し、いったん離れる',sub:'離れることも、経験を失うことではない',w:3,go(){Y.youthProposalResult='pause';say('進路や生活を優先して、活動からいったん離れることにした。提案はすぐに実現しなかった。それでも、若者の意見が社会に届くまでに、時間と調整が必要だと知った経験は残る。')}}
     ]});return;
   }
+  // 2026-10-20更新：AIが事例を調べ、ゲームでは主人公が現場へ飛び込んで見えてくる構成に。
+  if(a>=19&&a<=23&&y>=2000&&!Y.caseStudyEncounter&&!L.used.has('y7:regional-case-study')&&(Y.localVisits||Y.youthPlaceVisited||Y.youthCouncil||Y.studyFromField||Y.communityListening||Y.aiProject)){
+    Y.caseStudyEncounter=true;L.used.add('y7:regional-case-study');
+    ask({title:'20歳前後：現場に飛び込んだ先で、何が見えてくる？',text:'地域活動で知り合った大人が、「話を聞くだけじゃなく、実際にやっている場所へ行ってみない？」と誘ってくれた。徳島県上勝町では、横石知二さんが料理に添えられた葉っぱに価値を見いだし、地域の人と「葉っぱビジネス」を育てた。一方、山梨県の南アルプス完熟農園は、開業後に集客や資金面で苦戦し、営業を終えた。成功談も失敗談も、外から名前だけ覚えても肝心なことは見えにくい。現地の空気、働く人の工夫、続ける難しさに触れたとき、自分の問いが生まれるかもしれない。',opts:[
+      {t:'上勝町を訪ね、出荷の準備や地域の人の仕事に触れる',sub:'葉っぱが商品になるまで、手を動かしてみる',w:3,go(){Y.caseStudyChoice='kamikatsu';Y.studyLink=true;Y.caseStudyResearch=true;Y.fieldExperience=true;L.know+=3;L.action=(L.action||0)+4;const p=meet('caseMentor','現地で仕事を案内してくれる人','mentor');say('葉っぱを選び、傷や大きさを確かめ、出荷の準備を手伝う。山にある葉っぱを見つけただけでは仕事にならない。使う料理人の希望に合わせ、品質をそろえ、必要な時期に届ける人たちがいる。作業をしながら聞いた話で、成功の裏には地道な段取りと信頼の積み重ねがあると見えてきた。自分の身近な場所にも、まだ価値に気づいていないものがあるのだろうか。','big')}},
+      {t:'かつての農園の場所を訪ね、地域の人から当時の話を聞く',sub:'なぜ人が集まらず、続けることが難しくなったのか',w:3,go(){Y.caseStudyChoice='failure';Y.studyLink=true;Y.caseStudyResearch=true;Y.fieldExperience=true;L.know+=3;L.action=(L.action||0)+3;const p=meet('caseMentor','地域の事業を見てきた人','mentor');say('かつて大きな期待を集めた農園の話を、地域で当時を知る人から聞く。施設をつくることと、何度も来てもらう理由をつくることは別だった。人を呼ぶ企画だけでなく、日々の運営費や担い手、地域との関係を続けられるかも大切だったのだと気づく。失敗は誰か一人のせいと決めつけられない。始める前にどんな声を聞けたのか、自分なら何を小さく試すかが気になってきた。','big')}},
+      {t:'二つの現場に飛び込み、働く人の工夫と苦労を比べる',sub:'成功をコピーするのではなく、自分の地域に合う問いを見つける',w:3,go(){Y.caseStudyChoice='compare';Y.studyLink=true;Y.caseStudyResearch=true;Y.fieldExperience=true;Y.localQuestion=true;L.know+=3;L.action=(L.action||0)+5;say('二つの場所に足を運び、続いている取り組みと続かなかった取り組みの両方を、そこで暮らす人の話から考えた。最初は「成功の方法」を探していたのに、帰り道には「自分の地域では、誰が何に困っているんだろう」という問いが浮かんでいた。すぐに答えは出ない。それでも、問いを持ってもう一度現場へ行く理由ができた。','big')}},
+      {t:'今は別の道に進み、必要になったら現場を訪ねる',sub:'地域づくりに関わることだけが正解ではない',w:3,go(){Y.caseStudyChoice='defer';L.know+=1;say('今は自分の進路や仕事を優先することにした。地域づくりを仕事にしなくても、現場に飛び込んだ人たちの工夫や、続ける難しさから学べることはありそうだ。必要になったときは、記事を読むだけで終わらせず、実際に人に会いに行くことも考えてみよう。')}}
+    ]});return;
+  }
   // 2026-10-20追加：現場での摩擦、学び直し、将来像の分岐をつなぐ。
   if(a>=17&&a<=19&&y>=2000&&!Y.fieldFriction&&!L.used.has('y7:field-friction')&&(Y.localVisits||Y.youthPlaceVisited||Y.youthCouncil||Y.aiPath==='community'||Y.aiProject)){
     Y.fieldFriction=true;L.used.add('y7:field-friction');
@@ -1949,6 +2062,92 @@ function makerisaStory(a){
       {t:'悔しさを持ち帰り、必要な知識を調べ直す',sub:'勉強を現場で使うための武器に変える',w:3,go(){Y.fieldFrictionResponse='study';Y.studyFromField=true;Y.studyLink=true;L.know+=4;L.action+=1;say('悔しさを持ち帰り、地域の制度や人口、予算の仕組みを調べ直すことにした。覚えるためだけの勉強とは違い、知りたいことが具体的にある。次に話すときは、根拠を持って質問したい。','big')}},
       {t:'自分の案に固執せず、住民や利用者の話を聞き直す',sub:'自分の正しさより、現場の実情を知る',w:3,go(){Y.fieldFrictionResponse='listen';Y.communityListening=true;L.rel+=2;L.know+=2;const p=Y.contacts.aiCommunityAdult||Y.contacts.youthOfficial;if(p){p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a}say('自分の案を通すより先に、実際に使う人や、以前から関わる人の話を聞き直すことにした。困りごとは外から見ただけではわからない。話を聞くほど、答えを出す前に問いを立て直す必要があるとわかった。','big')}},
       {t:'自分には合わないと感じ、活動から距離を置く',sub:'共鳴しないことも、その人なりの発見',w:3,go(){Y.fieldFrictionResponse='leave';Y.localDistance=true;say('熱意のある大人たちの話や、細かな調整に疲れてしまった。自分はこの活動にそこまで惹かれていないのかもしれない。無理に感動したふりをせず、いったん距離を置くことにした。経験してみたからこそ、合う・合わないが少しわかった。')}}
+    ]});return;
+  }
+  // 実在する地域の取り組みを、大人になった主人公自身が小さく実践する分岐。成功談を読むだけで終わらせない。
+  if(a>=25&&a<=30&&y>=2000&&!Y.adultRealCaseChallenge&&!L.used.has('y7:adult-real-case-challenge')&&(Y.caseStudyChoice==='kamikatsu'||Y.caseStudyChoice==='failure'||Y.caseStudyChoice==='compare'||Y.adultIslandPath||Y.microStay==='participate'||Y.microStay==='listen'||Y.fieldExperience||Y.studyFromField||Y.communityListening)){
+    Y.adultRealCaseChallenge=true;L.used.add('y7:adult-real-case-challenge');
+    ask({title:'20代後半：今度は、自分が現場で試す番',text:'これまで訪ねた場所や、そこで出会った人のことを思い出す。上勝町の葉っぱビジネスは、思いつきだけでなく、買い手の希望を知り、品質をそろえ、農家と仕組みをつくることで続いてきた。一方、地域の事業には、集客や資金繰り、担い手不足で続かなくなった例もある。隠岐島前地域には、若者が一定期間暮らしながら働く「大人の島留学」もある。自分も、誰かの成功をそのまま真似るのではなく、実際の現場で小さく試してみることはできるだろうか。',opts:[
+      {t:'島で期間を決めて働き、現場の仕事を一つ任せてもらう',sub:'大人の島留学のように、暮らしと仕事の両方に入ってみる',w:3,go(){Y.adultRealCaseChallenge='island-work';Y.adultIslandPath=Y.adultIslandPath||'work-trial';Y.fieldExperience=true;L.action=(L.action||0)+5;L.rel+=3;L.know+=2;const p=meet('adultCaseHost','島で仕事を任せてくれる人','localHost');say('一定期間、島の事業所で働き、ひとつの仕事を任せてもらうことにした。理想を語る会議だけでなく、予約の変更、仕入れ、欠勤の穴埋め、予算の確認など、地味な仕事も続く。地域のためという気持ちだけでは回らない。働く人の生活と事業の収支を知って、続く仕組みをつくる難しさが見えてきた。','big')}},
+      {t:'微住をヒントに、短い滞在で地域の人と小さな企画を試す',sub:'いきなり移住せず、誰の役に立つかを聞いてから始める',w:3,go(){Y.adultRealCaseChallenge='micro-pilot';Y.microStay=Y.microStay||'participate';Y.fieldExperience=true;Y.communityListening=true;L.action=(L.action||0)+5;L.rel+=3;L.know+=3;const p=meet('adultCaseHost','小さな企画を一緒に試す地域の人','localHost');say('金山町の微住のように、まず短く滞在し、地域の人と日々の仕事や催しに関わりながら、困りごとを聞くことにした。自分が面白いと思った企画は、住民にとって優先順位が低いとわかった。そこで大きな予算を使う前に、少人数で一度だけ試し、来た人の声と準備にかかった手間を記録した。小さく試すと、続けるために何が必要かが少し見えてきた。','big')}},
+      {t:'葉っぱビジネスから学び、身近な地域資源の売り方を一緒に考える',sub:'商品を思いつくだけでなく、買い手・品質・担い手・届け方を確かめる',w:3,go(){Y.adultRealCaseChallenge='local-product';Y.studyLink=true;Y.localQuestion=true;Y.fieldExperience=true;L.action=(L.action||0)+4;L.know+=4;L.rel+=2;const p=meet('adultCaseHost','地域資源の活かし方を考える協力者','mentor');say('上勝町の葉っぱビジネスを参考に、身近な地域資源を誰が必要としているのか、実際に買い手候補に聞いてみる。自分が価値だと思うものと、お金を払ってでも欲しいものは同じとは限らない。試作品を小さくつくり、品質や届け方、作業を担う人の負担も確かめる。アイデアを発表して終わるのではなく、現場の人と試し、反応を見て直すことが始まった。','big')}},
+      {t:'失敗事例を手がかりに、始める前に撤退条件や費用を決める',sub:'勢いだけで始めず、需要・費用・運営する人を確かめる',w:3,go(){Y.adultRealCaseChallenge='risk-check';Y.studyLink=true;Y.localQuestion=true;L.know+=4;L.action+=2;say('過去に続かなかった地域事業を調べ、始める前に誰に必要とされているか、毎月いくらかかるか、誰が運営を担うかを確かめることにした。仲間の中には「まず始めよう」と急ぐ人もいる。小さく試す期間と、続ける・変える・やめる判断の条件を決めてから動くことにした。失敗を恐れて何もしないのではなく、失敗しても学びが残る大きさにする。','big')}},
+      {t:'今は挑戦せず、経験を今の仕事や暮らしに持ち帰る',sub:'実践を選ばないことも、現実的な判断',w:3,go(){Y.adultRealCaseChallenge='defer';L.know+=1;say('今は新しい挑戦を始めず、今の仕事や暮らしを優先することにした。現場で学んだことは、すぐ事業にしなくても、仕事で相手の声を聞くことや、無理のない計画を立てることに活かせる。余裕ができたとき、また小さく試すか考えればいい。')}}
+    ]});return;
+  }
+  // 2026-10-20追加：夢がすぐ見つからない時期も人生の一部として描く。
+  if(a>=16&&a<=19&&y>=2000&&!Y.noPurposeSeason&&!L.used.has('y7:no-purpose-season')&&Y.highRoute==='LOCAL_RYUGAKU'&&(Y.arrivalStory||Y.islandWorkExperience||Y.localVisits||Y.localDistance)){
+    Y.noPurposeSeason=true;L.used.add('y7:no-purpose-season');
+    ask({title:'高校生活：ここに来たのに、まだ何も見つからない',text:'地域での生活にも慣れてきた。でも、心を動かされる出来事が毎日起こるわけではない。友達は進路を決め始め、SNSには充実した活動の写真が流れてくる。自分だけ何も見つけられていない気がする。',opts:[
+      {t:'気になったことを一つだけ、もう一度見に行く',sub:'夢を決めず、具体的な疑問から始める',w:3,go(){Y.noPurposeResponse='small-step';Y.localQuestion=true;Y.fieldExperience=true;L.action+=2;L.know+=1;say('大きな目標は決めず、前に少し気になった仕事をもう一度見に行くことにした。すぐに将来が見えたわけではない。でも「どうしてこの作業はこの順番なんだろう」という小さな疑問が残った。夢は何度か関わるうちに育つのかもしれない。','big')}},
+      {t:'先生や寮の人に、焦っている気持ちを話す',sub:'一人で答えを出そうとしない',w:3,go(){Y.noPurposeResponse='talk';L.rel+=2;meet('trustedAdult','進路を急がず話を聞いてくれる大人','mentor');say('「ここに来たら何か見つかると思っていた」と話してみた。大人は、すぐに答えを出さなくてもいいと言った。迷っている時間にも、自分が何に反応するのか確かめる意味はある。','big')}},
+      {t:'地域活動から距離を置き、部活や友人との時間を大切にする',sub:'合わない時期や休む選択もある',w:3,go(){Y.noPurposeResponse='pause';Y.localDistance=true;L.hp+=2;say('しばらく地域活動から距離を置くことにした。部活や友人との時間を大切にし、生活のペースを整える。ここで何かを見つけなければならない義務はない。少し離れたことで、自分に合う距離も考えられる。')}}
+    ]});return;
+  }
+  // 企画の失敗を、聞き直し・縮小・撤退へ分岐させる。
+  if(a>=17&&a<=21&&y>=2000&&!Y.projectFailureRepair&&!L.used.has('y7:project-failure-repair')&&(Y.communityListening||Y.islandFriction==='listen'||Y.islandFriction==='collaboration'||Y.youthCouncil||Y.localVisits>=2||Y.fieldExperience&&Y.studyLink)){
+    Y.projectFailureRepair=true;L.used.add('y7:project-failure-repair');
+    ask({title:'企画がうまくいかなかった。次はどうする？',text:'準備した企画は、予想したほど人が集まらなかった。手伝ってくれた人の時間も使ってしまい、申し訳なさが残る。「告知を増やせば成功する」と仲間は言うが、地域の人からは「そもそも誰のための企画だったの？」と聞かれた。',opts:[
+      {t:'来なかった人や住民に話を聞き、目的から組み直す',sub:'自分たちの思い込みを確かめる',w:3,go(){Y.projectRepair='listen';Y.communityListening=true;Y.studyFromField=true;L.know+=3;L.action+=2;L.rel+=2;say('来てほしかった人に話を聞くと、開催時間や移動手段が合わず、参加しにくかったとわかった。次は必要な人と一緒に目的を決める。失敗を隠さず、使ってしまった人の時間にも向き合うことが信頼を取り戻す第一歩になった。','big')}},
+      {t:'費用と人手を見直し、小さな試行に縮小する',sub:'成功の規模より、続けられる仕組みを考える',w:3,go(){Y.projectRepair='shrink';Y.studyLink=true;L.know+=3;L.action+=3;say('大きなイベントはやめ、少人数で短時間だけ試す形に変えた。必要な費用、準備時間、片づけをする人を事前に決める。派手さはなくなったが、無理をする人が減り、改善点も見えた。小さくすることは、あきらめることとは違う。','big')}},
+      {t:'仲間と相談して企画を終了し、何が起きたか記録する',sub:'撤退も責任ある判断になりうる',w:3,go(){Y.projectRepair='stop';Y.localDistance=true;L.know+=2;L.hp+=1;say('関係者と相談し、今回は企画を終了することにした。悔しさはあるが、誰かが無理をするのも違う。費用、参加者の反応、準備の負担を記録し、協力してくれた人に結果を伝える。失敗を次に活かす形にするのも責任だ。','big')}}
+    ]});return;
+  }
+  // 仲間もそれぞれ別の人生を歩む。
+  if(a>=18&&a<=23&&y>=2000&&!Y.peerDivergence&&!L.used.has('y7:peer-divergence')&&(Y.outsidePeer||Y.youthPlaceVisited||Y.youthCouncil||Y.islandWorkExperience||Y.arrivalAction)){
+    Y.peerDivergence=true;L.used.add('y7:peer-divergence');
+    ask({title:'同じ場所で出会った友達が、別の道を選ぶ',text:'地域で一緒に活動した友達が「自分は地元を離れて、別のことを学びたい」と話す。別の友達は地域に残るつもりらしい。同じ経験をしても、心に残ったものも、優先したい暮らしも違う。',opts:[
+      {t:'離れる友達の話を聞き、応援する',sub:'同じ経験から違う答えが生まれていい',w:3,go(){Y.peerDivergence='support-leave';Y.peerLeaves=true;L.rel+=2;say('離れる理由を聞くと、その友達は地域が嫌いになったのではなく、別の分野を学びたいのだとわかった。地域で過ごした時間は、同じ場所に残ることだけで証明されない。別々の場所で経験を積んで、いつかまた話そうと思った。','big')}},
+      {t:'残る友達と、無理のない範囲で関係を続ける',sub:'近くにいる人の選択も尊重する',w:3,go(){Y.peerDivergence='support-stay';Y.peerStays=true;L.rel+=2;say('地域に残る友達とも話した。残ることにも、離れることにも、それぞれ事情がある。自分と違う選択をしたからといって関係が切れるわけではない。何年か後、お互いの経験を持ち寄れたらいい。','big')}},
+      {t:'自分も進路を決めきらず、まず試せることを探す',sub:'友達の選択を自分の答えにしない',w:3,go(){Y.peerDivergence='own-pace';L.know+=2;L.action+=1;say('友達の決断に刺激を受けたけれど、自分も同じように決める必要はない。短いインターンや授業、アルバイトなど、今の自分が試せることを探す。他人の人生は参考になる。でも、自分の答えは自分で確かめたい。')}}
+    ]});return;
+  }
+  // 大学を就職の切符だけでなく、問いを深める場所として描く。
+  if(a>=19&&a<=23&&y>=2000&&!Y.universityMeaningEvent&&!L.used.has('y7:university-meaning')&&(Y.universityRouteAsked||Y.university||Y.admissionType||Y.studyLink||Y.aiPath==='study')){
+    Y.universityMeaningEvent=true;L.used.add('y7:university-meaning');
+    ask({title:'大学生活：入学したあと、何を問い続ける？',text:'入試が終わり、大学生活が始まった。周りには資格や就職先を早く決めたい人もいれば、研究やサークル、地域活動に夢中な人もいる。出された問題に正解するだけでは進まない課題もある。大学は就職のためだけの場所なのか、それとも自分の問いを深める場所なのか。',opts:[
+      {t:'現場で気になった問題を、授業や研究で掘り下げる',sub:'体験を知識や専門性につなぐ',w:3,go(){Y.universityMeaning='research';Y.studyFromField=true;Y.studyLink=true;L.know+=4;L.action+=1;say('高校時代に見た地域の困りごとを、授業で学ぶ経済や福祉、情報の知識と結びつけて考えることにした。現場を知っているだけでは解けない問題も、理論だけでは見落とすこともある。行き来しながら、自分の問いを具体的にしていく。','big')}},
+      {t:'研究室やゼミの人に会い、学びたいことを探す',sub:'大学の価値は偏差値や名前だけでは測れない',w:3,go(){Y.universityMeaning='people';Y.communityListening=true;L.rel+=2;L.know+=3;say('教員や先輩の話を聞き、研究室やゼミを見学してみる。大学名だけではわからなかった、どんな問いを面白がる人がいるか、どんな方法で考えるかが見えてきた。入学をゴールにせず、誰と何を学べるかを確かめる。','big')}},
+      {t:'まずは生活を整え、今は目の前の授業や仕事に集中する',sub:'すぐに大きな目的が見つからなくてもいい',w:3,go(){Y.universityMeaning='steady';L.hp+=2;L.know+=1;say('今は大きなテーマを決めず、授業に出て、生活を整え、興味のあることを少しずつ試すことにした。大学に入れば自動的に目的が見つかるわけではない。焦って目標を掲げるより、続けて考えたいことを探す時間にしてもいい。')}}
+    ]});return;
+  }
+  // 成人後の地域との関わり方は、移住だけではない。
+  if(a>=25&&a<=29&&y>=2000&&!Y.regionalRelationshipForms&&!L.used.has('y7:regional-relationship-forms')&&(Y.fieldExperience||Y.localVisits||Y.studyLink||Y.adultIslandPath||Y.microStay==='participate'||Y.microStay==='listen')){
+    Y.regionalRelationshipForms=true;L.used.add('y7:regional-relationship-forms');
+    ask({title:'20代後半：地域と、どんな距離で関わり続ける？',text:'暮らしや仕事を選ぶ時期になった。地域に移住して働く道もあれば、都市で働きながら時々訪れる、専門職として外から支える、数年だけ関わる、今は離れるという道もある。以前の経験を大切にすることと、同じ場所に住み続けることは同じではない。',opts:[
+      {t:'都市の仕事を続けながら、地域の人と定期的にプロジェクトを進める',sub:'二拠点・副業・遠隔の協力を組み合わせる',w:3,go(){Y.regionalRelationship='bridge';Y.cityRegionBridge=true;L.action+=3;L.rel+=2;say('都市での仕事を続けながら、地域の人と役割や期限を決めてプロジェクトに関わる。現地に任せきりにせず、できることとできないことを共有する。距離があっても、約束を守り、相手の負担を想像することで関係を続けられる。','big')}},
+      {t:'地域に移り住み、仕事と暮らしの両方を引き受ける',sub:'憧れだけでなく収入・住まい・人間関係も確かめる',w:3,go(){Y.regionalRelationship='move';Y.adultRegionRole='career';Y.fieldExperience=true;L.action+=3;L.rel+=3;L.know+=2;say('移住を選び、仕事や住まい、地域の人間関係を一つずつ整え始めた。好きな場所でも生活費や仕事の責任はある。地域のために頑張ることだけでなく、自分が無理なく暮らせる条件も話し合い、続けられる形を探す。','big')}},
+      {t:'今の仕事や生活を優先し、地域との関わりは休む',sub:'関わらない時期も、経験を否定することではない',w:3,go(){Y.regionalRelationship='pause';L.hp+=2;say('今は仕事や生活を優先し、地域との関わりを休むことにした。連絡を取らない時期があっても、そこで出会った人や経験が消えるわけではない。余裕ができたときに再び関わるか、そのときの自分で決めればいい。')}},
+      {t:'地域で得た問いを、別の業界や研究の仕事で追いかける',sub:'現場に戻らなくても、経験を専門性に変えられる',w:3,go(){Y.regionalRelationship='career-transfer';Y.studyLink=true;L.know+=4;say('地域活動を職業にするのではなく、別の業界や研究で経験を活かすことにした。現場で見た課題が、仕事で何を確かめ、誰の声を聞くかを変えている。経験を特定の場所に閉じ込めず、別の分野で役立てていく。','big')}}
+    ]});return;
+  }
+  // かつて支えてくれた人も年齢を重ねる。主人公の生活との両立も問う。
+  if(a>=35&&a<=45&&y>=2000&&!Y.oldMentorNeedsHelp&&!L.used.has('y7:old-mentor-needs-help')&&(Y.contacts.mizumoto||Y.contacts.localHost||Y.contacts.mentor||Y.localVisits||Y.highRoute==='LOCAL_RYUGAKU'||Y.becomesSupporter)){
+    Y.oldMentorNeedsHelp=true;L.used.add('y7:old-mentor-needs-help');
+    ask({title:'40歳前後：昔、自分を支えてくれた人から連絡が来る',text:'高校生のころ、困ったときに話を聞いてくれた地域の大人から連絡が来た。地域の活動を続ける人が減り、イベントの担い手も足りないらしい。助けてもらった記憶があるから力になりたい。でも、自分にも仕事や家族、体調や生活の都合がある。感謝だけで、すべてを引き受けることはできない。',opts:[
+      {t:'できる時間と役割を伝え、小さな仕事を引き受ける',sub:'無理なく続く支え方を一緒に考える',w:3,go(){Y.oldMentorResponse='bounded-help';Y.becomesSupporter=true;L.rel+=3;L.action+=2;say('毎週通うことはできないと正直に伝え、月に一度の相談と得意な仕事だけを引き受ける。昔の恩を返し切ることはできない。でも、一人で抱えている作業を分け、次の人にも引き継げる形にすることならできる。支える側にも限界があると認めることが、長く続ける条件になった。','big')}},
+      {t:'周囲の人や若い世代をつなぎ、自分一人で抱えない仕組みをつくる',sub:'次の担い手が参加できる入口をつくる',w:3,go(){Y.oldMentorResponse='connect';Y.cityRegionBridge=true;Y.becomesSupporter=true;L.action+=4;L.rel+=2;say('自分だけが手伝うのではなく、地域の人、学校、若い世代、仕事で知り合った人に相談した。作業を小さく分け、参加できる人が選べるようにする。一人の善意に頼り切らない形を考え始めた。','big')}},
+      {t:'今は引き受けられないと伝え、別の方法を一緒に探す',sub:'断ることも、関係を大切にする一つの方法',w:3,go(){Y.oldMentorResponse='cannot-now';L.hp+=1;L.rel+=1;say('今は引き受けられないと伝えた。無理に約束して守れなくなる方が迷惑をかける。代わりに、相談できそうな団体や、作業を縮小する方法を一緒に考える。感謝していることと、何でも引き受けることは別だ。')}}
+    ]});return;
+  }
+  // AI時代の仕事の変化を、学力ルートの断罪ではなく再学習の分岐として描く。
+  if(a>=35&&a<=50&&y>=2000&&!Y.aiCareerChange&&!L.used.has('y7:ai-career-change')&&(Y.aiPath==='study'||Y.universityMeaning==='research'||Y.universityRouteAsked||Y.adultRealCaseChallenge||Y.lifeDirection)){
+    Y.aiCareerChange=true;L.used.add('y7:ai-career-change');
+    ask({title:'40代：AIで仕事の一部が変わり始める',text:'職場でAIが資料作成や定型的な分析を担うようになり、自分の仕事も少しずつ変わってきた。知識を身につけたことが無駄になったわけではないが、知っているだけでは差をつけにくい場面も増えた。自分は何を磨き直し、どんな価値を出せるだろう。',opts:[
+      {t:'AIを使いこなし、専門知識をより深い判断に使う',sub:'知識と道具を組み合わせる',w:3,go(){Y.aiCareerResponse='augment';Y.studyLink=true;L.know+=4;L.action+=2;say('AIを避けるのではなく、下調べや定型作業に使い、結果を検証して専門的な判断に時間を使う。出力をそのまま信じず、根拠を確かめ、責任を持って説明する。学んできた知識は、問いを立て、答えの質を見極めるために使える。','big')}},
+      {t:'顧客や現場の人と話し、AIだけでは決めにくい課題を見つける',sub:'対話・調整・実行を専門性と組み合わせる',w:3,go(){Y.aiCareerResponse='field';Y.communityListening=true;Y.fieldExperience=true;L.action+=3;L.rel+=2;L.know+=2;say('現場の人と話す時間を増やし、数字や文書だけではわからない事情を確かめる。困りごとを整理し、専門家や関係者をつなぎ、小さく試して結果を見る。AIを使うことと、人の話を聞いて責任ある判断をすることを組み合わせていく。','big')}},
+      {t:'仕事の変化を見ながら、別の専門分野を学び直す',sub:'キャリアを一度決めたら終わりにしない',w:3,go(){Y.aiCareerResponse='reskill';Y.studyLink=true;L.know+=3;L.hp-=1;say('今の仕事だけにこだわらず、必要な技能を学び直すことにした。時間も費用もかかり、すぐ成果が出るとは限らない。それでも経験を振り返りながら新しい道具や分野を学べば、これまでの知識を別の仕事に活かせるかもしれない。','big')}},
+      {t:'今の生活を優先し、変化に備えて小さく試す',sub:'すぐ転職せず、暮らしとのバランスを取る',w:3,go(){Y.aiCareerResponse='steady';L.hp+=1;say('すぐに転職するのではなく、まず仕事の変化を観察し、使える範囲でAIを試すことにした。家族や生活を守ることも大切だ。大きな決断を急がず、少しずつできることを増やしていく。')}}
+    ]});return;
+  }
+  // 実在事例の「成功後の世代交代」も、主人公自身が現場で向き合う。
+  if(a>=30&&a<=35&&y>=2000&&!Y.localSuccessionChallenge&&!L.used.has('y7:local-succession-challenge')&&(Y.adultRealCaseChallenge==='local-product'||Y.caseStudyChoice==='kamikatsu'||Y.localQuestion||Y.fieldExperience&&Y.studyFromField)){
+    Y.localSuccessionChallenge=true;L.used.add('y7:local-succession-challenge');
+    ask({title:'30代：うまくいった仕事を、次の世代へ渡せる？',text:'上勝町の葉っぱビジネスは、約40年続く一方で、高齢化によって生産を担う人が足りず、農家の子どもたちのUターンや後継者育成が課題になっている。成功した仕組みも、始めた人たちが年を重ねれば、そのままでは続かない。自分が関わってきた小さな仕事でも、続けることと、次の人に渡すことを考える時期が来た。',opts:[
+      {t:'長く続けてきた人に会い、仕事の段取りや苦労を教わる',sub:'表に出る成果だけでなく、日々の仕事と引き継ぎを知る',w:3,go(){Y.localSuccessionChoice='learn';Y.communityListening=true;Y.studyLink=true;L.know+=4;L.rel+=3;L.action+=2;meet('localSuccessionMentor','地域の仕事を長く続けてきた人','mentor');say('長く続けてきた人に会い、仕事の段取り、品質を保つ工夫、忙しい時期、収入の波、やめたくなった時のことまで聞いた。成功事例の紹介記事には載りにくい、地味な作業と人間関係が事業を支えていた。引き継ぎは、名前や商品だけを受け取ることではない。続けてきた人の知恵を聞き、自分にもできる形に直すことから始める。','big')}},
+      {t:'若い人が一度試せる研修や小さな役割をつくる',sub:'いきなり全部を背負わせず、試してから選べるようにする',w:3,go(){Y.localSuccessionChoice='training';Y.becomesSupporter=true;Y.studyLink=true;L.action+=4;L.rel+=3;L.know+=2;say('いきなり事業全体を引き継いでもらうのではなく、若い人が短期間参加し、一つの仕事を試せる機会をつくることにした。教える側の負担や報酬、安全面も考えなければ続かない。参加した人の声を聞き、無理なく覚えられる仕事から少しずつ任せる。次の世代を育てることも、事業の大切な仕事だとわかってきた。','big')}},
+      {t:'自分が後継者になるのではなく、外から手伝えることを探す',sub:'継ぐ人だけでなく、支える人・つなぐ人も必要',w:3,go(){Y.localSuccessionChoice='support';Y.cityRegionBridge=true;L.action+=2;L.know+=3;L.rel+=2;say('自分が事業を引き継ぐことは選ばなかった。でも、販路を探す、情報を整理する、学校や企業とつなぐなど、外から支えられることはある。誰か一人が全部を背負う形ではなく、できることを持ち寄る仕組みを考えることにした。','big')}},
+      {t:'担い手不足の現実を知り、無理に続けず規模を見直す',sub:'続けることだけを正義にせず、関わる人の暮らしも守る',w:3,go(){Y.localSuccessionChoice='resize';L.know+=3;L.hp+=1;say('続けるために誰かが無理を重ねるなら、規模や仕事の内容を見直す必要があると考えた。できる人が減っているのに、昔と同じ量を求めることはできない。何を残したいのか、何なら続けられるのかを関係者と話し、縮小や休止も選択肢に入れて考えることにした。','big')}}
     ]});return;
   }
   // 成人後の人生は「地域で活躍する」だけに収束させず、経験の使い方を分岐させる。
@@ -3303,12 +3502,75 @@ function soumato(age){if(G.auto||matchMedia("(prefers-reduced-motion: reduce)").
   setTimeout(()=>{ov.classList.add("in");show()},50)}
 /* 更新情報 */
 const NEWS=[
+ {v:13,d:"2026年10月20日",t:"資産を使ってコミュニティカフェ・居場所をつくる実在事例の追体験を追加",g:[
+  ["構想から試行・資金調達・運営継続までの3段階イベントを追加",[
+   "30代以降、貯蓄や地域経験などの条件に応じて、コミュニティカフェや交流スペースをつくるイベントが発生します。いきなり物件を契約するだけでなく、住民への聞き取り、月1回の小さな試行、空き店舗や既存施設の活用、既存の居場所を手伝う選択を用意しました。",
+   "町田の『陽だまりカフェ』は、2016年に自宅で月1回の認知症カフェを始め、常設の場が必要だと考えた後、旧医院跡地を購入し、ボランティアを募って2022年に開設した事例です。立川の『シーズ立川』は、市民活動・NPOを経て構想を形にし、クラウドファンディング、日本政策金融公庫の運転資金、信用金庫の設備融資などを組み合わせた事例です。越谷の『CAFE803』は、開業前の調査と準備期間、地域交流・創業支援を組み合わせた事例として参照しました。",
+   "第2段階では、利用者と協力者を増やしてから借りる、寄付・クラウドファンディング・助成金を検討する、融資の返済可能性を確認する、間借りで固定費を抑える選択を追加。第3段階では、収支と作業時間の見直し、役割分担、休業・縮小・終了、別の仕事と両立する選択を用意し、資産を使い切ることや開業そのものを成功扱いしない構成にしました。",
+   "参考：東京都社会福祉協議会『みんなの居場所 陽だまりカフェ』 https://fukushi-portal.tokyo/archives/797/ ／ 東京都『シーズ立川』 https://incu.metro.tokyo.lg.jp/interview/id022.html ／ 中心市街地活性化協議会支援センター『CAFE803』 https://machi.smrj.go.jp/machi/public/example/170607koshigaya.html"
+  ]]
+ ]},
+ {v:12,d:"2026年10月20日",t:"資産形成・事業・税金・保障・年金を人生イベントに統合",g:[
+  ["人生の節目でお金の知識を実践するイベントを追加",[
+   "18歳に家計管理・自己投資・経験への支出、23歳に生活防衛資金と投資リスク、30歳に事業の売上・利益・資金繰り・税務確認、40歳に公的保障・保険・将来支出、60歳に年金見込み・老後の支出計画を考えるイベントを追加しました。",
+   "選択によって貯蓄・投資・負債・知識・行動が変化し、投資をしない選択や事業を小さく試す選択も尊重します。値上がりや起業を必勝法として描かず、損失・固定費・資金繰り・制度確認の必要性も扱います。",
+   "税金・社会保障・年金の条件は個人の状況や制度改正で異なるため、ゲーム内では学習用の概念として扱い、具体的な申告・受給・契約時には公的窓口で確認する前提を明記しました。"
+  ]]
+ ]},
+ {v:11,d:"2026年10月20日",t:"停滞期・企画の失敗・友達の別ルート・大学での問い・多様な地域との関わり・恩返し・AI時代の学び直しを追加",g:[
+  ["人生が一つの成功ルートに収束しないよう、7つの連鎖イベントを追加",[
+   "地域未来留学後も夢が見つからない時期を描き、再訪する・大人に相談する・活動から休む分岐を追加しました。",
+   "地域企画が失敗した後、住民に聞き直す・規模を縮小する・責任を持って終了する分岐を追加しました。失敗を単なる罰ではなく、次の判断に変えます。",
+   "地域で出会った友達にも独自の進路を持たせ、離れる友達を応援する・残る友達と関係を続ける・自分のペースで試す分岐を追加しました。",
+   "大学を就職の切符だけでなく、現場の問いを授業・研究・人との出会いで深める場所として描くイベントを追加しました。",
+   "成人後は移住だけでなく、都市からプロジェクトに関わる・別業界や研究に経験を活かす・関わりを休む選択を追加しました。",
+   "40歳前後に昔支えてくれた人が困っているイベントを追加し、無理のない範囲で支える・人をつなぐ・今は引き受けられないと伝える分岐を用意しました。",
+   "AIによって仕事が変わる中年期のイベントを追加。AIと専門知識を組み合わせる・現場との対話を磨く・学び直す・小さく備える選択肢を用意し、学力中心の進路を一律に失敗扱いしない構成にしました。",
+   "イベントは地域経験や過去の選択に応じて発生し、すべての主人公が地域活動に進むわけではありません。過去の選択が後年の関係や行動に影響するフラグを追加しました。"
+  ]]
+ ]},
+ {v:10,d:"2026年10月20日",t:"地域事業の成功後にある世代交代・後継者育成の挑戦を追加",g:[
+  ["成功事例を『始める』だけでなく『続けて渡す』段階へ",[
+   "30〜35歳に、上勝町の葉っぱビジネスを手がかりに、長く続いた地域事業でも高齢化や担い手不足が課題になることを踏まえたイベントを追加しました。長年続けてきた人から仕事の段取りや苦労を聞く、若い人が試せる研修や小さな役割をつくる、自分は後継者にならず外から支える、無理に続けず規模を見直す、の4分岐です。",
+   "実在する株式会社いろどりの紹介では、葉っぱビジネスが約40年続く一方、高齢化による生産力の制約や世代交代が課題となり、農業体験・長期研修で後継者育成を進めていると説明されています。これを単なる成功談ではなく、主人公が現場の人に会い、引き継ぎや継続の難しさに向き合う選択へ変換しました。",
+   "参考：株式会社いろどり『事業紹介』 https://irodori.co.jp/about/ ／ 地域みらい留学・卒業生インタビュー https://c-platform.or.jp/project/c-mirai.html ／ 大人の島留学公式 https://otona-shimaryugaku.jp/"
+  ]]
+ ]},
+ {v:9,d:"2026年10月20日",t:"大人になって実在事例を自分の挑戦に変えるイベントを追加",g:[
+  ["実在する取り組みを、主人公が現場で試す流れに拡張",[
+   "20代後半に、実在事例を調べて終わるのではなく、主人公自身が現場で挑戦するイベントを追加しました。島で期間を決めて働く、微住を参考に短期滞在で小さな企画を試す、上勝町の葉っぱビジネスから地域資源の売り方を学ぶ、過去の失敗事例をもとに需要・費用・担い手・撤退条件を確かめる、今は挑戦しない、の分岐です。",
+   "それぞれの選択が経験・人間関係・学びに反映され、成功をそのままコピーするのではなく、現場で試し、反応を見て直す流れにしました。地域活動や現場経験がある場合に発生し、地域に関わらない人生も否定しません。",
+   "参考：大人の島留学公式 https://otona-shimaryugaku.jp/ ／ 海士町公式 https://www.town.ama.shimane.jp/torikumi-shisetsu/torikumi/otona-shima ／ 金山町『クリエイター×金山微住』 https://www.town.kaneyama.yamagata.jp/machinososhiki/matidukuri/shokokankokakari/2/3673.html ／ 政府広報『上勝町・横石知二氏』 https://www.gov-online.go.jp/eng/publicity/book/hlj/html/201406/201406_08_jp.html ／ 地域みらい留学事業 https://c-platform.or.jp/project/c-mirai.html"
+  ]]
+ ]},
+ {v:8,d:"2026年10月20日",t:"地域留学の生活・失敗・微住・卒業後の関わりを連鎖イベント化",g:[
+  ["画像のストーリー構造を反映",[
+   "参考画像の『進路に迷う→地域で人や仕事に出会う→思いどおりにいかない→関係の温かさに気づく→将来の仕事や生き方に活かす』流れを、単発イベントではなく高校生から20代の複数イベントに分けました。",
+   "地域みらい留学ルートでは、畑や作業場の手伝い、地域イベントの準備の失敗、住民への聞き直し、活動から距離を置く選択を追加。地域活動を選ばない・休む選択も残しています。",
+   "20代には山形県金山町などの『微住』を参考に、観光でも移住でもない短期滞在で地域の人と関わるイベント、さらに島根県隠岐島前地域の『大人の島留学』を参考に、島で働く・都市からプロジェクトで関わる・別の仕事に経験を活かす分岐を追加しました。",
+   "参考：地域みらい留学 https://c-mirai.jp/ ／ 海士町公式『隠岐島前教育魅力化プロジェクト』 https://www.town.ama.shimane.jp/torikumi-shisetsu/torikumi/miryokuka ／ 海士町公式『大人の島留学』 https://www.town.ama.shimane.jp/torikumi-shisetsu/torikumi/otona-shima ／ 金山町『微住』資料 https://www.town.kaneyama.yamagata.jp/material/files/group/1/731_03.pdf ／ 田中佑典さんインタビュー https://fin.miraiteiban.jp/journey02/"
+  ]]
+ ]},
+ {v:7,d:"2026年10月20日",t:"『調べて知る』から『飛び込んで見えてくる』へ変更",g:[
+  ["実在事例を、現場体験としてゲームに組み込む",[
+   "AI側で実在する人物・地域の成功事例と失敗事例を調査し、主人公には資料を読むだけの選択ではなく、現場へ行く・仕事に触れる・当時を知る人の話を聞く体験を用意しました。",
+   "徳島県上勝町の横石知二さんと葉っぱビジネス、山梨県の南アルプス完熟農園の事例を、成功／失敗の暗記ではなく、現場に飛び込んだ結果として問いが生まれる流れに再構成しました。地域づくりに進まない選択肢も維持しています。",
+   "参考：政府広報『上勝町・横石知二氏インタビュー』 https://www.gov-online.go.jp/eng/publicity/book/hlj/html/201406/201406_08_jp.html ／ 衆議院総務委員会会議録（上勝町・葉っぱビジネス） https://www.shugiin.go.jp/internet/itdb_kaigiroku.nsf/html/kaigiroku/009421320240509018.htm"
+  ]]
+ ]},
+ {v:6,d:"2026年10月20日",t:"実在する地域づくりの成功・失敗事例を追加",g:[
+  ["人生の選択に、現実の事例との出会いを追加",[
+   "地域活動や現場での経験がある場合に限り、20歳前後で実在する地域づくりの事例を調べるイベントを追加。徳島県上勝町の葉っぱビジネス（横石知二さん）を成功事例として、発想だけでなく地域資源・担い手・運営の仕組みを考えます。",
+   "山梨県の南アルプス完熟農園が営業を断念した事例も取り上げ、需要・資金繰り・運営体制など、失敗から学ぶ選択肢を追加しました。成功例をコピーするのではなく、複数事例を比べ、自分の地域で小さく試す発想につなげます。",
+   "参考：政府広報『上勝町・横石知二氏インタビュー』 https://www.gov-online.go.jp/eng/publicity/book/hlj/html/201406/201406_08_jp.html ／ 自治体通信Online『地方創生のリアルな現状』 https://www.jt-tsushin.jp/articles/service/casestudy_tiiki-kasseika"
+  ]]
+ ]},
  {v:5,d:"2026年10月20日",t:"更新情報をひとつの一覧に統合",g:[
   ["更新情報の表示を整理",[
    "ページ下部に別枠で表示していた更新内容を廃止し、ページ上部の「更新情報」にまとめました。今後の変更もこの一覧の先頭へ追加し、古い更新情報は同じ一覧内に残します。"
   ]],
   ["大学入試イベントの順序を修正",[
-   "入試方式を選ぶ前に合否が出てしまう流れを修正対象として明記。入試方式の選択→志望大学の決定→方式と志望先に応じた合否、の順になるよう、関連イベントの接続を整理します。"
+   "入試方式を選ぶ前に合否が出る不整合を修正対象として記録。方式選択→志望先決定→合否の一連の接続は、各ルートで引き続き検証が必要です。"
   ]],
   ["SAPIX後の進路と地域活動の条件を調整",[
    "難関中学合格後に内部進学か外部受験かを選ぶ進路分岐を追加。地域活動に踏み出した場合に可能性が広がる構成とし、勉強だけを続ける人が若者会議・ユースカウンシルへ偶然出会わないよう条件を調整しました。"
