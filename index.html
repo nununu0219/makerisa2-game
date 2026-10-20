@@ -368,6 +368,41 @@ button,.btn{transition:background-color .16s,border-color .16s,transform .16s}
 button:active,.btn:active{transform:translateY(1px)}
 .label,.note{color:var(--muted)}
 .start h1{letter-spacing:-.045em}
+
+/* ===== スマートフォン向け操作性 ===== */
+@media (max-width:760px){
+  html{-webkit-text-size-adjust:100%;scroll-padding-top:84px}
+  body{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right));padding-bottom:calc(18px + env(safe-area-inset-bottom));font-size:15px}
+  .topbar{padding-top:8px;padding-bottom:8px;margin-left:calc(-1 * max(10px,env(safe-area-inset-left)));margin-right:calc(-1 * max(10px,env(safe-area-inset-right)));padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+  .tb-in{gap:7px}.tb-l{flex:1 1 100%;gap:9px}.brand{font-size:14px}.age{font-size:32px}.age span{font-size:14px}.sub{font-size:11px}
+  .ctrl{width:100%;gap:6px;padding:3px 0 5px;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+  .ctrl button,.ctrl .btn{min-height:40px;flex:0 0 auto;padding:8px 11px;font-size:13px}
+  .grid{gap:10px;padding-top:10px}.col{gap:10px}.card{min-width:0;border-radius:10px;padding:12px}
+  #c_scene{padding:0;overflow:hidden}#c_scene .hd{padding:12px 12px 8px}#c_scene .bd{padding:12px}
+  .opts{display:grid;grid-template-columns:minmax(0,1fr);gap:9px}
+  .opts button{width:100%;min-height:52px;padding:13px 14px;font-size:15px;line-height:1.55;border-radius:10px;touch-action:manipulation;overflow-wrap:anywhere;-webkit-tap-highlight-color:transparent}
+  button,.btn,select,input,textarea{max-width:100%;touch-action:manipulation}
+  button{min-height:40px}button:focus-visible,.btn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+  .btns{flex-wrap:wrap;gap:8px}.btns button{min-height:44px}
+  .idc .body{grid-template-columns:58px minmax(0,1fr);gap:10px;padding:12px}.idc canvas{width:58px}.idc .nm{font-size:19px}.idc dl{grid-template-columns:5.5em minmax(0,1fr);font-size:13px;overflow-wrap:anywhere}
+  .idc .mrz{font-size:10px;overflow-x:auto}
+  .lf{display:flex;gap:6px;overflow-x:auto;padding-bottom:5px;-webkit-overflow-scrolling:touch}.lf button{flex:0 0 auto;min-height:36px;font-size:12px}
+  .money .acts{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}.money .acts button{min-height:48px;padding:11px 12px;font-size:14px}
+  table{max-width:100%} .card, .col, .grid, p, li{overflow-wrap:anywhere}
+  canvas,svg,img{max-width:100%}
+}
+@media (max-width:390px){
+  body{padding-left:8px;padding-right:8px}.card{padding:10px}.age{font-size:29px}.brand{font-size:13px}
+  .opts button{padding:12px;font-size:14px}.idc dl{grid-template-columns:5em minmax(0,1fr)}
+}
+
+
+/* 人生ストーリーパネル：スマホでは折りたたんで画面を確保 */
+.y7-story-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:10px 0;border:0;background:transparent;color:inherit;text-align:left;font:inherit;font-weight:700;cursor:pointer}
+.y7-story-indicator{flex:0 0 auto;color:var(--teal);font-size:12px;font-weight:600}
+.y7-story-content{padding-top:2px}
+#y7StoryPanel.y7-collapsed .y7-story-content{display:none}
+@media (max-width:760px){#y7StoryPanel{padding:10px 12px;margin-top:10px}.y7-story-toggle{min-height:38px;font-size:14px}}
 </style>
 </head>
 <body>
@@ -459,6 +494,8 @@ button:active,.btn:active{transform:translateY(1px)}
     <h2>更新情報</h2>
     <div class="news" id="news"></div>
   </section>
+
+
 
   <section>
     <h2>同じ時代を生きる人たち</h2>
@@ -1029,9 +1066,10 @@ function renderSceneCard(){const L=G.L;const cv=$("#scv");if(!cv)return;drawScen
   const home=G.dead?"永眠":L.illness?"病院に通う":L.home==="実家"?"実家":L.home;
   if(!G.dead&&L.army&&!L.army.end){$("#scap").innerHTML=`<b>戦地・${L.army.front}</b> · 部隊の仲間と`;return}
   $("#scap").innerHTML=`<b>${place}</b> · ${home}${G.dead?"":" · "+liveWith()}`}
-function renderLogNote(){const L=G.L;$("#lognote").textContent=`いま日本では約1億2,380万人が暮らしています · ${pf(L.city!==L.pref?(CITY2PREF[L.city]||L.city):L.pref)}に、あなたのほかに約${POP[CITY2PREF[L.city]||L.city]||POP[L.pref]}万人`}
+function renderLogNote(){const L=G.L;const homePref=L.livingPref||CITY2PREF[L.city]||L.pref;$("#lognote").textContent=`いま日本では約1億2,380万人が暮らしています · 出生地：${pf(L.birthPref||L.pref)} · 現在地：${homePref}`}
 function renderScene(){renderSceneCard()}
-function renderY7Story(){if(!G)return;let box=document.getElementById("y7StoryPanel");if(!box){box=document.createElement("section");box.id="y7StoryPanel";box.className="sheet";const life=document.getElementById("life");if(!life)return;life.appendChild(box)}const Y=G.L.y7||{};const c=Y.contacts||{};const tags=[];if(Y.sapix)tags.push("SAPIXでの勉強経験");if(Y.studyTalk)tags.push("勉強の悩みを相談した経験");if(Y.teacherSpark||Y.teacherAsked)tags.push("先生の言葉から生まれた問い");if(Y.regionInterest)tags.push("地域みらい留学への関心");if(Y.localRoute)tags.push("地元での地域活動への関心");if(Y.localVisits)tags.push(`地域活動への参加 ${Y.localVisits}回`);if(Y.studyLink)tags.push("地域の疑問と学校の学びの接続");if(Y.projectStarted)tags.push("地域の人との企画・協働");if(Y.portfolioStrong)tags.push("経験を振り返り、言葉にした");if(Y.aoResult)tags.push(`進路の選択：${({pass:"総合型選抜に合格",fail:"総合型選抜に挑戦",general:"一般選抜を中心に準備",explore:"進学以外も含めて検討"})[Y.aoResult]||Y.aoResult}`);if(Y.reunionHelp)tags.push("地域で出会った人との再会・相談");const people=Object.values(c).filter(p=>p.meet>0).map(p=>`${p.name}（出会い ${p.meet}回・信頼 ${p.trust}/5）`);box.innerHTML=`<h2 style="margin:0 0 6px">人生の中で育ってきたもの</h2><p class="note">ルートは最初に決まるのではなく、経験や関係が生まれたときに少しずつ形になります。</p><div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0">${tags.length?tags.map(t=>`<span style="display:inline-block;border:1px solid var(--rule);border-radius:999px;padding:4px 9px;font-size:12px">${t}</span>`).join(""):'<span class="note">まだ大きな分岐は記録されていません。何気ない出来事が、あとから意味を持つこともあります。</span>'}</div>${people.length?`<h3 style="font-size:14px;margin-top:12px">関係が続いている人</h3><p class="note">${people.join(" · ")}</p>`:""}`;box.hidden=false}
+function renderY7Story(){if(!G)return;let box=document.getElementById("y7StoryPanel");if(!box){box=document.createElement("section");box.id="y7StoryPanel";box.className="sheet";box.dataset.collapsed=window.matchMedia("(max-width:760px)").matches?"1":"0";const life=document.getElementById("life");if(!life)return;life.appendChild(box)}const Y=G.L.y7||{};const c=Y.contacts||{};const tags=[];if(Y.sapix)tags.push("SAPIXでの勉強経験");if(Y.studyTalk)tags.push("勉強の悩みを相談した経験");if(Y.teacherSpark||Y.teacherAsked)tags.push("先生の言葉から生まれた問い");if(Y.regionInterest)tags.push("地域みらい留学への関心");if(Y.localRoute)tags.push("地元での地域活動への関心");if(Y.localVisits)tags.push(`地域活動への参加 ${Y.localVisits}回`);if(Y.studyLink)tags.push("地域の疑問と学校の学びの接続");if(Y.projectStarted)tags.push("地域の人との企画・協働");if(Y.portfolioStrong)tags.push("経験を振り返り、言葉にした");if(Y.aoResult)tags.push(`進路の選択：${({pass:"総合型選抜に合格",fail:"総合型選抜に挑戦",tried:"総合型選抜に挑戦",general:"一般選抜を選択",designated:"指定校推薦を選択",explore:"進学以外も含めて検討"})[Y.aoResult]||Y.aoResult}`);if(Y.reunionHelp)tags.push("地域で出会った人との再会・相談");if(Y.aiPath)tags.push(`AI時代の学び：${({study:"専門性を積む",community:"地域の現場を知る",maker:"AIで試作する",interviews:"大人の仕事を聞く"})[Y.aiPath]||Y.aiPath}`);if(Y.aiAdultRole)tags.push(`大人になってから：${({expert:"専門性とAI",connector:"人と地域をつなぐ", "side-by-side":"本業と地域活動",pause:"暮らしを優先し学び直す"})[Y.aiAdultRole]||Y.aiAdultRole}`);const people=Object.values(c).filter(p=>p.meet>0).map(p=>`${p.name}（出会い ${p.meet}回・信頼 ${p.trust}/5）`);box.innerHTML=`<button type="button" class="y7-story-toggle" aria-expanded="${box.dataset.collapsed!=="1"}" onclick="toggleY7Story()"><span>人生の中で育ってきたもの</span><span class="y7-story-indicator">${box.dataset.collapsed==="1"?"開く ＋":"閉じる −"}</span></button><div class="y7-story-content"><p class="note">ルートは最初に決まるのではなく、経験や関係が生まれたときに少しずつ形になります。</p><div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0">${tags.length?tags.map(t=>`<span style="display:inline-block;border:1px solid var(--rule);border-radius:999px;padding:4px 9px;font-size:12px">${t}</span>`).join(""):'<span class="note">まだ大きな分岐は記録されていません。何気ない出来事が、あとから意味を持つこともあります。</span>'}</div>${people.length?`<h3 style="font-size:14px;margin-top:12px">関係が続いている人</h3><p class="note">${people.join(" · ")}</p>`:""}</div>`;box.classList.toggle("y7-collapsed",box.dataset.collapsed==="1");box.hidden=false}
+function toggleY7Story(){const box=document.getElementById("y7StoryPanel");if(!box)return;box.dataset.collapsed=box.dataset.collapsed==="1"?"0":"1";box.classList.toggle("y7-collapsed",box.dataset.collapsed==="1");const b=box.querySelector(".y7-story-toggle");if(b){b.setAttribute("aria-expanded",box.dataset.collapsed!=="1");const i=b.querySelector(".y7-story-indicator");if(i)i.textContent=box.dataset.collapsed==="1"?"開く ＋":"閉じる −"}}
 function renderAll(){if(!G)return;renderTop();renderId();renderSceneCard();renderStats();renderFocus();renderFam();renderMoney();renderPeers();renderJMap();renderCurve();renderLogNote();renderY7Story()}
 setInterval(()=>{if(G&&!G.still&&$("#scv")){G.frame=(G.frame||0)+1;drawScene($("#scv"))}},500);
 
@@ -1132,7 +1170,7 @@ function makeLife(mode){
   const p=weighted(PREFS,weightsFor(mode));
   const sex=R()<0.512?"M":"F";
   const le=(sex==="M"?p[2]:p[4])+ERA.le[sex==="M"?0:1];
-  const L={pref:p[0],prefLE:le,univ:Math.min(92,Math.round(p[3]*ERA.univ)),sex,surname:surnameFor(p[0]),given:sex==="M"?pick(MN):pick(FN),
+  const L={pref:p[0],birthPref:p[0],birthplace:p[0],prefLE:le,univ:Math.min(92,Math.round(p[3]*ERA.univ)),sex,surname:surnameFor(p[0]),given:sex==="M"?pick(MN):pick(FN),
     dec:1+Math.floor(R()*10),sibs:weighted([0,1,2,3],[22,52,21,5]),
     weight:Math.round(clamp(3000+gauss()*420,1400,4400)/10)*10,
     edu:"",school:"",hs:"",job:"",title:"",income:0,savings:0,pension:0,home:"実家",city:p[0],loan:0,invest:0,
@@ -1286,7 +1324,7 @@ async function makeCardImage(kind){try{await document.fonts.ready}catch(e){}
   const pt=document.createElement("canvas");drawPortrait(pt,L,kind==="birth"?0:a);c.fillStyle="#DCDFD8";c.fillRect(X+22,Y+70,100,118);c.drawImage(pt,X+24,Y+72,96,114);
   c.fillStyle="#23262D";c.font=`700 40px ${CARD_FONT.disp}`;c.fillText(L.name,X+142,Y+122);
   c.fillStyle="#7A7F88";c.font=`500 15px ${CARD_FONT.mono}`;c.fillText(`${ROMA[L.surname]||""} ${ROMA[L.given]||""}`,X+144,Y+150);
-  const rows=[["性別",L.sex==="M"?"男性":"女性"],["出生",`${pf(L.pref)} · ${YEAR0}年${L.bm}月`]];
+  const rows=[["性別",L.sex==="M"?"男性":"女性"],["出生",`${pf(L.birthPref||L.pref)} · ${YEAR0}年${L.bm}月`]];
   if(kind==="birth"){rows.push(["体重",`${L.weight.toLocaleString()}g`],["両親",`父 ${L.fa}歳 · 母 ${L.mo}歳`],["生まれた家庭","●".repeat(Math.ceil(L.dec/2))+"○".repeat(5-Math.ceil(L.dec/2))],["気質",L.trait])}
   else rows.push(["享年",`${a}歳（${YEAR0+a}年）`],["最期",L.cause],["学歴",eduLabel(L,a)],["家族",[L.wasMarried?(L.spouse&&L.spouse.dead?"死別":L.married?"既婚":"離別"):"独身",L.kids.length?`子${L.kids.length}人`:"",L.grand?`孫${L.grand}人`:""].filter(Boolean).join(" · ")]);
   rows.forEach(([k,v],i)=>{const y=Y+232+i*44;c.fillStyle="#7A7F88";c.font=`500 17px ${CARD_FONT.body}`;c.fillText(k,X+24,y);c.fillStyle="#23262D";c.font=`500 21px ${CARD_FONT.body}`;c.fillText(v,X+150,y)});
@@ -1437,7 +1475,7 @@ function showNext(){
   $("#sheetIn").insertAdjacentHTML("beforeend",`<div class="cd" id="cd"><div class="cdbar"><i id="cdI"></i></div><span id="cdT"></span><span class="kbd">数字キーでも選べます</span><button id="cdStop" type="button">待って</button></div>`);
   startCd(d);
   $("#sheetIn").querySelectorAll(".opts button").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;clearCd();
-    if(d.reflect){G.cur=null;if(i>=0){const v=d.opts[i].t;G.L.reflect[G.age]=v;line(`あなたは「${esc(v)}」`,"re")}showNext()}else choose(i)});
+    if(G.cur!==d)return;if(d.reflect){G.cur=null;if(i>=0&&d.opts[i]){const v=d.opts[i].t;G.L.reflect[G.age]=v;line(`あなたは「${esc(v)}」`,"re")}showNext()}else choose(i)});
 }
 /* 選ばずにいると、時間切れでおまかせの選択になる */
 function clearCd(){if(G&&G.cdT){clearInterval(G.cdT);G.cdT=null}}
@@ -1448,7 +1486,21 @@ function startCd(d){clearCd();const total=Math.round(clamp((d.reflect?15000:3000
     if(left<=0){clearCd();if(d.reflect){G.cur=null;showNext()}else{G.tout=true;autoPick();G.tout=false}}},150)}
 document.addEventListener("keydown",e=>{if(!G||!G.cur||$("#sheet").hidden||e.metaKey||e.ctrlKey||e.altKey)return;const tg=e.target&&e.target.tagName;if(tg==="INPUT"||tg==="TEXTAREA")return;
   const n=parseInt(e.key,10);if(n>=1&&n<=9){const b=$("#sheetIn").querySelectorAll(".opts button")[n-1];if(b){e.preventDefault();b.click()}}});
-function choose(i){const d=G.cur;if(!d)return;clearCd();G.cur=null;const o=d.opts[i];if(!d.reflect){try{const pc=choicePct(d.title.replace(/[。？]$/,""),o.t);if(pc!=null)toast(`同じ選択をした人は <b>${pc}%</b>`,"pct")}catch(e){}}reseed(G.age*131+((G.L.decs||[]).length)*17+i+5);(G.L.decs=G.L.decs||[]).push([G.age,d.title.replace(/[。？]$/,""),o.t]);line(`▸ ${d.title.replace(/[。？]$/,"")} · 決断：${o.t}${G.tout?"（迷っているうちに、なりゆきで決まる）":""}`,"ch");o.go&&o.go();renderScene();showNext()}
+function choose(i){
+  const d=G&&G.cur;
+  if(!d||!Array.isArray(d.opts)||!Number.isInteger(i)||i<0||i>=d.opts.length)return;
+  const o=d.opts[i];if(!o)return;
+  // 連打やタイムアウトとの競合で同じ選択が二重実行されないよう、先に現在イベントをロックする。
+  clearCd();G.cur=null;
+  const sh=$("#sheet");if(sh)sh.hidden=true;
+  const buttons=$("#sheetIn")?.querySelectorAll(".opts button");if(buttons)buttons.forEach(b=>b.disabled=true);
+  if(!d.reflect){try{const pc=choicePct(d.title.replace(/[。？]$/,""),o.t);if(pc!=null)toast(`同じ選択をした人は <b>${pc}%</b>`,"pct")}catch(e){}}
+  reseed(G.age*131+((G.L.decs||[]).length)*17+i+5);
+  (G.L.decs=G.L.decs||[]).push([G.age,d.title.replace(/[。？]$/,""),o.t]);
+  line(`▸ ${d.title.replace(/[。？]$/," ")} · 決断：${o.t}${G.tout?"（迷っているうちに、なりゆきで決まる）":""}`,"ch");
+  try{if(typeof o.go==="function")o.go()}catch(err){console.error("選択肢の処理でエラー:",err);line("選択の反映中に問題が起きました。時間を進めて続けられます。","big")}
+  renderScene();showNext()
+}
 function autoPick(){const d=G.cur;reseed(G.age*977+((G.L.decs||[]).length)*13+3);const o=weighted(d.opts,d.opts.map(o=>Math.max(0.05,o.w??1)));mark(G.age,"ch");choose(d.opts.indexOf(o))}
 
 function tick(){
@@ -1590,12 +1642,12 @@ function events(a){const L=G.L;const k=L.know,rel=L.rel;war(a);if(L.forceDie)ret
       {t:"高等小学校に進む",sub:"2年学んでから働きに出る",w:5,go(){L.school="高等小学校";say(`高等小学校に進む。`)}},
       {t:L.farm?"家の仕事を手伝う":"すぐに働きに出る",sub:"家の暮らしを助ける",w:L.dec<=3?3:0.8,go(){L.edu="中卒";L.hs="小卒";say(`学校は小学校までにして、働きに出る。`,"big");earlyJob()}}]})}
   if(a===14&&YEAR0+a<1947&&L.school==="高等小学校"){L.edu="中卒";say(`高等小学校を卒業する。`,"big");earlyJob()}
-  if(a===12&&YEAR0+a>=1947){
+  if(a===12&&YEAR0+a>=1947&&!(L.y7&&L.y7.sapix)){
     const exam=["東京","神奈川","大阪","京都","兵庫","奈良","愛知","福岡","埼玉","千葉"].includes(L.pref)&&L.dec>=5;
     if(exam)ask({title:"中学受験をする？",text:`${pf(L.pref)}では私立中学に進む子も少なくない。塾代は年に50万円ほどかかる。`,opts:[
       {t:"受験する",sub:`合格の見込み 約${Math.round(SUCC(k*0.9+10))}%`,w:L.dec-3,go(){if(R()*100<SUCC(k*0.9+10)){L.used.add("private");say(`私立中学に合格する。`,"big");L.know+=6;L.hs="進学校";L.school="中学生（私立）"}else{say(`不合格。地元の公立中学に進む。`,"big");L.hp-=6;L.school="中学生"}}},
       {t:"地元の公立中学に行く",w:5,go(){say(`地元の公立中学に進む。`);L.school="中学生"}}]});
-    else{say(YEAR0+a<1950?`新しくできた中学校に進む。義務教育が中学校までになった。`:`地元の公立中学校に進む。`,"big");L.school="中学生"}
+    else{say(YEAR0+a<1950?`新しくできた中学校に進む。義務教育が中学校までになった。`:`東京の公立中学校に進む。中学進学を機に上京し、生まれ育った${L.pref}を離れて暮らし始める。`,"big");L.school=YEAR0+a<1950?"中学生":"東京都内の公立中学校";if(YEAR0+a>=1950){L.city="東京";L.livingPref="東京都";L.home="親元を離れた暮らし";const Y=L.y7||(L.y7={});Y.tokyoMove=true;L.used.add("y7:tokyo-middle-school")}}
     ask({title:"部活はどうする？",opts:[
       {t:"運動部に入る",sub:"健康と人間関係が伸びる",w:5,go(){L.used.add("sportsClub");L.club=pick(["野球部","サッカー部","バスケ部","陸上部","テニス部","卓球部"]);say(`${L.club}に入る。`);L.hb+=4;L.rel+=4}},
       {t:"文化部に入る",sub:"知識と人間関係が少し伸びる",w:3,go(){L.club=pick(["吹奏楽部","美術部","科学部","放送部"]);say(`${L.club}に入る。`);L.know+=3;L.rel+=2}},
@@ -1606,10 +1658,17 @@ function events(a){const L=G.L;const k=L.know,rel=L.rel;war(a);if(L.forceDie)ret
   if(a===14&&L.club&&chance(0.4))say(`${L.club}で県大会に出る。`);
   if(a===15&&YEAR0+a<1947&&L.hs==="進学校")say(L.sex==="M"?`旧制中学で、${pick(["漢文","英語","数学","剣道"])}に打ち込む。`:`高等女学校で、${pick(["裁縫","英語","国語","生け花"])}を学ぶ。`);
   if(a===15&&YEAR0+a>=1947){
-    if(L.hs==="進学校"){say(`中高一貫校なので、そのまま高校に上がる。`);L.school="高校生"}
+    const Y7=L.y7||(L.y7={});
+    if(Y7.middleRoute==="SAPIX_PASS"&&!Y7.highSchoolDecision){
+      Y7.highSchoolDecision=true;
+      ask({title:"15歳：中高一貫校の内部進学か、さらに上をめざすか",text:"難関中学に合格し、東京の中高一貫校で勉強を続けてきた。内部進学なら慣れた環境で学び続けられる。外部の難関高校を受験すれば、さらに偏差値の高い環境をめざせるが、受験勉強に生活の多くを使うことになる。どちらを選んでも、この先の人生が決まるわけではない。",opts:[
+        {t:"内部進学して、今の学校で学び続ける",sub:"受験競争を続ける以外の時間も残せる",w:3,go(){Y7.highRoute="INTERNAL_ADVANCE";L.hs="進学校";L.school="高校生";L.know+=2;say("内部進学を選んだ。周りには外部受験をする人もいる。自分は今の環境で学び続けながら、勉強以外に何をするかも少しずつ考えていく。", "big")}},
+        {t:"外部の、さらに偏差値が高い高校を受験する",sub:"学力を伸ばす道。勉強中心の生活になり、AI時代の進路を考える機会は少なくなるかもしれない",w:3,go(){Y7.highRoute="ELITE_EXAM";Y7.eliteRoute=true;L.hs="進学校";L.school="高校生";L.know+=5;L.hp-=3;say("さらに偏差値の高い高校をめざし、外部受験に挑戦することにした。模試の結果や順位が気になり、放課後も塾と自習室を往復する。知識を積み上げる力は伸びる一方、何のために学ぶのか、誰の役に立ちたいのかを考える時間は後回しになっていく。この道を選んだからといって将来が確定したわけではないが、今のままなら、決められた問いに答える力だけで評価される進路に近づいていく。", "big")}},
+      ]});
+    }else if(L.hs==="進学校"){say(`中高一貫校なので、そのまま高校に上がる。`);L.school="高校生"}
     else ask({title:"高校受験。どこをめざす？",text:"高校進学率は約99%。どの高校に行くかで、大学進学のしやすさが変わる。",opts:[
       {t:"地域の進学校をめざす",sub:`合格の見込み 約${Math.round(SUCC(k*1.1-15))}%`,w:k/10,go(){if(R()*100<SUCC(k*1.1-15)){L.hs="進学校";say(`第一志望の進学校に合格する。`,"big");L.hp+=5}else{L.hs="普通科";say(`進学校には届かず、併願の高校に進む。`,"big");L.hp-=5}L.school="高校生"}},
-      {t:"地域みらい留学で、地域の高校へ進む",sub:"知らない土地で暮らし、地域の人と学ぶ。入学できる学校や条件を調べ、家族とも相談する",w:(L.y7?.regionInterest||L.y7?.teacherSpark||L.y7?.teacherAsked)?3:1.2,go(){const Y=L.y7||(L.y7={});Y.regionInterest=true;Y.regionTalk=true;Y.highRoute="LOCAL_RYUGAKU";L.y7RegionInterest=true;L.hs="地域留学";L.school="高校生";L.highSchoolRoute="地域みらい留学";L.pref=pick(["愛媛県内子町（小田分校）","島根県海士町（隠岐島前高校）"]);L.city=L.pref;L.home="寮生活";L.know+=2;L.rel+=3;L.hp-=2;Y.regionStartAge=15;Y.contacts=Y.contacts||{};Y.contacts.mentor=Y.contacts.mentor||{name:"地域留学先で出会う大人",kind:"地域の案内人",meet:1,trust:1,last:a};say(`${L.pref}の高校へ進む道を選ぶ。知らない町での暮らしが始まる。期待も不安もある。地域の人と出会えるか、居場所をつくれるかは、これからの関わり方で変わっていく。`,"big")}},
+      {t:"地域みらい留学で、地域の高校へ進む",sub:"知らない土地で暮らし、地域の人と学ぶ。入学できる学校や条件を調べ、家族とも相談する",w:(L.y7?.regionInterest||L.y7?.teacherSpark||L.y7?.teacherAsked)?3:1.2,go(){const Y=L.y7||(L.y7={});Y.regionInterest=true;Y.regionTalk=true;Y.highRoute="LOCAL_RYUGAKU";L.y7RegionInterest=true;L.hs="地域留学";L.school="高校生";L.highSchoolRoute="地域みらい留学";Y.regionDestination=pick([{pref:"愛媛県",city:"内子町（小田分校）"},{pref:"島根県",city:"海士町（隠岐島前高校）"}]);L.city=Y.regionDestination.city;L.livingPref=Y.regionDestination.pref;L.home="寮生活";L.know+=2;L.rel+=1;L.hp-=2;Y.regionStartAge=15;Y.contacts=Y.contacts||{};Y.contacts.mentor=Y.contacts.mentor||{name:"地域留学先で出会う大人",kind:"地域の案内人",meet:1,trust:1,last:a};say(`${Y.regionDestination.pref}${Y.regionDestination.city}の高校へ進む道を選ぶ。生まれた場所は${L.birthPref||L.birthplace||L.pref}のまま、15歳から知らない町で寮生活を始める。期待も不安もある。地域の人と出会えるか、居場所をつくれるかは、これからの関わり方で変わっていく。`,"big");Y.arrivalStory=true;L.used.add("y7:arrival-story");ask({title:"15歳・春：知らない町での高校生活",text:"寮に荷物を運び、知らない町で暮らし始める。地域の人も同級生も、まだ名前と顔が一致しない。ここで暮らすことが、どんな意味を持つのかはわからない。",opts:[{t:"寮の人や同級生に、自分から挨拶する",sub:"関係は一度で深まらないが、入口になる",w:2,go(){Y.arrivalAction=true;Y.localVisits=(Y.localVisits||0)+1;const p=Y.contacts.mentor||(Y.contacts.mentor={name:"地域留学先で出会う大人",kind:"地域の案内人",meet:0,trust:0,last:0});p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a;L.rel+=2;say("寮の人や同級生に挨拶する。会話は短く、少し気まずさも残る。それでも、翌朝に向こうから声をかけてくれた。","big")}},{t:"まずは学校と寮の生活に慣れる",sub:"無理に積極的にならなくてもいい",w:3,go(){Y.arrivalQuiet=true;say("まずは学校と寮の生活に慣れることにした。すぐに友達ができたわけではないが、毎日の食事や廊下で顔を合わせるうち、少しずつ人の名前を覚える。")}}]})}},
       {t:"通信制高校で、探究やプロジェクトの時間をつくる",sub:"自分のペースで学ぶ。自由な時間をどう使うかが大切",w:1.3,go(){const Y=L.y7||(L.y7={});Y.highRoute="TSUSHIN";L.hs="通信制";L.school="高校生";L.highSchoolRoute="通信制高校";L.know+=1;L.hp+=2;say("通信制高校へ進む。時間の自由が増えた。自分で動けば、地域活動や探究に使える時間が生まれるが、何もしなければ日々が過ぎていく。","big")}},
       {t:"家から近い普通科の高校",sub:"確実に入れる。地元に残って地域と関わる道もある",w:5,go(){L.hs="普通科";say(`家から近い普通科の高校に進む。`);L.school="高校生";const Y=L.y7||(L.y7={});Y.highRoute="LOCAL_GENERAL";Y.localRoute=true}},
       {t:"工業・商業高校で手に職をつける",sub:"就職に強い。実習や地域企業との接点が生まれることも",w:2,go(){L.hs="専門学科";say(`${pick(["工業","商業","農業"])}高校に進む。`);L.school="高校生";const Y=L.y7||(L.y7={});Y.highRoute="VOCATIONAL"}},
@@ -1620,7 +1679,8 @@ function events(a){const L=G.L;const k=L.know,rel=L.rel;war(a);if(L.forceDie)ret
     {t:"飲食店で働く",sub:"忙しいが、仲間ができる",w:1.5,go(){L.savings+=25;L.rel+=4;L.hb-=1;say(`${pick(["ファミレス","ラーメン屋","焼肉店"])}でアルバイトを始める。バイト仲間と仲良くなる。`)}},
     {t:"アルバイトはしない",sub:"勉強や部活に打ち込む",w:3,go(){L.know+=2;say("アルバイトはせず、勉強と部活に打ち込む。")}}]});
   if(a===17&&L.school&&!(YEAR0+a>=1941&&YEAR0+a<=1946))say(`修学旅行で${YEAR0+a<1975?pick(["京都・奈良","東京","日光","伊勢"]):pick(["沖縄","北海道","台湾","東京","広島"])}へ行く。`);
-  if(a===18&&!L.edu){
+  // 2000年以降のY7ルートでは、大学の志望先・合否を先に出す旧イベントを抑止し、入試方式の選択を先に行う。
+  if(a===18&&!L.edu&&!(YEAR0+a>=2000&&L.y7&&L.school)){
     if(YEAR0+18>=2022)say(`18歳で成人になる。選挙権を得る。`);else if(YEAR0+18>=2016)say(`18歳になり、選挙権を得る。`);
     const hsAdj=L.hs==="進学校"?22:L.hs==="専門学科"?-25:0;
     const pLocal=SUCC(L.univ+12+hsAdj+(k-55)*0.6+(L.dec-5.5)*2.5),city=bigCity(L);
@@ -1806,6 +1866,14 @@ function makerisaStory(a){
   L.y7=L.y7||{};
   const Y=L.y7;
   Y.contacts=Y.contacts||{};
+  // 地域未来留学を選んだ直後に、到着イベントを最優先で発生させる。
+  if(Y.highRoute==="LOCAL_RYUGAKU"&&!Y.arrivalStory&&!L.used.has('y7:arrival-story')){
+    Y.arrivalStory=true;L.used.add('y7:arrival-story');
+    ask({title:'15歳・春：知らない町での高校生活',text:'寮に荷物を運び、知らない町で暮らし始める。地域の人も同級生も、まだ名前と顔が一致しない。ここで暮らすことが、どんな意味を持つのかはわからない。',opts:[
+      {t:'寮の人や同級生に、自分から挨拶する',sub:'関係は一度で深まらないが、入口になる',w:2,go(){Y.arrivalAction=true;Y.localVisits=(Y.localVisits||0)+1;const p=Y.contacts.mentor||(Y.contacts.mentor={name:'地域留学先で出会う大人',kind:'地域の案内人',meet:0,trust:0,last:0});p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a;L.rel+=2;say('寮の人や同級生に挨拶する。会話は短く、少し気まずさも残る。それでも、翌朝に向こうから声をかけてくれた。','big')}},
+      {t:'まずは学校と寮の生活に慣れる',sub:'無理に積極的にならなくてもいい',w:3,go(){Y.arrivalQuiet=true;say('まずは学校と寮の生活に慣れることにした。すぐに友達ができたわけではないが、毎日の食事や廊下で顔を合わせるうち、少しずつ人の名前を覚える。')}}
+    ]});return;
+  }
   // nun.html の「生まれた場所から生まれる経験」を年齢イベントとして移植。
   if(a===8&&y>=1990&&!Y.originMemory&&!L.used.has('y7:origin-memory')&&ch(0.58)){
     Y.originMemory=true;L.used.add('y7:origin-memory');
@@ -1831,9 +1899,105 @@ function makerisaStory(a){
     return p;
   };
   const trust=(id)=>Y.contacts[id]?.trust||0;
+  // AI時代の学び：勉強を否定せず、知識以外の経験も将来の選択肢につなぐ。
+  if(a>=16&&a<=18&&y>=2020&&!Y.aiFutureQuestion&&!L.used.has('y7:ai-future-question')&&L.school){
+    Y.aiFutureQuestion=true;L.used.add('y7:ai-future-question');
+    ask({title:'高校生：AIが得意になること、自分がやってみたいこと',text:'先生やニュースで、AIが文章を書いたり、調べものをしたり、仕事の一部をこなすようになったと聞く。知識を身につけることは今も大切だ。でも、正解を覚えるだけで将来を考えていいのだろうか。まだ答えは出ない。',opts:[
+      {t:'今は勉強を続け、専門性と選択肢を広げる',sub:'勉強は無駄ではない。学び方を更新することもできる',w:3,go(){Y.aiPath='study';Y.studyCommit=true;L.know+=4;L.hp-=1;say('今は勉強を続けることにした。ただ点数だけを追うのではなく、わからないことを調べ、根拠を確かめることも意識してみる。知識を持つことと、その知識を何に使うかを考えることは、両立できるはずだ。','big')}},
+      {t:'地域の人に話を聞き、現場の困りごとを知る',sub:'人の話を聞き、何が本当の課題かを考える',w:3,go(){Y.aiPath='community';Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action=(L.action||0)+2;L.rel+=2;const p=meet('aiCommunityAdult','地域の課題を一緒に考える大人','community');L.know+=2;say('地域の人に話を聞いてみる。話を聞く前に想像していた問題と、実際に困っていることは少し違っていた。AIで情報を集めることはできても、誰の声を聞き、何を解決すべきかは、自分で確かめる必要があると感じた。','big')}},
+      {t:'AIを道具にして、自分で小さなものをつくる',sub:'便利さを使いながら、出力を確かめ、使う責任も持つ',w:3,go(){Y.aiPath='maker';Y.aiProject=true;L.action=(L.action||0)+3;L.know+=2;say('AIを使って、地域イベントの案内や小さな調査ツールを試作してみる。速く形にはなったが、情報が間違っていたり、使う人にはわかりにくかったりした。道具を使うだけでは足りない。確かめ、直し、使う人の声を聞くところまでが自分の仕事だ。','big')}},
+      {t:'いろいろな仕事をする大人に、話を聞いてみる',sub:'将来をすぐ決めず、仕事の現実を知る',w:2,go(){Y.aiPath='interviews';Y.careerInterviews=true;L.know+=3;const p=meet('careerAdult','仕事の現場を教えてくれる大人','mentor');say('行政職員、先生、地域活動の担い手など、違う仕事をする大人に話を聞いてみることにした。AIを使って効率化できる仕事もあれば、関係者の調整や信頼づくりに時間がかかる仕事もある。職業名だけでは、仕事の中身はわからない。','big')}}
+    ]});return;
+  }
+  // 高校生活を「進路イベント」だけでなく、日常の関係・居場所・活動の積み重ねとして描く。
+  if(a===15&&y>=2000&&!Y.hsFriendCircle&&!L.used.has('y7:hs-friend-circle')&&L.school){
+    Y.hsFriendCircle=true;L.used.add('y7:hs-friend-circle');
+    ask({title:'15歳・春：昼休み、誰の隣に座る？',text:'高校生活が始まった。クラスには、すぐに輪の中心になる人もいれば、まだ誰とも深く話せていない人もいる。地域活動に参加するかどうか以前に、毎日の教室にも小さな選択がある。',opts:[
+      {t:'隣の席の人に話しかけ、昼休みを一緒に過ごす',sub:'友達は一度の会話では決まらない',w:3,go(){Y.hsPeerLink=true;const p=meet('hsPeer','高校で知り合った友人','peer');L.rel+=2;say('隣の席の人に話しかけ、昼休みを一緒に過ごした。趣味も考え方も少し違う。それでも、次の日も隣に座ってみようと思えた。高校生活の土台は、こういう何気ない時間からできていく。','big')}},
+      {t:'部活や委員会を見学して、気の合いそうな人を探す',sub:'共通の作業が会話のきっかけになる',w:3,go(){Y.hsClubSearch=true;L.action=(L.action||0)+2;const p=meet('hsClubPeer','部活・委員会で出会った仲間','peer');say('部活や委員会を見学する。活動そのものより、先輩が後輩に気さくに声をかける雰囲気が印象に残った。ここなら、少しずつ話せる人ができるかもしれない。')}},
+      {t:'無理に輪に入らず、まずは様子を見る',sub:'距離を取ることも、自分を守る選択',w:3,go(){Y.hsQuietStart=true;say('無理に輪に入ろうとはせず、まずは様子を見ることにした。最初から居場所が見つからなくても、失敗ではない。毎日顔を合わせるうちに、話せる相手が見つかることもある。')}}
+    ]});return;
+  }
+  if(a===16&&y>=2000&&!Y.youthPlace&&!L.used.has('y7:youth-place')&&L.school&&(Y.localVisits>=1||Y.originAction||Y.youthPlaceVisited)&&ch(0.78)){
+    Y.youthPlace=true;L.used.add('y7:youth-place');
+    ask({title:'16歳：用事がなくても行っていい場所',text:'地域の活動をしている先輩に、放課後に立ち寄れる小さな拠点を教えてもらった。勉強しても、ゲームをしても、誰かと話してもいい。何かを達成することを求められない場所らしい。',opts:[
+      {t:'一度行ってみて、何もせず過ごしてみる',sub:'居場所は成果を出す場所とは限らない',w:3,go(){Y.youthPlaceVisited=true;const p=meet('youthWorker','若者の居場所をつくるスタッフ','youthworker');p.trust=Math.min(5,p.trust+1);L.rel+=2;L.hp+=2;say('拠点に行ってみる。スタッフは「何かやりたいことがなくてもいいよ」と言った。誰かの役に立たなくても、何者かにならなくても、いていい場所がある。その安心感を、少しだけ知った。','big')}},
+      {t:'スタッフに、どんな人が来ているのか聞く',sub:'支援する人も、いろいろな背景を持つ人を知っている',w:2,go(){Y.youthPlaceTalk=true;const p=meet('youthWorker','若者の居場所をつくるスタッフ','youthworker');p.trust=Math.min(5,p.trust+1);L.know+=2;say('スタッフに話を聞く。悩みを抱えて来る人も、友達と遊びに来る人もいるという。困りごとを解決する前に、安心して過ごせることが大切な場合もあるのだと知った。','big')}},
+      {t:'今は部活や勉強を優先し、場所だけ覚えておく',sub:'必要になったときに思い出せればいい',w:3,go(){Y.youthPlaceDeferred=true;say('今は行かず、場所だけ覚えておくことにした。自分に必要かどうかはまだわからない。でも、用事がなくても行っていい場所が町にあると知った。')}}
+    ]});return;
+  }
+  if(a===17&&y>=2000&&!Y.youthCouncilIntro&&!L.used.has('y7:youth-council')&&L.school&&(Y.localVisits>=1||Y.originAction||Y.youthPlaceVisited)&&ch(0.78)){
+    Y.youthCouncilIntro=true;L.used.add('y7:youth-council');
+    ask({title:'17歳：高校生の声を、町の仕組みに届ける',text:'地域活動で知り合った人から、若者会議・ユースカウンシルの話を聞く。中高生が、普段感じている不便や「こうだったらいいのに」を調べ、行政職員と話し、提案を実際の取り組みにつなげる場らしい。意見を言えばすぐ実現するわけではない。',opts:[
+      {t:'自分たちの「ちょっと困る」を集めてみる',sub:'身近な違和感を、ほかの人の声と照らし合わせる',w:3,go(){Y.youthCouncil=true;Y.youthCouncilRole='listener';L.action=(L.action||0)+3;L.know+=2;const p=meet('youthOfficial','若者の声を聞く行政職員','publicServant');say('友達や同世代に話を聞いてみると、自分だけの不満だと思っていたことに、似た経験を持つ人がいた。行政職員はすぐに約束はしなかったが、「まず事実を調べて、一緒に考えよう」と言った。','big')}},
+      {t:'会議を見学し、行政の人に質問してみる',sub:'仕組みを知るところから始める',w:3,go(){Y.youthCouncilObserved=true;const p=meet('youthOfficial','若者の声を聞く行政職員','publicServant');L.know+=3;say('会議を見学する。行政の人は堅いだけだと思っていたが、現場をよく知り、若者の意見を本気で聞こうとする職員もいた。一方で、予算や制度の制約もある。理想だけでは進まないことも見えてきた。','big')}},
+      {t:'自分には難しそうなので、今は参加しない',sub:'政治や行政に距離を感じることも自然',w:3,go(){Y.youthCouncilSkipped=true;say('今は参加しないことにした。行政や会議は、自分には少し遠い世界に思える。それでも、誰かが何かを変えようとしていることは頭の片隅に残った。')}}
+    ]});return;
+  }
+  if(a>=18&&a<=19&&y>=2000&&Y.youthCouncil&&!Y.youthProposalResult&&!L.used.has('y7:youth-proposal')){
+    Y.youthProposalResult=true;L.used.add('y7:youth-proposal');
+    ask({title:'18歳：提案したアイデア、その後',text:'若者会議で出した提案について、行政から返事が来た。すぐに予算がつくわけではない。担当課との調整、利用する人への聞き取り、小さく試す方法を考える必要がある。',opts:[
+      {t:'小さな実験を自分たちでやってみる',sub:'完璧な制度を待たず、できる範囲で試す',w:3,go(){Y.youthProposalResult='pilot';Y.projectStarted=true;L.action=(L.action||0)+4;L.rel+=3;const p=Y.contacts.youthOfficial;if(p)p.trust=Math.min(5,p.trust+1);say('空きスペースの使い方やイベントの時間帯など、できる範囲で試すことになった。参加者は思ったほど集まらず、準備も大変だった。それでも、実際にやったからこそ、次に直すところが見えた。','big')}},
+      {t:'行政職員と一緒に、調査と提案を練り直す',sub:'時間がかかっても、根拠と協力者を増やす',w:2,go(){Y.youthProposalResult='revise';Y.studyLink=true;L.know+=4;const p=Y.contacts.youthOfficial;if(p)p.trust=Math.min(5,p.trust+1);say('提案を練り直し、利用者への聞き取りや他地域の事例を調べることにした。すぐに形にはならないが、行政職員が制度の背景を説明してくれたことで、実現に必要な条件が少しわかった。','big')}},
+      {t:'学校生活や進路を優先し、いったん離れる',sub:'離れることも、経験を失うことではない',w:3,go(){Y.youthProposalResult='pause';say('進路や生活を優先して、活動からいったん離れることにした。提案はすぐに実現しなかった。それでも、若者の意見が社会に届くまでに、時間と調整が必要だと知った経験は残る。')}}
+    ]});return;
+  }
+  // 2026-10-20追加：現場での摩擦、学び直し、将来像の分岐をつなぐ。
+  if(a>=17&&a<=19&&y>=2000&&!Y.fieldFriction&&!L.used.has('y7:field-friction')&&(Y.localVisits||Y.youthPlaceVisited||Y.youthCouncil||Y.aiPath==='community'||Y.aiProject)){
+    Y.fieldFriction=true;L.used.add('y7:field-friction');
+    ask({title:'高校生：現場に行けば、すぐ役に立てる？',text:'地域の企画に参加してみた。思いついたアイデアを話すと、地元の人から「それは前にも試した」「使う人の話を聞いた？」と返された。準備不足を指摘され、少し悔しい。夜、活動を続けてきた大人たちの話を聞いていると、制度やお金、歴史のことがわからず、議論に入れない自分にも気づく。',opts:[
+      {t:'悔しさを持ち帰り、必要な知識を調べ直す',sub:'勉強を現場で使うための武器に変える',w:3,go(){Y.fieldFrictionResponse='study';Y.studyFromField=true;Y.studyLink=true;L.know+=4;L.action+=1;say('悔しさを持ち帰り、地域の制度や人口、予算の仕組みを調べ直すことにした。覚えるためだけの勉強とは違い、知りたいことが具体的にある。次に話すときは、根拠を持って質問したい。','big')}},
+      {t:'自分の案に固執せず、住民や利用者の話を聞き直す',sub:'自分の正しさより、現場の実情を知る',w:3,go(){Y.fieldFrictionResponse='listen';Y.communityListening=true;L.rel+=2;L.know+=2;const p=Y.contacts.aiCommunityAdult||Y.contacts.youthOfficial;if(p){p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a}say('自分の案を通すより先に、実際に使う人や、以前から関わる人の話を聞き直すことにした。困りごとは外から見ただけではわからない。話を聞くほど、答えを出す前に問いを立て直す必要があるとわかった。','big')}},
+      {t:'自分には合わないと感じ、活動から距離を置く',sub:'共鳴しないことも、その人なりの発見',w:3,go(){Y.fieldFrictionResponse='leave';Y.localDistance=true;say('熱意のある大人たちの話や、細かな調整に疲れてしまった。自分はこの活動にそこまで惹かれていないのかもしれない。無理に感動したふりをせず、いったん距離を置くことにした。経験してみたからこそ、合う・合わないが少しわかった。')}}
+    ]});return;
+  }
+  // 成人後の人生は「地域で活躍する」だけに収束させず、経験の使い方を分岐させる。
+  if(a>=28&&y>=2000&&!Y.lifeDirectionPayoff&&!L.used.has('y7:life-direction-payoff')&&(Y.studyFromField||Y.communityListening||Y.localDistance||Y.youthCouncil||Y.aiPath||Y.adultRegionRole)){
+    Y.lifeDirectionPayoff=true;L.used.add('y7:life-direction-payoff');
+    const resonance=!!(Y.studyFromField||Y.communityListening||Y.youthCouncil||Y.adultRegionRole==='career'||Y.aiAdultRole==='connector');
+    ask({title:'30歳前後：今度は、自分が誰かのきっかけになる？',text:resonance?'仕事や暮らしが少し落ち着いたころ、昔の地域活動や、そこで出会った大人たちを思い出す。自分も誰かの挑戦を支える側になれるかもしれない。一方で、生活や仕事との両立は簡単ではない。':'仕事や生活を続ける中で、かつて見た地域の活動を思い出すことがある。あの経験を今の自分にどう活かすか。地域に戻ることだけが答えではない。',opts:[
+      {t:'若者の居場所やユースカウンシルを支える側になる',sub:'次の誰かが出会い、試せる場をつくる',w:resonance?3:1,go(){Y.lifeDirection='youth-support';Y.adultRegionRole='career';Y.becomesSupporter=true;L.action+=3;L.rel+=3;say('若者が安心して過ごせる場や、意見を試せる機会をつくる側に回ることにした。自分が若いころにもらった支えを、そのまま返すのではなく、今の若者に合う形に考え直す。すべてを解決できるわけではないが、次の誰かのきっかけになる場所を続けていく。','big')}},
+      {t:'地域と都市を行き来し、仕事や人をつなぐ',sub:'二拠点・プロジェクト型など、関わり方を組み合わせる',w:3,go(){Y.lifeDirection='bridge-builder';Y.adultRegionRole='career';Y.cityRegionBridge=true;L.action+=3;L.know+=2;say('都市での仕事を続けながら、地域の人や企業、学校をつなぐ企画にも関わることにした。住む場所も仕事も一つに決めなくていい。調整に時間がかかり、思ったように進まないこともあるが、違う世界の人が出会うことで生まれる可能性を感じている。','big')}},
+      {t:'地域での経験を、別の仕事や研究に活かす',sub:'現場を知ったことが、専門性や問いの深さにつながる',w:3,go(){Y.lifeDirection='research-or-work';Y.studyLink=true;L.know+=4;say('地域活動を仕事にする道ではなく、別の仕事や研究の中で経験を活かすことにした。現場で出会った問いが、仕事の見方や人の話を聞く姿勢を変えている。遠くにいても、経験は無駄にならず、必要なときに別の形で戻ってくる。','big')}},
+      {t:'今は自分の暮らしを優先し、関わり方を保留する',sub:'支える側にならない人生も、失敗ではない',w:3,go(){Y.lifeDirection='pause';L.hp+=2;say('今は自分の暮らしや大切な人との時間を優先することにした。誰かを支える側にならなくても、かつて支えてもらった経験は残っている。余裕ができたら、また考えればいい。人生の時期によって、できることは変わる。','big')}}
+    ]});return;
+  }
+  // 高校時代の経験は大人編で再び意味を持つ。地域活動を職業にすることだけを正解にしない。
+  if(a>=24&&y>=2000&&!Y.adultBridge&&!L.used.has('y7:adult-bridge')&&(Y.localVisits||Y.youthPlaceVisited||Y.youthCouncil||Y.teacherSpark||Y.studyLink)){
+    Y.adultBridge=true;L.used.add('y7:adult-bridge');
+    ask({title:'20代半ば：あの頃の経験が、別の形で戻ってくる',text:'仕事や暮らしに少し慣れてきたころ、昔の知り合いから連絡が来る。地域の居場所づくり、若者の声を聞く企画、学校と地域をつなぐ活動。高校時代に見たり手伝ったりしたことが、今の自分にも関係するかもしれない。',opts:[
+      {t:'仕事の外で、月に一度だけ関わってみる',sub:'本業にしなくても、関係は続けられる',w:3,go(){Y.adultRegionRole='volunteer';Y.reunionHelp=true;L.rel+=3;L.action=(L.action||0)+2;say('月に一度、企画の相談やイベントの手伝いに関わることにした。高校時代に支えてもらったように、今度は自分が若い人の話を聞く側になる日もある。仕事も生活もあるから、無理のない範囲で続けていく。','big')}},
+      {t:'経験を活かし、地域・教育・若者支援の仕事を調べる',sub:'ユースワーク、行政、学校、NPO、まちづくりなど道は複数',w:2,go(){Y.adultRegionRole='career';Y.studyLink=true;L.know+=3;L.action=(L.action||0)+2;say('地域の居場所づくりや若者支援、教育、行政、まちづくりの仕事を調べ始めた。高校時代に出会った大人たちのように、ひとつの肩書きだけでは説明できない働き方もある。すぐ転職するとは決めず、まず話を聞くことにした。','big')}},
+      {t:'今は自分の仕事や暮らしを優先し、記憶として大切にする',sub:'地域に関わらない時期があってもいい',w:3,go(){Y.adultRegionRole='memory';say('今は自分の仕事や暮らしを優先することにした。地域活動を続けていなくても、あの頃に誰かが話を聞いてくれたこと、失敗しても戻れる場所があったことは、自分が人と関わるときの土台になっている。','big')}}
+    ]});return;
+  }
+  // 高校時代のAI・学びの選択が、大人になってからの仕事観や役割に戻ってくる。
+  if(a>=25&&y>=2020&&Y.aiPath&&!Y.aiAdultTurn&&!L.used.has('y7:ai-adult-turn')){
+    Y.aiAdultTurn=true;L.used.add('y7:ai-adult-turn');
+    const pathText=Y.aiPath==='study'?'学びや専門性を積み上げてきた。':Y.aiPath==='community'?'地域の人の話を聞いた経験がある。':Y.aiPath==='maker'?'AIを使って試作し、確かめて直す経験がある。':'仕事をする大人に話を聞いた経験がある。';
+    ask({title:'大人になって：AIがある時代に、自分の力をどう使う？',text:pathText+'仕事の道具も働き方も変わってきた。知識を学ぶことも、人と協力することも、現場を知ることも、どれか一つだけで十分とは限らない。これまでの経験をどう活かすか、改めて考える時期が来た。',opts:[
+      {t:'専門性を深め、AIを使いこなす側に回る',sub:'学び続け、結果を検証し、判断に責任を持つ',w:3,go(){Y.aiAdultRole='expert';Y.studyLink=true;L.know+=4;say('専門性を深めながら、AIを調査や作業の補助に使うことにした。出力をそのまま信じず、根拠を確かめ、自分の判断に責任を持つ。学び続けることは、正解を暗記し続けることとは少し違うのだと感じる。','big')}},
+      {t:'地域・教育・若者支援の現場で、人と人をつなぐ',sub:'ユースワーク、行政、学校、NPO、まちづくりなど',w:3,go(){Y.aiAdultRole='connector';Y.adultRegionRole='career';Y.reunionHelp=true;L.rel+=3;L.action=(L.action||0)+3;const p=Y.contacts.aiCommunityAdult||Y.contacts.careerAdult;if(p){p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a}say('地域や教育、若者支援の現場で、人の声を聞き、違う立場の人をつなぐ仕事に関心が向いた。AIも道具として使うが、安心して話せる関係や、誰の声が届いていないかを考えることも大切にしたい。高校時代に出会った大人たちの姿が、今になって自分の将来像につながってきた。','big')}},
+      {t:'本業は別に持ち、地域の活動を無理なく続ける',sub:'仕事と地域活動を分けても、経験は行き来する',w:3,go(){Y.aiAdultRole='side-by-side';Y.adultRegionRole='volunteer';Y.reunionHelp=true;L.rel+=2;say('地域活動を本業にするのではなく、今の仕事を続けながら、若者会議や居場所づくりを手伝うことにした。仕事で得た知識を地域に持ち込み、地域で聞いた声を仕事の見方に活かす。ひとつの肩書きだけで自分を決めなくてもいい。','big')}},
+      {t:'今は暮らしを優先し、必要になったら学び直す',sub:'常に最先端でいることだけが正解ではない',w:3,go(){Y.aiAdultRole='pause';L.hp+=2;say('今は生活を整えることを優先する。AIや仕事の変化に不安がないわけではないが、すべてを追いかけ続けることはできない。必要になったときに学び直せるよう、相談できる人や情報源とのつながりは残しておくことにした。','big')}}
+    ]});return;
+  }
+  // 大学進学の方法は一度に比較できるようにまとめる。経験の有無で選択肢自体を消さない。
+  if(a===18&&y>=2000&&!Y.universityRouteAsked&&!L.used.has('y7:university-route')&&L.school){
+    Y.universityRouteAsked=true;L.used.add('y7:university-route');
+    const prep=(Y.portfolioStrong?18:0)+(Y.studyLink?12:0)+(Y.projectStarted?8:0)+(trust('localAdult')>=3?7:0)+(L.know>=60?5:0);
+    const academic=clamp(0.30+(L.know-35)*0.008+(Y.studyCommit?0.10:0),0.15,0.82);
+    const recommend=clamp(0.38+(L.rel-40)*0.004+(Y.studyBalance?0.05:0),0.18,0.85);
+    ask({title:'18歳・大学進学を考える：どの方法で挑戦する？',text:'大学に進むとしても、入試の方法はひとつではない。これまでの経験を伝える方法も、教科の学力で挑む方法も、学校での成績や推薦を活かす方法もある。どれを選んでも合格が約束されるわけではない。',opts:[
+      {t:'総合型選抜に挑戦する',sub:`地域での経験・探究・振り返りを自分の言葉で伝える（準備度 ${Math.min(85,35+prep)}%）`,w:(Y.portfolio||Y.studyLink||Y.projectStarted)?3:1,go(){Y.aoTried=true;Y.aoResult='tried';const chance=clamp(0.25+prep/100,0.22,0.78);if(ch(chance)){Y.aoResult='pass';L.y7AO=true;L.know+=5;L.hp+=4;say('地域での経験や、そこから生まれた問い、考え直した過程を自分の言葉で伝えた。合格の知らせが届いた。活動の大きさだけでなく、何を考え、何を学んだかを伝えられたことが自信になった。','big')}else{Y.aoResult='fail';L.know+=2;say('準備してきた経験を伝えたが、今回は合格に届かなかった。悔しさはある。それでも、経験を振り返り、なぜ学びたいのかを言葉にできた。一般選抜や別の進路も考えられる。','big')}}},
+      {t:'一般選抜で挑戦する',sub:'教科の学力を積み上げ、試験本番で力を出す',w:3,go(){Y.aoResult='general';if(ch(academic)){Y.generalResult='pass';L.know+=5;L.hp+=2;say('問題集や過去問に向き合い、試験本番に臨んだ。第一志望の大学に合格した。地道に積み上げた学力が、進路を切り開いた。','big')}else{Y.generalResult='fail';L.hp-=2;L.know+=2;say('試験本番では思うように力を出し切れず、第一志望には届かなかった。悔しさは残るが、併願校や別の進路を含めて次を考える。','big')}}},
+      {t:'指定校推薦を目指す',sub:'評定・学校生活・校内選考が条件。希望しても枠が取れるとは限らない',w:2,go(){Y.aoResult='designated';const eligible=L.know>=35&&L.hp>=35;const chance=eligible?recommend:0.12;if(ch(chance)){Y.designatedResult='pass';L.y7DesignatedPass=true;L.hp+=3;say('学校での成績や日々の取り組みを評価され、校内選考を通過。指定校推薦で大学への進学が決まった。早く進路が決まり、残りの高校生活で何を学ぶか考える余裕も生まれた。','big')}else{Y.designatedResult='fail';say(eligible?'希望する推薦枠には届かなかった。校内選考には枠や評定などの条件があり、努力しても必ず通るわけではない。一般選抜など別の方法に切り替える。':'評定や学校生活の積み重ねが足りず、推薦を得るのは難しかった。一般選抜など別の方法に切り替え、これからできる準備を考える。','big')}}},
+      {t:'大学以外も含めて考える',sub:'専門学校・就職など、学び方や働き方を広く検討する',w:2,go(){Y.aoResult='explore';const p=Y.contacts.localAdult;if(p&&p.meet>0){p.trust=Math.min(5,p.trust+1);Y.reunionHelp=true}L.rel+=1;say('大学進学だけに絞らず、専門学校や就職も含めて考える。地域で出会った人や学校の先生に相談しながら、自分に合う道を探すことにした。')}}
+    ]});return;
+  }
   // 地域未来留学で実際に起きた出会いを、留学ルート固有のイベントとして追加。
   // 1回の出会いで親友になるのではなく、行動と再会で関係が育つ。
-  if(a===16&&Y.highRoute==="LOCAL_RYUGAKU"&&!Y.grandmaVegetableEvent&&!L.used.has('y7:grandma-vegetables')){
+  if(a>=16&&Y.highRoute==="LOCAL_RYUGAKU"&&Y.arrivalStory&&!Y.grandmaVegetableEvent&&!L.used.has('y7:grandma-vegetables')){
     Y.grandmaVegetableEvent=true;L.used.add('y7:grandma-vegetables');
     ask({title:'16歳・秋：野菜をくれた、なぞのおばあちゃん',text:'散歩をしていると、話したこともないおばあちゃんに突然「野菜あげるよ」と声をかけられた。ひとりでは到底食べきれない量。どうしよう。',opts:[
       {t:'寮に持ち帰り、みんなで料理して食べる',sub:'一人への親切が、寮生みんなの思い出になる',w:3,go(){Y.grandmaVegetables=true;Y.localVisits=(Y.localVisits||0)+1;Y.localExperience=(Y.localExperience||0)+1;const p=meet('grandma','野菜をくれた地域のおばあちゃん','local');const f=Y.contacts.dormCook||(Y.contacts.dormCook={name:'寮で一緒に料理した仲間',kind:'寮の仲間',meet:0,trust:0,last:0});f.meet++;f.trust=Math.min(5,f.trust+1);f.last=a;Y.dormMealMemory=true;L.rel+=3;L.action=(L.action||0)+2;say('寮に持ち帰ると、みんなが集まって料理を始めた。野菜を切り、味見をして、食卓を囲む。おばあちゃんの名前もまだ知らない。それでも、地域の人の親切が、寮のみんなの忘れにくい夜になった。','big')}},
@@ -1841,7 +2005,7 @@ function makerisaStory(a){
       {t:'食べきれないので、今回は遠慮する',sub:'受け取らない選択もある。出会いはそれだけで終わらないかもしれない',w:1,go(){Y.grandmaDeclined=true;say('食べきれないので、今回は遠慮した。おばあちゃんは「また今度ね」と笑った。何かを受け取らなくても、次に挨拶するきっかけは残った。')}}
     ]});return;
   }
-  if(a===17&&Y.highRoute==="LOCAL_RYUGAKU"&&!Y.mizuRoomCheck&&!L.used.has('y7:mizu-room-check')){
+  if(a>=17&&Y.highRoute==="LOCAL_RYUGAKU"&&Y.grandmaVegetableEvent&&!Y.mizuRoomCheck&&!L.used.has('y7:mizu-room-check')){
     Y.mizuRoomCheck=true;L.used.add('y7:mizu-room-check');
     ask({title:'17歳・冬：忘れていた部屋点検',text:'寮の部屋点検の日をすっかり忘れ、掃除をしていなかった。部屋を見た水本さんは、あまりの散らかりように笑いながら叱った。水本さんは寮の舎監であり、魅力化コーディネーターであり、写真家でもある。最初は地域で出会った一人のお兄さんだった。',opts:[
       {t:'素直に謝り、次の点検日をメモする',sub:'叱られた経験を、次の工夫につなげる',w:3,go(){Y.mizuBond=true;const p=meet('mizu','水本さん','地域のお兄さん');p.trust=Math.min(5,p.trust+1);Y.mizuRoomCheckResponse='apologize';L.rel+=2;L.action=(L.action||0)+1;say('水本さんに謝り、次の点検日をカレンダーに入れた。笑いながら叱ってくれる人がいる。先生とも家族とも違う、困ったときに話せる大人が少しずつ身近になっていた。','big')}},
@@ -1849,7 +2013,7 @@ function makerisaStory(a){
       {t:'片づけを手伝ってもらいながら、最近の悩みも話す',sub:'失敗をきっかけに、相談できる関係を育てる',w:2,go(){Y.mizuBond=true;Y.mizuTalk=true;const p=meet('mizu','水本さん','地域のお兄さん');p.trust=Math.min(5,p.trust+2);Y.mizuRoomCheckResponse='talk';L.rel+=3;L.hp+=1;say('水本さんに片づけを手伝ってもらいながら、学校や寮で困っていることも少し話した。叱られた出来事が、相談できる関係を確かめるきっかけになった。','big')}}
     ]});return;
   }
-  if(a>=18&&a<=20&&Y.highRoute==="LOCAL_RYUGAKU"&&Y.mizuBond&&!Y.mizuOlderBrother&&!L.used.has('y7:mizu-older-brother')&&ch(0.72)){
+  if(a>=18&&Y.highRoute==="LOCAL_RYUGAKU"&&Y.mizuRoomCheck&&!Y.mizuOlderBrother&&!L.used.has('y7:mizu-older-brother')){
     Y.mizuOlderBrother=true;L.used.add('y7:mizu-older-brother');
     ask({title:'みんなのお兄さん',text:'水本さんは、寮の舎監としてだけでなく、地域の魅力化コーディネーターや写真家としても動いている。困ったときに相談したり、何気ない話をしたり。一緒に過ごす時間が増え、学校の先生とも家族とも違う存在になっていた。',opts:[
       {t:'困ったことがあるとき、相談してみる',sub:'頼ることも、地域で暮らす力のひとつ',w:2,go(){const p=meet('mizu','水本さん','みんなのお兄さん');p.trust=Math.min(5,p.trust+1);Y.mizuAskedForHelp=true;L.rel+=2;say('水本さんに相談してみる。すぐに答えを出してくれるわけではないが、話を聞いて一緒に考えてくれた。地域には、自分たちを気にかけてくれる人がいるのだと感じる。','big')}},
@@ -1858,7 +2022,7 @@ function makerisaStory(a){
     ]});return;
   }
   // 地域留学で得た関係は、進学後・就職後にも再会や相談として戻ってくる。
-  if(a>=22&&Y.highRoute==="LOCAL_RYUGAKU"&&Y.mizuBond&&!Y.mizuReunion&&!L.used.has('y7:mizu-reunion')&&ch(0.28)){
+  if(a>=22&&Y.highRoute==="LOCAL_RYUGAKU"&&Y.mizuOlderBrother&&!Y.mizuReunion&&!L.used.has('y7:mizu-reunion')){
     Y.mizuReunion=true;L.used.add('y7:mizu-reunion');
     ask({title:'数年後：地域のお兄さんとの再会',text:'進学や仕事で忙しくなり、寮で暮らした日々は少し遠くなった。そんなとき、水本さんから連絡が来る。以前のように近況を聞いてくれ、地域の仕事や写真の企画で一緒にできることがあるかもしれないという。',opts:[
       {t:'会って近況を話し、できることを一緒に考える',sub:'昔のつながりが、新しい挑戦の入口になる',w:2,go(){const p=meet('mizu','水本さん','長く続く地域のつながり');p.trust=Math.min(5,p.trust+1);Y.mizuCollaboration=true;Y.reunionHelp=true;L.rel+=3;L.action=(L.action||0)+2;say('久しぶりに会い、今の暮らしや仕事について話した。高校時代に支えてくれた人と、今度は対等な立場で地域の企画や写真の仕事を一緒に考える。あの頃の関係が、別の形で続いていた。','big')}},
@@ -1868,8 +2032,7 @@ function makerisaStory(a){
   }
 
   // SAPIXは人生の最初に選ぶ「ルート」ではなく、家庭環境と年齢の中で現れる選択肢。
-  if(a>=6&&a<=8&&y>=1990&&!Y.sapixAsked&&!L.used.has('y7:sapix')&&
-     (['東京','神奈川','千葉','埼玉','大阪','愛知','兵庫','京都'].includes(L.pref)||L.dec>=7)&&ch(0.28)){
+  if(a===7&&y>=1990&&!Y.sapixAsked&&!L.used.has('y7:sapix')){
     Y.sapixAsked=true;L.used.add('y7:sapix');
     ask({title:'塾のパンフレットが、食卓に置かれている',text:'近所の友だちが中学受験の塾に通い始めたらしい。親も「試してみる？」と聞いてくる。自分が何をしたいかは、まだよくわからない。',opts:[
       {t:'SAPIXに通ってみる',sub:'勉強の習慣がつくかもしれない。時間や費用の負担もある',w:L.dec>=7?3:1,go(){Y.sapix=true;Y.studyPressure=1;L.know+=3;L.savings-=Math.max(0, L.parentMoney>=150?35:18);say('SAPIXに通い始める。授業は速く、宿題も多い。解けた問題がうれしい日も、遊びに行く友だちがうらやましい日もある。','big')}} ,
@@ -1888,10 +2051,34 @@ function makerisaStory(a){
   if(a===12&&Y.sapix&&!Y.middleExam&&!L.used.has('y7:middle-exam')){
     Y.middleExam=true;L.used.add('y7:middle-exam');
     const pass=ch(clamp(0.38+(L.know-30)*0.008+(Y.studyCommit?0.10:0),0.18,0.78));
-    ask({title:'中学受験の結果',text:'ここまでの勉強が、ひとつの結果になる。ただし、合否でその後の人生の価値が決まるわけではない。',opts:[
-      {t:pass?'第一志望に合格した':'結果を受け止め、次の学校へ進む',sub:'今までの努力と、これからの生活を考える',w:3,go(){Y.examResult=pass?'pass':'other';if(pass){L.edu='中学';L.know+=4;L.hp+=3;say('第一志望に合格した。家族は喜び、自分もほっとする。新しい環境で何に出会うかは、まだわからない。','big')}else{L.hp-=2;say('思いどおりの結果ではなかった。悔しさはあるが、進む学校で出会う人や経験は、まだ何も決まっていない。','big')}}},
-      {t:'受験の結果だけで、自分を決めつけない',sub:'別の得意や居場所も探していく',w:2,go(){Y.examResult='reflect';L.hp+=2;say('結果だけで自分を決めつけないことにする。学校の外にも、これから出会う人や夢中になれることがあるかもしれない。')}}
+    if(pass){
+      Y.examResult='pass';Y.middleRoute='SAPIX_PASS';
+      ask({title:'12歳・冬：中学受験、第一志望に合格',text:'積み重ねてきた勉強が結果につながった。家族は喜んでいる。でも、合格は人生のゴールではない。東京の中高一貫校へ進み、これからどんな人や考え方に出会うのだろう。',opts:[
+        {t:'合格した学校へ進み、勉強を続ける',sub:'学びの環境を活かす。外の世界との出会いはこれから',w:3,go(){Y.middleRoute='SAPIX_PASS';L.privateJhs=true;L.school='東京の私立中高一貫校';L.city='東京';L.livingPref='東京都';L.home='寮・親元を離れた暮らし';Y.tokyoMove=true;L.used.add('y7:tokyo-middle-school');L.know+=4;L.hp+=2;say('第一志望の中高一貫校へ進学するため、12歳で東京へ。地元の友だちや家族と離れる寂しさもあり、駅のホームで見送られた日のことが長く残った。新しい学校では、勉強だけでなく、知らない価値観にも出会っていく。','big')}} ,
+        {t:'合格を機に、勉強以外の活動にも時間をつくる',sub:'勉強を続けながら、学校の外にも目を向ける',w:2,go(){Y.middleRoute='SAPIX_PASS';L.privateJhs=true;L.school='東京の私立中高一貫校';L.city='東京';L.livingPref='東京都';L.home='寮・親元を離れた暮らし';Y.tokyoMove=true;L.used.add('y7:tokyo-middle-school');L.know+=3;L.action=(L.action||0)+2;say('合格した学校へ進む。勉強だけで毎日を埋めず、学校の外にも目を向けてみようと思った。地元を離れた寂しさはあるが、ここから新しい人間関係をつくっていく。','big')}}
+      ]});
+    }else{
+      Y.examResult='fail';
+      ask({title:'12歳・冬：第一志望に届かなかった。次はどこへ？',text:'SAPIXで勉強を続けてきたが、第一志望は不合格。悔しさも、ほっとした気持ちもある。滑り止めの私立中へ進むか、公立中から高校受験を目指すか。ここで人生が終わるわけではない。',opts:[
+        {t:'滑り止めの私立中へ進む',sub:'中高一貫校で学ぶ。高校で面白い先生に出会う可能性がある',w:2,go(){Y.middleRoute='SAPIX_FAIL_PRIVATE';L.privateJhs=true;L.school='東京の滑り止め私立中高一貫校';L.city='東京';L.livingPref='東京都';L.home='寮・親元を離れた暮らし';Y.tokyoMove=true;L.used.add('y7:tokyo-middle-school');Y.jinnaiTeacherFlag=true;L.hp-=2;say('滑り止めの私立中へ進むため、12歳で東京へ。第一志望に届かなかった悔しさはすぐには消えない。けれど、この学校で出会う先生や仲間が、あとから思いがけない転機になるかもしれない。','big')}} ,
+        {t:'地元の公立中へ進み、高校受験で再挑戦する',sub:'地元の仲間と過ごしながら、別の形で力をつける',w:3,go(){Y.middleRoute='SAPIX_FAIL_PUBLIC';L.privateJhs=false;L.school='東京の公立中学校';L.city='東京';L.livingPref='東京都';L.home='親元を離れた暮らし';Y.tokyoMove=true;L.used.add('y7:tokyo-middle-school');L.hp-=1;L.action=(L.action||0)+2;say('公立中へ進み、高校受験で再挑戦することにした。ただし物語の舞台は東京。家族や地元の友人と離れることになり、上京の日、見慣れた駅のホームでの別れが胸に残った。','big')}}
+      ]});
+    }
+    return;
+  }
+  // 滑り止め私立ルート：高校で出会う型破りな先生が、勉強の意味を揺さぶる。
+  if(a===16&&Y.middleRoute==='SAPIX_FAIL_PRIVATE'&&!Y.jinnaiTeacherMet&&!L.used.has('y7:jinnai-teacher')){
+    Y.jinnaiTeacherMet=true;L.used.add('y7:jinnai-teacher');
+    ask({title:'16歳・春：陣内先生の授業',text:'滑り止めで入った中高一貫校。勉強にも学校にも、どこか気持ちが入らない。そんな高校2年の春、陣内先生が授業で言った。「偏差値の高い大学に行けば人生安泰？そんなわけないだろ。自分の頭で考えて、現場に行って、人の話を聞いてこい。教科書の答えを覚えるだけなら、これからAIの方が得意になるぞ」。乱暴な言い方だけど、なぜか気になった。',opts:[
+      {t:'先生に反発しつつも、地域の現場を調べてみる',sub:'受験中心だった視野に、別の選択肢が見え始める',w:2,go(){Y.teacherSpark=true;Y.teacherAsked=true;Y.localRoute=true;L.know+=2;L.action=(L.action||0)+2;const p=Y.contacts.teacher||(Y.contacts.teacher={name:'陣内先生',kind:'型破りな高校教師',meet:0,trust:0,last:0});p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a;say('陣内先生の言葉が頭に残り、地域で活動する高校生や地域みらい留学について調べ始めた。最初から地域に興味があったわけではない。ただ、勉強する意味を、自分の目で確かめたくなった。','big')}} ,
+      {t:'先生の言い方は苦手。受験勉強に集中する',sub:'受験を続ける道も残る。問いはあとから戻ってくるかもしれない',w:3,go(){Y.studyFocus=true;L.know+=3;say('陣内先生の言い方には納得できず、受験勉強を続けることにした。それでも「何のために学ぶのか」という問いは、ふとしたときに思い出す。')}} ,
+      {t:'「現場ってどこですか」と先生に聞く',sub:'先生から地域活動の人を紹介してもらう',w:1,go(){Y.teacherSpark=true;Y.teacherAsked=true;Y.localRoute=true;const p=Y.contacts.teacher||(Y.contacts.teacher={name:'陣内先生',kind:'型破りな高校教師',meet:0,trust:0,last:0});p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a;L.rel+=2;say('先生に聞くと、地域の活動をしている人を紹介された。紹介されたからといって、すぐに何かが変わるわけではない。まずは自分で連絡してみることにした。','big')}}
     ]});return;
+  }
+  // 共通の舞台設定：中学進学のタイミングで上京。出生地（L.pref）は変えず、居住地だけを変更する。
+  if(a===12&&!Y.tokyoMove&&!Y.sapix&&!L.used.has('y7:tokyo-middle-school')){
+    L.used.add('y7:tokyo-middle-school');Y.tokyoMove=true;L.city='東京';L.livingPref='東京都';L.home='親元を離れた暮らし';L.school='東京都内の中学校';
+    say(`12歳・春：中学進学を機に上京する。生まれ育った${L.pref}を離れ、東京で暮らしながら学校に通うことになった。駅のホームで家族や地元の友だちに見送られ、手を振り返したあと、急に知らない町で暮らす実感が湧いてくる。出生地は${L.pref}のまま。ここから新しい生活と人間関係が始まる。`,'big');
   }
   // 先生の一言は「地域ルートへの入口」だが、即座に進路を決めさせない。
   if(a>=14&&a<=16&&y>=2000&&!Y.teacherTalk&&!L.used.has('y7:teacher-talk')&&L.school&&ch(0.42)){
@@ -1900,6 +2087,15 @@ function makerisaStory(a){
       {t:'言葉が少し引っかかる。地域の活動を調べてみる',sub:'すぐに夢が見つかるとは限らない',w:2,go(){Y.teacherSpark=true;L.know+=1;say('先生の言葉が、なぜか頭に残る。地域のイベントや高校生が参加できる活動を調べてみることにした。まだ、何をしたいかはわからない。','big')}} ,
       {t:'今は受験や勉強に集中する',sub:'学ぶ意味は、あとから見えてくるかもしれない',w:3,go(){Y.studyFocus=true;L.know+=3;say('今は勉強に集中することにした。ただ、先生の言葉は完全には消えず、何かの拍子に思い出すかもしれない。')}} ,
       {t:'先生に「具体的にはどういうこと？」と聞いてみる',sub:'答えではなく、次の問いが返ってくるかもしれない',w:1,go(){Y.teacherAsked=true;const p=meet('teacher','勉強の意味を問いかけた先生','teacher');say('先生に聞いてみると、「地域の人に話を聞いてみたら？」と返ってきた。答えを教えてもらったわけではないが、最初の一歩が少し具体的になった。','big')}}
+    ]});return;
+  }
+  // 高偏差値ルートでも、本人が小さく外へ踏み出した場合にだけ別の可能性が開く。
+  if(a===16&&y>=2000&&Y.highRoute==='ELITE_EXAM'&&!Y.eliteRouteTurn&&!L.used.has('y7:elite-route-turn')){
+    Y.eliteRouteTurn=true;L.used.add('y7:elite-route-turn');
+    ask({title:'16歳：勉強だけで、この先もいいのだろうか',text:'難関高校に入り、周りは大学受験の話をしている。成績は伸びているが、ニュースで「AIが知識を使う仕事を変えていく」と聞いた。勉強をやめる必要はない。ただ、点数を取ること以外に、自分で問いを見つけ、人と動く経験も必要なのかもしれない。',opts:[
+      {t:'今は受験勉強に集中する',sub:'専門性を積む道。外の世界に出会う機会は自分で作らないと増えにくい',w:3,go(){Y.eliteRouteStayed=true;Y.aiPath='study';Y.studyFocus=true;L.know+=4;say('今は受験勉強に集中することにした。学力を伸ばすことには手応えがある。地域活動には参加しないまま、進学先や資格など、次の目標を目指していく。いつか学んだ知識を何に使うのか、自分で考える必要は残っている。','big')}},
+      {t:'勉強は続けながら、地域の人や活動を一度だけ訪ねる',sub:'小さな一歩。そこで何を感じるかは、行ってみるまでわからない',w:2,go(){Y.eliteRouteSteppedOut=true;Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;Y.aiPath='community';L.action=(L.action||0)+3;L.rel+=2;say('勉強を続けながら、地域の活動を一度だけ訪ねてみることにした。そこで出会った人たちは、知識がないからといって追い返したりはしなかった。ただ、現場の話は教科書と違い、正解がひとつではない。次も行きたいと思うかは、まだわからない。','big')}},
+      {t:'学校外の大人に、AI時代に必要な力を聞いてみる',sub:'地域活動に限らず、仕事の現場から考える',w:2,go(){Y.eliteRouteAskedAdult=true;Y.aiPath='interviews';L.action+=2;L.know+=2;const p=meet('aiAdult','仕事とAIの変化を話してくれる大人','working adult');say('学校外の大人に話を聞いてみた。知識は大切だが、問いを立て、相手の事情を理解し、周りを巻き込んで試す力も必要だという。地域活動に参加したわけではない。それでも、勉強の先にある世界を少し想像できた。','big')}}
     ]});return;
   }
   // 地域未来留学は、SAPIX経験の有無にかかわらず、親・先生・友人の誘いから偶然見えてくる。
@@ -1911,7 +2107,7 @@ function makerisaStory(a){
       {t:'まずは学校と寮の生活に慣れる',sub:'無理に積極的にならなくてもいい',w:3,go(){Y.arrivalQuiet=true;say('まずは学校と寮の生活に慣れることにした。すぐに友達ができたわけではないが、毎日の食事や廊下で顔を合わせるうち、少しずつ人の名前を覚える。')}}
     ]});return;
   }
-  if(a>=15&&a<=17&&Y.highRoute==="LOCAL_RYUGAKU"&&!Y.regionalWork&&!L.used.has('y7:regional-work')&&ch(0.62)){
+  if(a===16&&Y.highRoute==="LOCAL_RYUGAKU"&&!Y.regionalWork&&!L.used.has('y7:regional-work')){
     Y.regionalWork=true;L.used.add('y7:regional-work');
     ask({title:'地域の人から、小さな手伝いを頼まれる',text:'畑の作業、祭りの準備、食堂の配膳。大人たちは歓迎してくれるが、何をすれば役に立つのかは、やってみないとわからない。',opts:[
       {t:'わからないことを聞きながら、一緒に手を動かす',sub:'作業を通じて、相手の暮らしや考えを知る',w:2,go(){Y.localVisits=(Y.localVisits||0)+1;Y.localRole='helper';L.localExperience=(L.localExperience||0)+1;const p=Y.contacts.farmer||(Y.contacts.farmer={name:'地域で作業を教えてくれた人',kind:'一緒に動く人',meet:0,trust:0,last:0});p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a;L.rel+=3;say('教わりながら手伝う。作業は思ったより難しく、段取りもわからない。それでも、帰り際に地域の人が暮らしの話をしてくれた。次に会ったとき、聞いてみたいことができた。','big')}},
@@ -1985,15 +2181,6 @@ function makerisaStory(a){
       {t:'失敗も含めて記録し、次に確かめたいことを書く',sub:'経験が自分の問いとしてつながる',w:2,go(){Y.portfolioStrong=true;L.know+=4;L.rel+=1;say('活動の記録をまとめる。派手な成果より、問いが生まれ、試し、失敗し、考え直した過程が自分の言葉になっていく。','big')}} ,
       {t:'成果を中心にまとめる',sub:'伝わりやすいが、過程も振り返る余地がある',w:2,go(){Y.portfolioBasic=true;L.know+=2;say('成果をまとめる。見せやすい記録になったが、なぜその活動を続けたのかも、もう少し考えてみたい。')}} ,
       {t:'今は記録をまとめない',sub:'経験が消えるわけではないが、言葉にする機会は減る',w:2,go(){Y.portfolioSkipped=true;say('今はまとめないことにする。経験は残っているが、誰かに伝えようとしたとき、うまく説明できないことに気づくかもしれない。')}}
-    ]});return;
-  }
-  if(a>=17&&a<=20&&!Y.aoAsked&&!L.used.has('y7:ao-story')&&L.school&&(Y.portfolio||Y.studyLink||Y.projectStarted)&&ch(0.52)){
-    Y.aoAsked=true;L.used.add('y7:ao-story');
-    const prep= (Y.portfolioStrong?18:0)+(Y.studyLink?12:0)+(Y.projectStarted?8:0)+(trust('localAdult')>=3?7:0)+(L.know>=60?5:0);
-    ask({title:'総合型選抜という選択肢',text:`地域での経験、そこで生まれた問い、学校での学びをつなげて伝える方法がある。今回の準備度はゲーム内の目安 ${Math.min(85,35+prep)}%。実際の合格率ではなく、合格を約束するものでもない。`,opts:[
-      {t:'挑戦する。自分の経験と問いを伝える',sub:'合格しても、しなくても、経験を言葉にする機会になる',w:2,go(){const chanceAO=clamp(0.28+prep/100,0.28,0.78);Y.aoTried=true;if(ch(chanceAO)){Y.aoResult='pass';L.y7AO=true;L.know+=5;L.hp+=5;say('地域での経験と、そこから生まれた問い、学び直したことを自分の言葉で伝えた。合格の知らせが届く。人との関係も、積み重ねてきた過程も、自分の強みとして見えてきた。','big')}else{Y.aoResult='fail';L.know+=2;say('今回は合格に届かなかった。悔しさはある。それでも、なぜ学びたいのかを言葉にできたことは残った。一般選抜や別の進路も含め、次を考える。','big')}}},
-      {t:'一般選抜を中心に勉強を続ける',sub:'地域経験を、学ぶ理由として持ち続ける',w:3,go(){Y.aoResult='general';L.know+=4;say('一般選抜を中心に準備する。地域で見たことが、教科の勉強を続ける理由のひとつになっている。')}} ,
-      {t:'進学以外も含め、信頼できる人に相談する',sub:'仕事や専門学校など、道は一つではない',w:2,go(){Y.aoResult='explore';const p=meet('localAdult','地域活動で会った大人','local');say('地域で出会った人にも相談してみる。大学進学だけが唯一の道ではないと知り、選択肢を広げて考え始める。')}}
     ]});return;
   }
   // 数年後の再会・紹介。関係が積み上がった場合だけ起きる。
@@ -2581,7 +2768,7 @@ const INIT=[
    if(L.y7ProjectSuccess&&L.y7StudyLink){L.y7PortfolioStrong=true;L.rel+=1;say("何を疑問に思い、誰に話を聞き、何を試し、何がうまくいかなかったかを記録する。活動の派手さより、自分の考えがどう変わったかを説明できるようになった。","big")}
    else say("活動や調べたことを記録する。まだ大きな成果とは言えないが、次に何を確かめたいかが少し見えてくる。")
  }},
- {id:"tAOY7",t:"総合型選抜に向けて、経験と学びをまとめる",sub:"積み重ねが強みになる。合格が約束されるわけではない",when:(L,a)=>a>=17&&a<=19&&YEAR0+a>=2000&&L.school&&!L.used.has("y7:ao")&&(L.y7Portfolio||L.y7StudyLink||L.y7Project),go(L,a){
+ {id:"tAOY7",t:"総合型選抜に向けて、経験と学びをまとめる",sub:"積み重ねが強みになる。合格が約束されるわけではない",when:(L,a)=>false,go(L,a){
    L.used.add("y7:ao");L.y7AO=true;
    const prep=(L.y7Portfolio?12:0)+(L.y7StudyLink?12:0)+(L.y7ProjectSuccess?10:0)+(L.rel>=60?4:0)+(L.know>=55?5:0);
    ask({title:"総合型選抜に挑戦する？",text:`地域での経験を、問い・行動・振り返りとして説明できるかが鍵になる。今回の準備度の目安は ${Math.min(85,35+prep)}%。これはゲーム内の簡易指標で、実際の合格率ではない。`,opts:[
@@ -3116,6 +3303,32 @@ function soumato(age){if(G.auto||matchMedia("(prefers-reduced-motion: reduce)").
   setTimeout(()=>{ov.classList.add("in");show()},50)}
 /* 更新情報 */
 const NEWS=[
+ {v:5,d:"2026年10月20日",t:"更新情報をひとつの一覧に統合",g:[
+  ["更新情報の表示を整理",[
+   "ページ下部に別枠で表示していた更新内容を廃止し、ページ上部の「更新情報」にまとめました。今後の変更もこの一覧の先頭へ追加し、古い更新情報は同じ一覧内に残します。"
+  ]],
+  ["大学入試イベントの順序を修正",[
+   "入試方式を選ぶ前に合否が出てしまう流れを修正対象として明記。入試方式の選択→志望大学の決定→方式と志望先に応じた合否、の順になるよう、関連イベントの接続を整理します。"
+  ]],
+  ["SAPIX後の進路と地域活動の条件を調整",[
+   "難関中学合格後に内部進学か外部受験かを選ぶ進路分岐を追加。地域活動に踏み出した場合に可能性が広がる構成とし、勉強だけを続ける人が若者会議・ユースカウンシルへ偶然出会わないよう条件を調整しました。"
+  ]],
+  ["現場での経験とその後の選択を追加",[
+   "地域活動での悔しさから学び直す、住民の声を聞き直す、活動から距離を置く選択や、成人後に若者を支える・都市と地域をつなぐ・別の仕事に経験を活かす・暮らしを優先する分岐を追加しました。"
+  ]]
+ ]},
+ {v:4,d:"2026年10月20日",t:"進路分岐・上京ストーリーと地域未来留学イベントを改善",g:[
+  ["進路と別れ",[
+   "SAPIXでの中学受験に合格した場合と不合格の場合を分岐。合格なら東京の中高一貫校へ、不合格なら滑り止め私立か公立中を選びます",
+   "中学進学で上京する際、出生地はそのまま記録し、住む場所だけを東京に変更。家族や地元の友人との別れを物語に反映しました",
+   "滑り止め私立ルートでは、高校で陣内先生と出会い、勉強する意味や地域に出るきっかけが生まれます"
+  ]],
+  ["地域未来留学",[
+   "地域未来留学を選んでも出生地が内子町・海士町に書き換わらないよう修正。出生地と留学先を分けて記録します",
+   "留学後の到着・地域のおばあちゃんから野菜をもらう・寮生みんなで料理する・水本さんの部屋点検・みんなのお兄さん・数年後の再会を年齢に沿って発生させます",
+   "選択肢の連打やタイムアウトが重なった際の二重実行を防ぎ、選択肢が反応しない場合を減らす処理を追加しました"
+  ]]
+ ]},
  {v:2,d:"2026年10月20日",t:"地域未来留学での実体験を追加",g:[
   ["地域未来留学での実体験",[
    "【新しい出会い】寮の舎監・魅力化コーディネーター・写真家など、さまざまな立場から地域に関わる水本さんと出会うエピソードを追加しました",
