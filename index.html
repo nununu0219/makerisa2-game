@@ -490,6 +490,16 @@ button:active,.btn:active{transform:translateY(1px)}
     <p class="note">記録はこのブラウザにだけ残ります。</p>
   </section>
 
+  <section id="siteStats" aria-labelledby="siteStatsTitle">
+    <h2 id="siteStatsTitle">サイトのアクセス数</h2>
+    <div class="card" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+      <div><div class="label">累計ページ閲覧数</div><strong id="gcTotal" style="font-size:1.8rem">読み込み中…</strong></div>
+      <div><div class="label">今日のページ閲覧数</div><strong id="gcToday" style="font-size:1.8rem">読み込み中…</strong></div>
+      <p class="note" style="flex-basis:100%;margin:0">外部のアクセス解析サービス GoatCounter で集計しています。反映に時間がかかる場合があります。</p>
+      <a href="https://nunnun.goatcounter.com/" target="_blank" rel="noopener noreferrer">アクセス解析・日別推移を見る ↗</a>
+    </div>
+  </section>
+
   <section id="newsSec">
     <h2>更新情報</h2>
     <div class="news" id="news"></div>
@@ -3550,6 +3560,9 @@ function soumato(age){if(G.auto||matchMedia("(prefers-reduced-motion: reduce)").
 /* 更新情報 */
 const Y7_PREF_CASES=[{"pref": "北海道", "name": "東川町の写真文化と移住・交流", "desc": "写真文化を軸に町外の人と関係をつくる"}, {"pref": "青森県", "name": "田舎館村の田んぼアート", "desc": "農業と観光を結び、地域の風景を発信する"}, {"pref": "岩手県", "name": "紫波町オガールプロジェクト", "desc": "公共施設と民間事業を組み合わせて駅前を再生する"}, {"pref": "宮城県", "name": "東松島のブルーインパルス・震災復興交流", "desc": "復興の経験を伝え、交流や産業につなげる"}, {"pref": "秋田県", "name": "五城目町の住民主体の小さな拠点", "desc": "買い物や交流の場を住民が支える"}, {"pref": "山形県", "name": "川西町きらりよしじまネットワーク", "desc": "住民組織が地域課題を話し合い活動する"}, {"pref": "福島県", "name": "会津若松のスマートシティ", "desc": "データを使って暮らしや地域産業の課題を考える"}, {"pref": "茨城県", "name": "取手市の起業家タウン", "desc": "起業相談や人のつながりから事業を育てる"}, {"pref": "栃木県", "name": "那須地域の観光・農産物連携", "desc": "地域資源を商品や仕事につなげる"}, {"pref": "群馬県", "name": "上野村の森林資源活用", "desc": "木材や地域資源を使い仕事をつくる"}, {"pref": "埼玉県", "name": "小川町の有機農業と地域資源PR", "desc": "農産物と地域の魅力を伝え、販路を開く"}, {"pref": "千葉県", "name": "いすみ市の有機米給食", "desc": "農業と学校給食をつなぎ地域内の循環をつくる"}, {"pref": "東京都", "name": "立川のシーズ立川", "desc": "子育てと仕事を両立できる場を市民活動から事業化する"}, {"pref": "神奈川県", "name": "横浜の地域課題解決型市民活動", "desc": "行政・企業・市民が連携して課題に取り組む"}, {"pref": "新潟県", "name": "十日町の大地の芸術祭", "desc": "アートをきっかけに地域を歩き、人と出会う"}, {"pref": "富山県", "name": "氷見の魚食文化と地域ブランド", "desc": "地元の食材と担い手をつなぐ"}, {"pref": "石川県", "name": "能登の里山里海の地域活動", "desc": "自然や暮らしの知恵を次世代へつなぐ"}, {"pref": "福井県", "name": "鯖江市の市民協働・ものづくり", "desc": "眼鏡産業などの技術と若い担い手を結ぶ"}, {"pref": "山梨県", "name": "小菅村の源流・観光まちづくり", "desc": "自然環境を守りながら交流や仕事を生む"}, {"pref": "長野県", "name": "塩尻市のテレワーク・地域人材育成", "desc": "デジタル環境を使って働き方の選択肢を増やす"}, {"pref": "岐阜県", "name": "飛騨市の広葉樹活用", "desc": "使われにくい木材に価値を見出し商品化する"}, {"pref": "静岡県", "name": "浜松の中山間地域の小さな拠点", "desc": "移動・買い物・交流の困りごとに地域で向き合う"}, {"pref": "愛知県", "name": "豊田市の山村地域の仕事づくり", "desc": "都市と山村をつなぎ、地域資源の活用を試す"}, {"pref": "三重県", "name": "尾鷲の林業・地域資源活用", "desc": "森の手入れを仕事や地域の将来につなぐ"}, {"pref": "滋賀県", "name": "近江八幡の水辺・町並み保全", "desc": "観光と暮らしの両立を考える"}, {"pref": "京都府", "name": "南丹市美山のかやぶき集落保全", "desc": "景観と生活を守りながら来訪者を受け入れる"}, {"pref": "大阪府", "name": "大阪の商店街空き店舗活用", "desc": "小さな商いと交流の場を生む"}, {"pref": "兵庫県", "name": "豊岡のコウノトリと農業", "desc": "環境保全と農産物の価値をつなぐ"}, {"pref": "奈良県", "name": "川上村の森林と水源保全", "desc": "森を守る仕事と下流の暮らしを結ぶ"}, {"pref": "和歌山県", "name": "田辺・熊野古道の地域ガイド", "desc": "文化や自然を伝える仕事をつくる"}, {"pref": "鳥取県", "name": "智頭町の森のようちえん・森林資源", "desc": "子育てや森林を地域の価値として活かす"}, {"pref": "島根県", "name": "海士町の島留学と地域づくり", "desc": "外から来た若者と地域の人が一緒に学ぶ"}, {"pref": "岡山県", "name": "西粟倉村の百年の森林構想", "desc": "森林資源から小さな事業や雇用を生み出す"}, {"pref": "広島県", "name": "東広島・ファームおだ", "desc": "農業と地域活動を組み合わせ集落を支える"}, {"pref": "山口県", "name": "萩の町並み保存と観光", "desc": "地域の歴史を守り、訪れる人との接点をつくる"}, {"pref": "徳島県", "name": "上勝町の葉っぱビジネス", "desc": "身近な葉を商品にし、高齢者も担い手になる"}, {"pref": "香川県", "name": "東かがわ市五名の地域活動", "desc": "地域住民が資源を持ち寄り暮らしを支える"}, {"pref": "愛媛県", "name": "内子町の町並み保存と農産物直売", "desc": "景観や農産物を地域の仕事につなげる"}, {"pref": "高知県", "name": "梼原町の集落活動センター", "desc": "集落の困りごとを住民が協力して解決する"}, {"pref": "福岡県", "name": "那珂川の南畑ぼうぶら会議", "desc": "住民と外から来る人が地域の魅力を形にする"}, {"pref": "佐賀県", "name": "有田焼の産地継承と新商品づくり", "desc": "伝統技術を次の世代や新しい市場につなぐ"}, {"pref": "長崎県", "name": "五島の移住・島の仕事づくり", "desc": "島の暮らしと仕事を実際に体験して考える"}, {"pref": "熊本県", "name": "水俣の環境再生と地域づくり", "desc": "公害の経験から環境と産業のあり方を問い直す"}, {"pref": "大分県", "name": "豊後高田の昭和の町", "desc": "商店街の歴史や店主の物語をまち歩きにつなぐ"}, {"pref": "宮崎県", "name": "椎葉村の地域資源と小さな事業", "desc": "山村の資源から暮らしを支える仕事を考える"}, {"pref": "鹿児島県", "name": "三島村の焼酎蔵プロジェクト", "desc": "地域の産品を事業にし、地域内の仕事をつくる"}, {"pref": "沖縄県", "name": "久米島の海洋深層水活用", "desc": "島の自然資源を産業に活かす一方、持続可能性も考える"}];
 const NEWS=[
+ {v:18,d:"2026年10月20日",t:"GoatCounterで実サイトのアクセス計測とカウンター表示を追加",g:[
+  ["サイトのアクセス数",["GoatCounter（https://nunnun.goatcounter.com/）の計測スクリプトを追加しました。画面に累計ページ閲覧数と今日のページ閲覧数を表示し、日別推移などはGoatCounterの解析画面から確認できます。","公開カウンター表示にはGoatCounterのサイト設定で『Allow adding visitor counts on your website』を有効にする必要があります。GitHub Pagesへ変更を反映した後、表示と計測を実際の公開サイトで確認してください。"]]
+ ]},
  {v:17,d:"2026年10月20日",t:"イベントの古い表示を防ぎ、高校期に四半期ごとの行動選択を追加",g:[
   ["イベントキューの年齢ずれ対策",["イベントを積んだ年齢を記録し、年齢が進んでから古いイベントが表示される場合は破棄するようにしました。続きから再開するデータにも高校期の四半期状態を保存します。"]],
   ["15〜18歳に四半期ごとの選択を追加",["年齢・年次の家計や健康処理は従来どおり年1回のまま、春夏秋冬に現場へ連絡する・当事者の話を聞く・人と小さく試す・勉強や休息を優先する選択を追加しました。選択結果は行動・知識・人間関係の変化として後に残ります。"]]
@@ -3758,6 +3771,23 @@ function finish(a){const c=document.querySelector(".ctrl");if(c)c.hidden=true;
 /* すべての定義が終わってから開始画面を準備する（図鑑データがあるときの初期化エラー対策） */
 try{initStart()}catch(e){console.error(e);const b=document.getElementById("bornBtn");if(b&&!b.onclick)b.onclick=()=>location.reload()}
 </script>
+<!-- GoatCounter: 実サイトのページ閲覧を集計 -->
+<script>
+(function(){
+  const totalEl=document.getElementById('gcTotal');
+  const todayEl=document.getElementById('gcToday');
+  const base='https://nunnun.goatcounter.com/counter//.json';
+  const fmt=n=>Number(n).toLocaleString('ja-JP');
+  const get=async(url)=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw new Error('counter unavailable');return r.json()};
+  get(base).then(d=>{if(totalEl)totalEl.textContent=d.count??'—'}).catch(()=>{if(totalEl)totalEl.textContent='解析設定を確認中'});
+  const now=new Date();
+  const start=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+  const tomorrow=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
+  const end=[tomorrow.getFullYear(),String(tomorrow.getMonth()+1).padStart(2,'0'),String(tomorrow.getDate()).padStart(2,'0')].join('-');
+  get(base+'?start='+start+'&end='+end).then(d=>{if(todayEl)todayEl.textContent=d.count??'—'}).catch(()=>{if(todayEl)todayEl.textContent='解析設定を確認中'});
+})();
+</script>
+<script data-goatcounter="https://nunnun.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 
 </body>
 </html>
