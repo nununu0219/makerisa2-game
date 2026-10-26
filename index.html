@@ -1080,6 +1080,7 @@ function renderMoney(){const L=G.L,a=G.age,box=$("#moneyBox");if(!box)return;con
   box.innerHTML=`${ERA.key!=="now"?`<p class="note">金額はすべて、いまの物価に換算しています。</p>`:""}<div class="kv"><div><span>貯金</span><span>${sv.toLocaleString()}万円</span></div><div><span>つみたて投資</span><span>${Math.round(L.invest).toLocaleString()}万円</span></div>${L.income>0?`<div><span>手取り</span><span>年${Math.round(L.income*0.78/10)*10}万円</span></div>`:""}${L.y7?.businessDebt?`<div><span>事業の借入残高</span><span>${Math.round(L.y7.businessDebt)}万円</span></div>`:""}</div>
    <div class="acts">
     <button data-m="trip" ${can&&sv>=30?"":"disabled"}>旅行に行く（30万円）<small>幸福が上がる</small></button>
+    <button data-m="regionTrip" ${can&&sv>=30?"":"disabled"}>知らない地域へ行く（30万円）<small>行き先を決めずに出かけ、人や暮らしに出会う</small></button>
     <button data-m="study" ${can&&sv>=20&&a<65?"":"disabled"}>自分に投資する（20万円）<small>講座や資格。知識が上がる</small></button>
     <button data-m="gift" ${can&&sv>=20?"":"disabled"}>家族に贈り物をする（20万円）<small>人間関係が上がる</small></button>
     <button data-m="inv" ${can&&sv>=100?"":"disabled"}>つみたて投資にまわす（100万円）<small>年平均4〜5%。下がる年もある</small></button>
@@ -1087,11 +1088,37 @@ function renderMoney(){const L=G.L,a=G.age,box=$("#moneyBox");if(!box)return;con
    </div>${a<18?`<p class="note">18歳になると、自分でお金を使えるようになります。</p>`:""}`;
   box.querySelectorAll("button").forEach(b=>b.onclick=()=>{const m=b.dataset.m;
     if(m==="trip"){L.savings-=30;L.hp+=7;line(`${pick(YEAR0+G.age<1970?["京都","日光","伊勢","箱根","温泉地"]:["沖縄","北海道","台湾","京都","ハワイ","温泉地"])}へ旅行に行く。`)}
-    if(m==="study"){L.savings-=20;L.know+=4;line(`講座に通って、${pick(["簿記","英語","プログラミング","宅建","介護"])}を学ぶ。`)}
-    if(m==="gift"){L.savings-=20;L.rel+=4;line(`家族に贈り物をする。`)}
+    if(m==="regionTrip"){
+      L.savings-=30;L.hp+=3;L.action=(L.action||0)+1;
+      const Y=L.y7||(L.y7={});Y.regionalTrips=(Y.regionalTrips||0)+1;
+      line("行き先を細かく決めず、知らない地域へ出かける。予定どおりにいかないことも含めて、その土地の暮らしに触れてみる。","big");
+      ask({title:"知らない地域で、何が起きるかわからない",text:"さつま町、海士町など、名前を聞いたことがあるだけの地域。観光名所を回るのではなく、地元の人がいる場所へ足を運んでみる。",opts:[
+        {t:"地域の食堂や集まりで、近くの人に話しかける",sub:"人とのつながりが次の行動を連れてくる",w:3,go(){Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.rel+=3;const id="regionalHost";const c=Y.contacts[id]||(Y.contacts[id]={name:pick(["さつま町のおばちゃん","海士町で出会ったお兄さん","地域の食堂を切り盛りする人","祭りの準備をしていたおじちゃん"]),kind:"旅先で出会った地域の人",meet:0,trust:0,last:0});c.meet++;c.trust=Math.min(5,c.trust+1);c.last=G.age;say(`${c.name}に話しかけてみた。観光案内には載っていない暮らしの話を聞き、また来る理由がひとつできた。`,"big")}},
+        {t:"地域の手伝いを探して、祭りや食堂を手伝う",sub:"見学者から、一緒に動く人へ",w:2,go(){Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action=(L.action||0)+3;L.rel+=2;L.localExperience=(L.localExperience||0)+1;say("祭りの準備や食堂の片づけを手伝う。作業の合間に地域の人が声をかけてくれ、次は海や畑にも連れていくよと言ってくれた。","big")}},
+        {t:"フレキャンでお世話になった人に会いに行く",sub:"以前のつながりを、もう一度たどる",w:3,go(){const c=Y.contacts.frecamp||(Y.contacts.frecamp={name:"フレキャンでお世話になった○●さん",kind:"地域で出会った先輩",meet:0,trust:1,last:0});c.meet++;c.trust=Math.min(5,c.trust+1);c.last=G.age;Y.frecampReunion=true;Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.rel+=3;L.action=(L.action||0)+1;say("フレキャンのときにお世話になった○●さんのもとへ会いに行く。久しぶりなのに、あのときの話を覚えていてくれた。近況を話すうち、「今度、面白い人を紹介するよ」と次の出会いにつながった。","big")}},
+        {t:"今回は景色を見て帰る",sub:"何も起きない旅もある。次のきっかけは残る",w:2,go(){L.hp+=2;say("景色を見て帰る。誰かと深く話すことはなかったが、知らない場所で過ごした時間は残った。")}}
+      ]});
+    }
+    if(m==="study"){
+      L.savings-=20;L.know+=4;line(`講座に通って、${pick(["簿記","英語","プログラミング","宅建","介護"])}を学ぶ。`);
+      const Y=L.y7||(L.y7={});
+      if(!Y.studySpendEvent){Y.studySpendEvent=true;ask({title:"学んだことを、地域で使ってみる？",text:"自分のために使ったお金と時間。学んだことを誰かの困りごとに使えば、次の学びが必要になるかもしれない。",opts:[
+        {t:"地域の食堂や居場所の会計を手伝う",sub:"数字を見ながら、続けるための工夫を考える",w:2,go(){Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action=(L.action||0)+2;L.rel+=2;say("学んだことを使って、地域の食堂や居場所の収支を整理する。売上だけでなく、食材費や光熱費、手伝う人の時間も必要だとわかり、続けるために何を学ぶべきかが見えてきた。","big")}},
+        {t:"地域のお祭りの告知や記録を手伝う",sub:"デジタルや文章の学びを、現場の役に立てる",w:2,go(){Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action=(L.action||0)+2;L.rel+=1;say("学んだことを使って、お祭りの告知や写真の整理を手伝う。地域の人から「次はこういうこともできる？」と頼まれ、勉強が現場とつながった。","big")}},
+        {t:"今は自分の学びを深める",sub:"すぐに役立てなくてもいい",w:3,go(){L.know+=1;say("今は自分の学びを深めることにした。すぐに誰かの役に立てなくても、必要なときに使える知識を増やしていく。")}}
+      ]})}
+    }
+    if(m==="gift"){
+      L.savings-=20;L.rel+=4;line(`家族に贈り物をする。`);
+      const Y=L.y7||(L.y7={});
+      if(!Y.giftRegionEvent){Y.giftRegionEvent=true;ask({title:"贈り物をきっかけに、地域の人ともつながる",text:"家族への贈り物を選ぶために商店街へ出かけた。店の人から、近所で支え合いの活動をしていると聞く。",opts:[
+        {t:"商店街で話を聞き、募金や食堂の手伝いをする",sub:"小さなお金や時間が、地域の活動につながる",w:2,go(){Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.rel+=2;L.action=(L.action||0)+1;say("商店街の人に話を聞き、募金活動や食堂の準備を手伝うことにした。お金を出すだけでなく、声をかけたり、運んだり、できることはいくつもある。","big")}},
+        {t:"今回は家族への贈り物を大切にする",sub:"身近な人を大切にすることも、つながりのひとつ",w:3,go(){say("今回は家族との時間を大切にした。身近な人を思って使ったお金も、自分の暮らしを支えるつながりのひとつだ。")}}
+      ]})}
+    }
     if(m==="inv"){L.savings-=100;L.invest+=100;line(`100万円をつみたて投資にまわす。`)}
     if(m==="sell"){const v=Math.round(L.invest);L.savings+=v;L.invest=0;line(`投資を取り崩す。${v.toLocaleString()}万円が貯金に戻る。`)}
-    renderAll()})}
+    renderAll();if(G&&!G.waiting&&G.queue.length)showNext()})}
 function renderSceneCard(){const L=G.L;const cv=$("#scv");if(!cv)return;drawScene(cv);
   const place=`日本・${pf(L.pref)}${L.city!==L.pref?" → "+L.city:""}`;
   const home=G.dead?"永眠":L.illness?"病院に通う":L.home==="実家"?"実家":L.home;
@@ -1951,13 +1978,94 @@ function makerisaStory(a){
   // 2026-10-20追加：資産形成と人生設計を、年齢ごとの意思決定として体験する。
   // 金額はゲーム内の概算であり、個別の投資・税務助言ではない。
   // 18歳の進路選択は、別イベントが同じ年に出ても消えないよう独立したY7イベントとして保持。
-  if(a>=18&&a<=21&&y>=2000&&!L.edu&&!Y.universityPath&&!L.used.has('y7:university-path')){
-    Y.universityPath=true;L.used.add('y7:university-path');
-    ask({title:`${a}歳：高校卒業後、どこへ進む？`,text:'大学へ行くことだけが進路ではない。でも、大学で出会える人や研究、使える制度もある。入試方式や費用を調べ、何を学びたいのか、何を試したいのかも考える。',opts:[
-      {t:'一般選抜で大学を受験する',sub:'試験で問われる力を準備する。合格しても、大学で何をするかは自分次第',w:3,go(){Y.universityPath='general';const prob=SUCC(L.univ+8+(L.hs==='進学校'?18:0)+(L.know-55)*0.5);if(R()*100<prob){L.edu='大学';L.school='大学生';L.u0=a;L.know+=5;say('一般選抜で大学に合格した。受験勉強で身につけた力を、大学で何に使うかはこれから決める。','big')}else{L.hp-=5;say('一般選抜では合格に届かなかった。進路が閉じたわけではない。別の入試方式や専門学校、就職も含めて考え直す。','big');Y.universityFailed=true}}},
-      {t:'総合型・学校推薦型選抜を調べて挑戦する',sub:'活動や考えを言葉にし、大学との相性を確かめる',w:3,go(){Y.universityPath='comprehensive';const prob=SUCC(L.univ+5+(L.rel-50)*0.15+(L.action||0)*1.5);if(R()*100<prob){L.edu='大学';L.school='大学生';L.u0=a;L.know+=3;L.rel+=2;say('総合型・学校推薦型選抜で大学に進むことになった。自分が何をしてきたか、何を問い続けたいかを説明する経験が残った。','big')}else{L.hp-=3;say('選抜では合格に届かなかった。活動を評価してもらうことと、大学で学ぶ内容が自分に合うことは別だと気づき、別の道も調べる。','big');Y.universityFailed=true}}},
+  if(a>=18&&a<=21&&y>=2000&&!L.edu&&(!Y.universityPath||Y.todaiRetryPending)&&!L.used.has(`y7:university-path:${a}`)){
+    const retry=!!Y.todaiRetryPending;
+    L.used.add(`y7:university-path:${a}`);
+    if(retry){
+      const years=Y.roninYears||1;
+      const base=SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0));
+      const prob=Math.min(95,base+years*5);
+      ask({title:`${a}歳：浪人${years}年目、東大にもう一度挑む？`,text:`第一志望に届かなかった経験を振り返り、勉強の仕方を変えて再挑戦する。ゲーム内の合格見込みは約${Math.round(prob)}%。浪人を1年重ねるごとに、合格率を5ポイントずつ加算する設定です（実際の入試合格率を示すものではありません）。`,opts:[
+        {t:'東大をもう一度受験する',sub:`合格見込み 約${Math.round(prob)}%（浪人${years}年分の加算を反映）`,w:3,go(){Y.universityPath='todai';Y.todaiRetryPending=false;if(R()*100<prob){L.edu='大学';L.school='東京大学の学生';L.todai=true;L.u0=a;L.know+=8;Y.todaiRoute=true;say('浪人して勉強の仕方を見直し、東京大学に合格した。遠回りした時間も、ただの空白ではなかった。ここから何を学び、何に使うかは自分でつくっていく。','big')}else{L.hp-=4;Y.todaiFailedAgain=true;say('もう一度挑戦したが、東京大学には届かなかった。続けるか、別の環境で学ぶか。受験以外にも未来はある。','big');ask({title:'次の一年をどうする？',text:'東大を目指してさらに浪人するか、東京都市大学など別の環境で学び始めるか。費用や心身の負担も考えて決める。',opts:[
+          {t:'もう1年、東大を目指す',sub:'費用と負担を見積もり、勉強方法を変えて再挑戦',w:2,go(){Y.roninYears=(Y.roninYears||0)+1;Y.todaiRetryPending=true;Y.universityPath='todai';L.school='浪人生';L.retry=true;L.know+=4;L.hp-=2;if(L.parentMoney<100)L.savings-=100;say(`浪人${Y.roninYears}年目に入る。次の受験では、ゲーム内の合格率にさらに5ポイントが加わる。`,'big')}},
+          {t:'東京都市大学へ進み、別の場所で学ぶ',sub:'受験だけを続けず、大学での学びを始める',w:3,go(){Y.todaiRetryPending=false;Y.universityPath='safety-tokyo-city';L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=3;L.hp+=2;say('東京都市大学へ進むことにした。受験の結果だけで自分の可能性を決めず、大学で人と出会い、学びたいことを探していく。','big')}}
+        ]})}}},
+        {t:'東京都市大学へ進む',sub:'浪人を続けず、大学での学びを始める',w:3,go(){Y.todaiRetryPending=false;Y.universityPath='safety-tokyo-city';L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=3;L.hp+=2;say('浪人を続けず、東京都市大学へ進むことにした。受験の結果だけで自分の可能性を決めず、大学で人と出会い、学びたいことを探していく。','big')}}
+      ]});return;
+    }
+    Y.universityPath='pending';
+    ask({title:`${a}歳：高校卒業後、どこへ進む？`,text:'入試方式によって、出会える環境も準備することも違う。一般選抜で東京大学を目指す、総合型選抜で東京都市大学に挑戦する、指定校推薦で関東学院大学を目指す。学力や活動だけでなく、費用や大学との相性も調べて選ぶ。',opts:[
+      {t:'一般選抜で東京大学を受験する',sub:`知識を積み重ねて挑戦する。合格見込み 約${Math.round(SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0)))}%`,w:Y.todaiAspiration||Y.sapix?4:2,go(){const prob=SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0));Y.universityPath='todai';Y.todaiAttempted=true;if(R()*100<prob){L.edu='大学';L.school='東京大学の学生';L.todai=true;L.u0=a;L.know+=8;Y.todaiRoute=true;say('一般選抜で東京大学に合格した。積み重ねた勉強が結果につながった。ここからは、大学で何を問い、誰と何をつくるかが始まる。','big')}else{L.hp-=5;Y.universityFailed=true;Y.todaiRetryPending=false;say('東京大学の一般選抜では合格に届かなかった。ここで道が終わるわけではない。浪人して再挑戦するか、別の大学で学び始めるかを考える。','big');ask({title:'東大に届かなかった。次はどうする？',text:'もう一年、学び方を見直して挑戦することも、東京都市大学へ進むこともできる。',opts:[
+          {t:'1年浪人して、東大に再挑戦する',sub:'浪人1年目。次の合格率には5ポイントが加わる',w:2,go(){Y.roninYears=1;Y.todaiRetryPending=true;L.school='浪人生';L.retry=true;L.know+=4;if(L.parentMoney<100)L.savings-=100;say('浪人してもう一年挑戦する。模試の結果だけでなく、勉強方法や生活のリズムも見直す。次回はゲーム内の合格率に5ポイントが加わる。','big')}},
+          {t:'東京都市大学へ進む',sub:'別の大学で学び、問いを深める',w:3,go(){Y.universityPath='safety-tokyo-city';L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=3;L.hp+=2;say('東京都市大学へ進むことにした。違う環境で出会う人や授業から、自分の問いを育てていく。','big')}}
+        ]})}}},
+      {t:'総合型選抜で東京都市大学に挑戦する',sub:'地域活動や探究、考えの変化を自分の言葉で伝える',w:(Y.portfolio||Y.studyLink||Y.projectStarted)?4:2,go(){Y.universityPath='tokyo-city-comprehensive';const prep=(Y.portfolio?12:0)+(Y.studyLink?10:0)+(Y.projectStarted?8:0)+(Y.localVisits||0)*2;const prob=SUCC(35+prep+(L.rel-50)*0.12);if(R()*100<prob){L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=4;L.rel+=2;say('総合型選抜で東京都市大学に合格した。何を経験したかだけでなく、そこからどんな問いが生まれたかを伝えた。大学での学びが、地域での経験とつながっていく。','big')}else{L.hp-=3;Y.universityFailed=true;say('総合型選抜では合格に届かなかった。経験をしたことと、それを相手に伝えることは別の力だと気づき、別の道も考える。','big');ask({title:'次の進路を考える',text:'指定校推薦の条件を確認する、一般選抜を受ける、専門学校や就職を選ぶなど、道はひとつではない。',opts:[
+          {t:'指定校推薦の条件を確認する',sub:'校内選考と評定、募集枠を調べる',w:2,go(){Y.universityPath='designated-check';Y.designatedRetry=true;say('高校の先生に指定校推薦の条件を確認することにした。枠や評定の条件は学校ごとに違うため、実際に確認する必要がある。')}} ,
+          {t:'一般選抜で東大に挑戦する',sub:'試験に向けて準備する',w:2,go(){Y.universityPath='todai';Y.todaiRetryPending=true;Y.roninYears=0;L.school='受験準備';say('一般選抜で東京大学を目指すことにした。必要な科目や合格までの距離を調べ、勉強計画を立てる。','big')}}
+        ]})}}},
+      {t:'指定校推薦で関東学院大学を目指す',sub:'評定・校内選考・募集枠の条件を確認する',w:2,go(){Y.universityPath='kanto-gakuin-designated';const prob=SUCC(48+(L.know-50)*0.35+(L.hp>35?8:0));if(R()*100<prob){L.edu='大学';L.school='関東学院大学の学生';L.u0=a;L.know+=2;L.rel+=2;say('指定校推薦で関東学院大学に進むことになった。学校生活の積み重ねと、校内選考の条件を確認した経験が残った。','big')}else{Y.designatedFailed=true;L.hp-=2;say('指定校推薦は校内選考や枠の条件が合わず、進学先は決まらなかった。一般選抜や別の進路を調べ直すことにした。','big')}}},
       {t:'専門学校・職業訓練で実践的に学ぶ',sub:'資格や技能を身につけ、現場に近い場所で学ぶ',w:2,go(){Y.universityPath='vocational';L.edu='専門';L.school='専門学校生';L.field=pick(['IT','看護','調理','保育','デザイン','自動車整備']);L.know+=3;L.action=(L.action||0)+1;say(`${L.field}を学べる専門学校へ進む。大学に行かない選択も、学びを終えることではない。現場で必要になった知識を学び続ける道を選んだ。`,'big')}},
-      {t:'就職して、社会に出てから学ぶ',sub:'収入と現場経験を得る。学び直しの時間や費用も考える',w:2,go(){Y.universityPath='work';L.edu='高校';L.school='';L.action=(L.action||0)+2;L.rel+=2;say('就職して社会に出ることにした。目の前の仕事をこなすだけでなく、現場で何が問題になっているのかを見つけ、必要になった知識を学び直すことを目標にする。','big');jobAsk()}}
+      {t:'就職して、社会に出てから学ぶ',sub:'収入と現場経験を得る',w:2,go(){Y.universityPath='work';L.edu='高校';L.school='';L.action=(L.action||0)+2;L.rel+=2;say('就職して社会に出ることにした。目の前の仕事をこなしながら、現場で何が問題になっているのかを見つけ、必要になった知識を学び直していく。','big');jobAsk()}}
+    ]});return;
+  }
+  // 2026-10-26追加：大学入学後のフレキャンを、地域との出会いが続く入口として描く。
+  if(a>=18&&a<=22&&y>=2000&&L.edu==='大学'&&!Y.universityFirstYearEvent&&/東京都市大学/.test(L.school||'')){
+    Y.universityFirstYearEvent=true;
+    ask({title:`${a}歳：東京都市大学のフレッシャーズキャンプ`,text:'入学してすぐ、学生2〜5人に地域のキーマンが1人つき、地域を見学するだけでなく、実際の仕事や活動を一緒にやってみる。目的や関心がはっきりしていなくても参加していい。まずは、目の前の人と動いてみよう。',opts:[
+      {t:'地域の人と一緒に、現場の仕事をやってみる',sub:'作業のあと、面白かったこと・疑問・合わなかったことを振り返る',w:4,go(){Y.tcuFrecamp='field';Y.frecampDone=true;Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action=(L.action||0)+2;L.rel+=5;L.know+=3;L.happy+=2;const c=Y.contacts.tcuFrecamp||(Y.contacts.tcuFrecamp={name:'フレキャンで出会った地域のキーマン',kind:'地域の活動仲間',meet:0,trust:1,last:0});c.meet++;c.trust=Math.min(5,c.trust+1);c.last=a;say('地域の人と一緒に手を動かすと、外から見ているだけでは分からない事情や工夫が見えてきた。面白かったこと、疑問に残ったこと、自分には合わなかったことをメモする。まだ「やりたいこと」と呼べるほどではない。でも、次に確かめたい問いがひとつできた。','big');ask({title:'キャンプで生まれた関係を、その後も続ける？',text:'一度きりの思い出で終わらせないため、地域活動掲示板をのぞくこともできる。手伝い募集、地域の困りごと、アイデア募集、継続参加者の募集が載っている。',opts:[
+        {t:'掲示板から、もう一度その地域の活動に参加する',sub:'出会った人に連絡し、次の活動を見つける',w:4,go(){Y.localBoard=true;Y.tcuFrecampFollow=true;L.action+=2;L.rel+=4;L.know+=2;const p=Y.contacts.tcuFrecamp;p.meet++;p.trust=Math.min(5,p.trust+1);say('掲示板で、以前一緒に作業した人が別の活動を募集しているのを見つけた。「この前の続き、手伝ってくれない？」と声がかかる。大学の外にも、自分の居場所と次の行動ができていく。','big');ask({title:'地域で生まれた疑問を、大学の学びにつなぐ',text:'地域で感じた疑問を講義で調べ、学んだことをもう一度地域で試す。2年次以降のSDPBLなども、経験を深める選択肢になる。',opts:[
+          {t:'講義で理論を学び、地域で試してみる',sub:'経験→問い→知識→実践の循環をつくる',w:4,go(){Y.studyLink=true;Y.sdpblInterest=true;L.know+=4;L.action+=2;L.rel+=2;say('地域で出会った課題を、講義で学んだ考え方と照らし合わせる。学んだことを地域に持ち帰って試すと、また新しい疑問が生まれた。フレキャンは一度きりの行事ではなく、これからの学びの入口になった。','big')}},
+          {t:'今は結論を出さず、気になったことを記録する',sub:'すぐに進路や専門を決めなくてもいい',w:3,go(){Y.fieldNotes=true;L.know+=2;L.happy+=1;say('まだ研究テーマには決めず、気になったことだけ記録しておく。経験を急いで結論に変えず、次の出会いで見え方が変わる余地を残した。','big')}}
+        ]})}},
+        {t:'掲示板を見るだけにして、今は参加しない',sub:'関係を続けるかどうかも、自分で選べる',w:2,go(){Y.localBoardViewed=true;L.know+=1;say('掲示板には地域の困りごとや手伝い募集が並んでいる。今すぐ参加はしないが、困ったときに戻れる場所があると知った。','big')}}
+      ]})}},
+      {t:'まずは観察し、地域の人の考えを聞く',sub:'何に困り、何を大切にしているのか質問する',w:3,go(){Y.tcuFrecamp='listen';Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.rel+=3;L.know+=3;L.action++;say('地域の人に「この活動で一番大切にしていることは何ですか」と聞いた。答えは、事前に想像していたものと違った。自分の関心も、誰かの話を聞くことで少しずつ形になっていく。地域活動掲示板に次の募集が出ることも教えてもらった。','big')}},
+      {t:'うまくなじめず、キャンプを思い出だけにする',sub:'合わなかった経験も、自分を知る材料にはなる',w:2,go(){Y.tcuFrecamp='disconnected';L.happy-=1;L.know+=1;say('周りとうまく話せず、キャンプは少し気まずい思い出になった。無理に好きになる必要はない。ただ、何が合わなかったのかを振り返れば、次に環境を選ぶときの手がかりにはできる。','big')}}
+    ]});return;
+  }
+  if(a>=18&&a<=25&&y>=2000&&L.edu==='大学'&&!Y.universityLifeReflection&&/東京大学/.test(L.school||'')){
+    Y.universityLifeReflection=true;
+    ask({title:`${a}歳：東京大学で、学び続ける人生`,text:'難しい本、講義、研究。学べることは尽きない。一方で、勉強だけを続けて人や社会と関わらなければ、知識が増えても「自分は何のために学んでいるのか」が見えなくなることもある。ここで、学びをどう使う？',opts:[
+      {t:'地域に出て、人と一緒に課題を探す',sub:'知識を、まだ答えのない現場に持ち込む',w:4,go(){Y.todaiCommunity=true;Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action+=2;L.rel+=4;L.know+=2;say('本を閉じて地域へ出た。現場では、問いも正解も最初から用意されていない。人の話を聞き、一緒に動くことで、学んだ知識を何に使うかが少しずつ見えてきた。学びを続けることと、人生を生きることは、切り離さなくてもいい。','big')}},
+      {t:'研究と勉強を最優先にし、他のことは後回しにする',sub:'成果を追ううち、時間や人とのつながりが細くなることも',w:3,go(){Y.todaiStudyOnly=true;L.know+=5;L.hp-=3;L.rel-=3;L.happy-=2;say('研究は進み、知識も増えた。しかし気づくと、友人と会う時間も、知らない場所へ行く時間も減っていた。何かを深く学ぶことは大切だ。それでも、勉強だけで人生のすべてが満たされるとは限らない。','big')}},
+      {t:'学びと生活の両方を守る時間割をつくる',sub:'研究、友人、地域での活動を少しずつ続ける',w:3,go(){Y.todaiBalanced=true;L.know+=3;L.hp+=2;L.rel+=2;say('研究の時間を確保しつつ、友人と食事をしたり、地域の活動に参加したりする時間も予定に入れた。何を学ぶかだけでなく、誰とどう生きるかも自分で選び直していく。','big')}}
+    ]});return;
+  }
+  if(a>=18&&a<=25&&y>=2000&&L.edu==='大学'&&!Y.kantoGakuinLifeReflection&&/関東学院大学/.test(L.school||'')){
+    Y.kantoGakuinLifeReflection=true;
+    ask({title:`${a}歳：地域創生を学ぶはずだったのに`,text:'地域創生を学び、地域で活動したいと思って入学した。でも、周囲の空気や遊びの誘いに流されると、やりたかった活動から少しずつ離れてしまうこともある。これは大学や学生全体を決めつける話ではなく、自分の行動が環境に左右される一つの可能性。どうする？',opts:[
+      {t:'周囲に合わせ、地域活動をやめてしまう',sub:'居心地はできるが、入学時の思いは遠のく',w:3,go(){Y.kantoGakuinDrift=true;L.rel+=1;L.action=Math.max(0,(L.action||0)-1);L.happy-=2;say('周りと過ごす時間が増え、地域活動の予定はだんだん消えていった。毎日はそれなりに楽しい。でも、ふと「自分は何をしたくてここに来たんだろう」と思う。人生は一度きりで、やりたいことを先送りするうちに時間は過ぎていく。ここから戻ることも、もちろんできる。','big');ask({title:'このまま、はかない人生で終わらせる？',text:'過ぎた時間は戻らない。でも、今から小さく動けば、出会いも学びも変えられる。',opts:[
+        {t:'地域活動掲示板から、一つだけ参加してみる',sub:'以前の自分に戻るのではなく、今の自分から再開する',w:4,go(){Y.kantoGakuinRestart=true;Y.localBoard=true;Y.localRoute=true;L.action+=2;L.rel+=3;L.know+=2;L.happy+=2;say('掲示板で見つけた地域の手伝いに申し込んだ。以前のような熱意が戻るかは分からない。それでも一度現場に行くと、また人と話し、次に知りたいことが生まれた。人生が変わるのは、大きな決意より小さな一歩からかもしれない。','big')}},
+        {t:'今は動かず、この違和感だけ覚えておく',sub:'変わるきっかけを待つ選択もできる',w:2,go(){Y.kantoGakuinPaused=true;L.know+=1;say('今すぐには動けなかった。でも「本当は地域で活動したかった」という違和感は残った。いつか動き出すときの、小さな手がかりになるかもしれない。','big')}}
+      ]})}},
+      {t:'同じ思いを持つ人を探し、小さな活動を始める',sub:'周囲に流されるだけでなく、仲間や居場所を自分でつくる',w:4,go(){Y.kantoGakuinCommunity=true;Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action+=2;L.rel+=4;L.know+=2;say('同じように地域で活動したい人を探し、学外の団体にも連絡した。大学の中の空気だけが世界のすべてではない。やりたいことを続けるには、仲間や居場所を自分で見つけることも大切だと分かった。','big')}},
+      {t:'大学の授業で学び、地域活動と結びつける',sub:'講義・SDPBLなどをきっかけに、現場へ戻る',w:3,go(){Y.studyLink=true;Y.sdpblInterest=true;Y.localRoute=true;L.know+=4;L.action++;say('授業で扱った地域の課題を、自分が参加できる活動につなげた。知識だけでも、勢いだけでも続かない。学びと現場を往復することで、地域創生を自分の経験にしていく。','big')}}
+    ]});return;
+  }
+  // 2026-10-26追加：大学で「環境に入りづらい」状態が、その後の行動にどう影響するかを描く継続イベント。
+  // 大学名そのものの評価ではなく、周囲の空気・小さな誘い・自分の一歩で流れが変わる構成。
+  if(a>=19&&a<=24&&y>=2000&&L.edu==='大学'&&Y.tcuFrecamp==='disconnected'&&!Y.tcuSecondChance){
+    Y.tcuSecondChance=true;
+    ask({title:`${a}歳：フレキャンのあと、少しだけ気になっている`,text:'キャンプではうまく話せず、その後も地域活動には参加していない。授業やサークルの予定が埋まるほど、知らない人の輪に入るのは少し面倒になる。そんなとき、フレキャンで一緒だった学生から「地域の人が、前に話していた困りごとの続きを一緒に考えたいって」と連絡が来た。どうする？',opts:[
+      {t:'まずは30分だけ、話を聞きに行く',sub:'大きな決意ではなく、小さく関係をつなぎ直す',w:4,go(){Y.tcuSecondChance='small-step';Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action+=2;L.rel+=3;L.know+=2;say('最初は気まずかったが、地域の人はキャンプで話した内容を覚えていた。「全部を引き受けなくていい。気になったところだけ一緒に考えて」と言われ、少し肩の力が抜けた。知らない環境に入るのは、得意な人だけのものではない。短い時間でも、次の関わり方を選べるようになった。','big')}},
+      {t:'今は行かず、誘ってくれた学生に詳しい話だけ聞く',sub:'距離を置きながら、つながりは切らない',w:3,go(){Y.tcuSecondChance='stay-connected';L.rel+=1;L.know+=1;say('現場に行くのはまだためらったので、誘ってくれた学生に活動の内容を聞いた。どんな人が来るのか、何をするのかが分かると、知らない場所への不安が少し具体的になった。次に参加するかどうかは、その情報を見てから決めることにした。','big')}},
+      {t:'忙しいことを理由に、連絡を返さない',sub:'日々は過ぎるが、関係が自然に遠のくことも',w:2,go(){Y.tcuSecondChance='missed';L.happy-=1;say('返事を先延ばしにしているうちに、活動の日は過ぎてしまった。地域の人を嫌いになったわけではない。ただ、きっかけは待っているだけでは続かないこともある。次に誘いが来たとき、自分はどうするだろう。','big')}}
+    ]});return;
+  }
+  if(a>=19&&a<=25&&y>=2000&&L.edu==='大学'&&Y.kantoGakuinDrift&&!Y.kantoGakuinReconnect){
+    Y.kantoGakuinReconnect=true;
+    ask({title:`${a}歳：やりたかったことを、もう一度思い出す`,text:'地域活動から離れてしばらくたった。友人と過ごす日々が悪いわけではない。でも、地域創生を学びたくて進学したことを思い出す瞬間がある。SNSで、以前話を聞いた地域の人が「イベントの手伝いが一人足りない」と投稿していた。今の自分にできることはあるだろうか。',opts:[
+      {t:'一日だけ手伝いに行く',sub:'昔の自分に戻るのではなく、今できることから',w:4,go(){Y.kantoGakuinReconnect='one-day';Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action+=2;L.rel+=3;L.know+=2;L.happy+=1;say('久しぶりの現場では、知らないことも多く、最初から中心メンバーのようには動けなかった。それでも、会場設営を一緒にした人が「また来られる日に来て」と言ってくれた。続けるかどうかは、今日決めなくていい。環境に流された時間も、ここからの選択を決める材料にできる。','big')}},
+      {t:'同じ関心を持つ人を一人だけ探す',sub:'大勢の輪に入るより、小さなつながりから',w:3,go(){Y.kantoGakuinReconnect='find-peer';L.rel+=2;L.know+=1;say('いきなり活動に戻るのではなく、授業で地域に関心を持っていそうな人に声をかけた。相手も「興味はあるけど、どう始めればいいか分からない」と話した。一緒なら、最初の一歩を少し踏み出しやすい。','big')}},
+      {t:'今は何もしないが、地域の人の投稿を保存する',sub:'動けない自分を責めず、次の入口を残す',w:2,go(){Y.kantoGakuinReconnect='bookmark';L.know+=1;say('今すぐ申し込むことはできなかったが、投稿を保存した。やりたいことが遠のいたと感じても、それが完全に消えたとは限らない。次に時間や気持ちに余裕ができたとき、入口を探し直せる。','big')}}
+    ]});return;
+  }
+  if(a>=19&&a<=25&&y>=2000&&L.edu==='大学'&&Y.todaiStudyOnly&&!Y.todaiHumanMoment){
+    Y.todaiHumanMoment=true;
+    ask({title:`${a}歳：研究室の外から届いた連絡`,text:'研究は進み、論文や課題にも慣れてきた。けれど、予定表は勉強で埋まり、最近は友人とゆっくり話した記憶もない。ある日、以前地域で出会った人から「若い人の意見を聞きたい。今度の集まりに来られない？」と連絡が来た。忙しい今、どうする？',opts:[
+      {t:'一度だけ地域の集まりに参加し、現場の声を聞く',sub:'研究をやめるのではなく、問いの出どころに触れる',w:4,go(){Y.todaiHumanMoment='visit';Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action+=2;L.rel+=3;L.know+=2;L.happy+=1;say('集まりでは、研究論文の中では一行で済んでしまうような事情が、暮らす人それぞれの生活に結びついていた。自分の専門知識が役立つ場面もあれば、まず話を聞くしかない場面もあった。研究室の外に出たことで、次に調べたい問いが少し変わった。','big')}},
+      {t:'研究を優先し、理由を添えて今回は断る',sub:'断ること自体が悪いのではない。次の接点を残す',w:3,go(){Y.todaiHumanMoment='decline';L.know+=2;say('締切があることを伝え、今回は断った。ただ「また声をかけてください」と返信し、相手からの連絡先は残した。学びに集中する時期は必要だ。それでも、人との接点を自分から完全に閉じないことはできる。','big')}},
+      {t:'誘いを見なかったことにして、勉強を続ける',sub:'短期的には進むが、世界が狭くなる可能性も',w:2,go(){Y.todaiHumanMoment='ignore';L.know+=3;L.rel-=2;L.happy-=1;say('目の前の課題は片づいた。しかし、数週間後に連絡を見返したとき、誰かと話す機会を自分から遠ざけていたことに気づいた。知識が増えることと、人生の実感が増えることは、いつも同じではない。','big')}}
     ]});return;
   }
   if(a===18&&y>=2000&&!Y.moneyBasics&&!L.used.has('y7:money-basics')){
@@ -2331,6 +2439,37 @@ function makerisaStory(a){
     ]});return;
   }
 
+  // 地域の人を「名前の一覧」で終わらせず、誰に話しかけるかを選ぶ。
+  if(a>=15&&a<=70&&Y.localVisits>0&&!Y.talkToLocalEvent&&!L.used.has("y7:talk-to-local")){
+    Y.talkToLocalEvent=true;L.used.add("y7:talk-to-local");
+    const known=Object.entries(Y.contacts).filter(([id,p])=>p&&p.name&&/地域|local|お兄さん|おばあちゃん|農家|食堂|祭り|旅先|地域留学/i.test((p.kind||"")+" "+p.name)).slice(0,5);
+    const people=known.length?known.map(([id,p])=>({id,name:p.name,kind:p.kind||"地域で出会った人"})):[
+      {id:"grandma",name:"地域のおばちゃん",kind:"食堂や地域活動を知る人"},
+      {id:"oldman",name:"近所のおじいさん",kind:"暮らしの知恵を持つ人"},
+      {id:"organizer",name:"祭りを仕切るおじちゃん",kind:"地域の行事を支える人"},
+      {id:"youthworker",name:"ユースワーカー",kind:"若者の活動を応援する人"}
+    ];
+    ask({title:"地域の人に話しかけてみよう",text:"顔を知っている人が増えてきた。誰に話しかけるかで、聞ける話も次に起こることも変わる。",opts:[
+      ...people.slice(0,4).map(p=>({t:`${p.name}に話しかける`,sub:p.kind,w:2,go(){const c=Y.contacts[p.id]||(Y.contacts[p.id]={name:p.name,kind:p.kind,meet:0,trust:0,last:0});c.meet=(c.meet||0)+1;c.trust=Math.min(5,(c.trust||0)+1);c.last=a;Y.lastTalkedTo=p.id;L.rel+=2;L.know+=1;const scenes=[
+        `${p.name}と立ち話をするうち、地域のおばちゃんたちが募金活動で集めたお金で「おばちゃん食堂」を開いた話を聞く。お金を集めた人、料理する人、場所を貸した人。それぞれの力がつながっていた。`,
+        `${p.name}に、帰省しようと空港行きのバスを待っていたら運休になり、事情を知った地域のおじちゃんが急いで松山空港まで送ってくれた話を聞く。困ったときに助け合える関係は、普段の挨拶からできていた。`,
+        `${p.name}から、パートナーを亡くした近所のおじいさんと仲良くなり、野菜や魚を交換する物々交換が始まった話を聞く。何かを買うだけではない、近所の支え合いがある。`,
+        `${p.name}に夕ご飯へ誘われる。家族の食卓に混ぜてもらい、いつもの暮らしや困りごとを聞く。よそ者だった自分が、少しだけ「またおいで」と言ってもらえる人になる。`
+      ];say(scenes[(Y.localTalkCount||0)%scenes.length],"big");Y.localTalkCount=(Y.localTalkCount||0)+1;Y.localRoute=true;Y.localExperience=(Y.localExperience||0)+1;}})),
+      {t:"海へ行き、魚や貝をとる／仕事終わりに泳ぐ",sub:"その土地の季節や暮らしを、体で知る",w:2,go(){L.hp+=3;L.rel+=1;Y.seaMemory=true;say("地域の人に誘われ、海で魚や貝をとる。夏の仕事終わりには、そのまま海に入った。観光で来たときにはわからなかった季節のリズムや、暮らしと自然の近さが体に残る。","big")}},
+      {t:"お祭りの手伝いや、地域の人とのダンスに参加する",sub:"一緒に動くと、会話だけでは見えない関係が生まれる",w:2,go(){L.rel+=3;L.action=(L.action||0)+2;Y.festivalMemory=true;say("お祭りの準備を頼まれ、地域の人と一緒に動く。片づけのあとには音楽が流れ、みんなで踊った。うまく話せなくても、同じ場で汗をかいたことが次の挨拶につながる。","big")}}
+    ]});return;
+  }
+  // 地域の経験から社会教育士・行政職員の仕事へつながる可能性。
+  if(a>=20&&a<=38&&((L.localExperience||0)>0||Y.localVisits>=2)&&!Y.socialEducationRoute&&!L.used.has("y7:social-education-route")){
+    Y.socialEducationRoute=true;L.used.add("y7:social-education-route");
+    ask({title:"地域で人と学んだ経験を、仕事にできるだろうか",text:"住民の集まり、若者の活動、居場所づくりに関わるうち、学びの場を地域につくる仕事があると知る。社会教育士の学びを深め、行政の現場に入る道も見えてきた。",opts:[
+      {t:"社会教育士の学びを進め、自治体の仕事を目指す",sub:"住民・学校・行政をつなぐ仕事を学ぶ",w:2,go(){Y.socialEducationChosen=true;Y.careerRoute="行政・社会教育";L.know+=4;L.action=(L.action||0)+2;L.rel+=2;Y.occupation="社会教育・行政";say("社会教育士に関わる学びや自治体の採用情報を調べ始める。制度や予算、合意形成を知らなければ地域の思いを形にできないと気づき、法律や行政の仕組みも学ぶ。","big")}},
+      {t:"行政に入る前に、地域の団体や居場所で経験を積む",sub:"現場の声を知ってから、制度との接点を探す",w:2,go(){Y.socialEducationFieldFirst=true;L.action=(L.action||0)+3;L.rel+=2;say("地域の団体や居場所で、企画・会計・広報を手伝う。人の思いだけでは続かず、場所代や人手、制度の壁もある。現場の経験を積んでから行政との関わり方を考えることにした。","big")}},
+      {t:"今の仕事や学びを続け、地域活動は続けられる範囲で",sub:"地域に関わる方法は、行政職だけではない",w:3,go(){Y.socialEducationDeferred=true;say("行政職を目指すのは今ではないと判断する。今の仕事や学びを続けながら、できる範囲で地域の人とのつながりを保つ。","big")}}
+    ]});return;
+  }
+
   // SAPIXは人生の最初に選ぶ「ルート」ではなく、家庭環境と年齢の中で現れる選択肢。
   if(a===7&&y>=1990&&!Y.sapixAsked&&!L.used.has('y7:sapix')){
     Y.sapixAsked=true;L.used.add('y7:sapix');
@@ -2393,7 +2532,7 @@ function makerisaStory(a){
   if(a===16&&y>=2000&&Y.highRoute==='ELITE_EXAM'&&!Y.eliteRouteTurn&&!L.used.has('y7:elite-route-turn')){
     Y.eliteRouteTurn=true;L.used.add('y7:elite-route-turn');
     ask({title:'16歳：勉強だけで、この先もいいのだろうか',text:'難関高校に入り、周りは大学受験の話をしている。成績は伸びているが、ニュースで「AIが知識を使う仕事を変えていく」と聞いた。勉強をやめる必要はない。ただ、点数を取ること以外に、自分で問いを見つけ、人と動く経験も必要なのかもしれない。',opts:[
-      {t:'今は受験勉強に集中する',sub:'専門性を積む道。外の世界に出会う機会は自分で作らないと増えにくい',w:3,go(){Y.eliteRouteStayed=true;Y.aiPath='study';Y.studyFocus=true;L.know+=4;say('今は受験勉強に集中することにした。学力を伸ばすことには手応えがある。地域活動には参加しないまま、進学先や資格など、次の目標を目指していく。いつか学んだ知識を何に使うのか、自分で考える必要は残っている。','big')}},
+      {t:'今は受験勉強に集中する',sub:'専門性を積む道。外の世界に出会う機会は自分で作らないと増えにくい',w:3,go(){Y.eliteRouteStayed=true;Y.todaiAspiration=true;Y.aiPath='study';Y.studyFocus=true;L.know+=4;say('今は受験勉強に集中することにした。学力を伸ばすことには手応えがある。地域活動には参加しないまま、進学先や資格など、次の目標を目指していく。いつか学んだ知識を何に使うのか、自分で考える必要は残っている。','big')}},
       {t:'勉強は続けながら、地域の人や活動を一度だけ訪ねる',sub:'小さな一歩。そこで何を感じるかは、行ってみるまでわからない',w:2,go(){Y.eliteRouteSteppedOut=true;Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;Y.aiPath='community';L.action=(L.action||0)+3;L.rel+=2;say('勉強を続けながら、地域の活動を一度だけ訪ねてみることにした。そこで出会った人たちは、知識がないからといって追い返したりはしなかった。ただ、現場の話は教科書と違い、正解がひとつではない。次も行きたいと思うかは、まだわからない。','big')}},
       {t:'学校外の大人に、AI時代に必要な力を聞いてみる',sub:'地域活動に限らず、仕事の現場から考える',w:2,go(){Y.eliteRouteAskedAdult=true;Y.aiPath='interviews';L.action+=2;L.know+=2;const p=meet('aiAdult','仕事とAIの変化を話してくれる大人','working adult');say('学校外の大人に話を聞いてみた。知識は大切だが、問いを立て、相手の事情を理解し、周りを巻き込んで試す力も必要だという。地域活動に参加したわけではない。それでも、勉強の先にある世界を少し想像できた。','big')}}
     ]});return;
@@ -3604,6 +3743,15 @@ function soumato(age){if(G.auto||matchMedia("(prefers-reduced-motion: reduce)").
 /* 更新情報 */
 const Y7_PREF_CASES=[{"pref": "北海道", "name": "東川町の写真文化と移住・交流", "desc": "写真文化を軸に町外の人と関係をつくる"}, {"pref": "青森県", "name": "田舎館村の田んぼアート", "desc": "農業と観光を結び、地域の風景を発信する"}, {"pref": "岩手県", "name": "紫波町オガールプロジェクト", "desc": "公共施設と民間事業を組み合わせて駅前を再生する"}, {"pref": "宮城県", "name": "東松島のブルーインパルス・震災復興交流", "desc": "復興の経験を伝え、交流や産業につなげる"}, {"pref": "秋田県", "name": "五城目町の住民主体の小さな拠点", "desc": "買い物や交流の場を住民が支える"}, {"pref": "山形県", "name": "川西町きらりよしじまネットワーク", "desc": "住民組織が地域課題を話し合い活動する"}, {"pref": "福島県", "name": "会津若松のスマートシティ", "desc": "データを使って暮らしや地域産業の課題を考える"}, {"pref": "茨城県", "name": "取手市の起業家タウン", "desc": "起業相談や人のつながりから事業を育てる"}, {"pref": "栃木県", "name": "那須地域の観光・農産物連携", "desc": "地域資源を商品や仕事につなげる"}, {"pref": "群馬県", "name": "上野村の森林資源活用", "desc": "木材や地域資源を使い仕事をつくる"}, {"pref": "埼玉県", "name": "小川町の有機農業と地域資源PR", "desc": "農産物と地域の魅力を伝え、販路を開く"}, {"pref": "千葉県", "name": "いすみ市の有機米給食", "desc": "農業と学校給食をつなぎ地域内の循環をつくる"}, {"pref": "東京都", "name": "立川のシーズ立川", "desc": "子育てと仕事を両立できる場を市民活動から事業化する"}, {"pref": "神奈川県", "name": "横浜の地域課題解決型市民活動", "desc": "行政・企業・市民が連携して課題に取り組む"}, {"pref": "新潟県", "name": "十日町の大地の芸術祭", "desc": "アートをきっかけに地域を歩き、人と出会う"}, {"pref": "富山県", "name": "氷見の魚食文化と地域ブランド", "desc": "地元の食材と担い手をつなぐ"}, {"pref": "石川県", "name": "能登の里山里海の地域活動", "desc": "自然や暮らしの知恵を次世代へつなぐ"}, {"pref": "福井県", "name": "鯖江市の市民協働・ものづくり", "desc": "眼鏡産業などの技術と若い担い手を結ぶ"}, {"pref": "山梨県", "name": "小菅村の源流・観光まちづくり", "desc": "自然環境を守りながら交流や仕事を生む"}, {"pref": "長野県", "name": "塩尻市のテレワーク・地域人材育成", "desc": "デジタル環境を使って働き方の選択肢を増やす"}, {"pref": "岐阜県", "name": "飛騨市の広葉樹活用", "desc": "使われにくい木材に価値を見出し商品化する"}, {"pref": "静岡県", "name": "浜松の中山間地域の小さな拠点", "desc": "移動・買い物・交流の困りごとに地域で向き合う"}, {"pref": "愛知県", "name": "豊田市の山村地域の仕事づくり", "desc": "都市と山村をつなぎ、地域資源の活用を試す"}, {"pref": "三重県", "name": "尾鷲の林業・地域資源活用", "desc": "森の手入れを仕事や地域の将来につなぐ"}, {"pref": "滋賀県", "name": "近江八幡の水辺・町並み保全", "desc": "観光と暮らしの両立を考える"}, {"pref": "京都府", "name": "南丹市美山のかやぶき集落保全", "desc": "景観と生活を守りながら来訪者を受け入れる"}, {"pref": "大阪府", "name": "大阪の商店街空き店舗活用", "desc": "小さな商いと交流の場を生む"}, {"pref": "兵庫県", "name": "豊岡のコウノトリと農業", "desc": "環境保全と農産物の価値をつなぐ"}, {"pref": "奈良県", "name": "川上村の森林と水源保全", "desc": "森を守る仕事と下流の暮らしを結ぶ"}, {"pref": "和歌山県", "name": "田辺・熊野古道の地域ガイド", "desc": "文化や自然を伝える仕事をつくる"}, {"pref": "鳥取県", "name": "智頭町の森のようちえん・森林資源", "desc": "子育てや森林を地域の価値として活かす"}, {"pref": "島根県", "name": "海士町の島留学と地域づくり", "desc": "外から来た若者と地域の人が一緒に学ぶ"}, {"pref": "岡山県", "name": "西粟倉村の百年の森林構想", "desc": "森林資源から小さな事業や雇用を生み出す"}, {"pref": "広島県", "name": "東広島・ファームおだ", "desc": "農業と地域活動を組み合わせ集落を支える"}, {"pref": "山口県", "name": "萩の町並み保存と観光", "desc": "地域の歴史を守り、訪れる人との接点をつくる"}, {"pref": "徳島県", "name": "上勝町の葉っぱビジネス", "desc": "身近な葉を商品にし、高齢者も担い手になる"}, {"pref": "香川県", "name": "東かがわ市五名の地域活動", "desc": "地域住民が資源を持ち寄り暮らしを支える"}, {"pref": "愛媛県", "name": "内子町の町並み保存と農産物直売", "desc": "景観や農産物を地域の仕事につなげる"}, {"pref": "高知県", "name": "梼原町の集落活動センター", "desc": "集落の困りごとを住民が協力して解決する"}, {"pref": "福岡県", "name": "那珂川の南畑ぼうぶら会議", "desc": "住民と外から来る人が地域の魅力を形にする"}, {"pref": "佐賀県", "name": "有田焼の産地継承と新商品づくり", "desc": "伝統技術を次の世代や新しい市場につなぐ"}, {"pref": "長崎県", "name": "五島の移住・島の仕事づくり", "desc": "島の暮らしと仕事を実際に体験して考える"}, {"pref": "熊本県", "name": "水俣の環境再生と地域づくり", "desc": "公害の経験から環境と産業のあり方を問い直す"}, {"pref": "大分県", "name": "豊後高田の昭和の町", "desc": "商店街の歴史や店主の物語をまち歩きにつなぐ"}, {"pref": "宮崎県", "name": "椎葉村の地域資源と小さな事業", "desc": "山村の資源から暮らしを支える仕事を考える"}, {"pref": "鹿児島県", "name": "三島村の焼酎蔵プロジェクト", "desc": "地域の産品を事業にし、地域内の仕事をつくる"}, {"pref": "沖縄県", "name": "久米島の海洋深層水活用", "desc": "島の自然資源を産業に活かす一方、持続可能性も考える"}];
 const NEWS=[
+  {v:21,d:"2026年10月26日",t:"大学で地域に入りづらい現実と、そこからの再接続ストーリーを追加",g:[
+    ["環境が行動を左右する大学生活の継続イベント",["東京都市大学のフレキャンでなじめなかった場合、あとから学生の誘いや地域の人との再接点が生まれる展開を追加。大きな決意を求めず、30分だけ話を聞く・詳しい話を聞く・今回は見送るなど、小さな選択を用意しました。","関東学院大学の地域創生ルートでは、周囲に流されて活動から離れたあと、地域の人の募集投稿を見かける展開を追加。一日だけ手伝う、同じ関心を持つ人を探す、投稿を保存する、という再接続の仕方を選べます。","東京大学ルートでは、勉強に集中して人との関係が細くなったあと、地域で出会った人から若者の意見を求められる展開を追加。地域へ行く、今回は断って次の接点を残す、誘いを見送る選択によって、その後の関係や行動が変わります。"]],
+    ["描き方の方針",["大学名や学生全体を一括りに評価するのではなく、周囲の空気・時間の使い方・誘ってくれる人の存在・本人の小さな行動によって、地域に関わりやすくも、離れやすくもなるストーリーにしました。"]]
+  ]},
+  ["大学進学後のフレキャンと、その後の人生",["東京都市大学に入学した後、学生2〜5人と地域のキーマンが一緒に現場体験をするフレッシャーズキャンプを追加。目的がなくても参加でき、体験後に面白かったこと・疑問・合わなかったことを振り返ります。","地域活動掲示板を通じて、手伝い募集や困りごと、アイデア募集から再び地域に関わる展開を追加。地域で生まれた疑問を大学の講義で学び直し、2年次以降のSDPBLなどで再び実践する流れも選べます。","東京大学では勉強だけに閉じこもる可能性と、学びを地域や人との関係に生かす可能性を描写。関東学院大学の地域創生ルートでは、周囲の空気に流されて活動をやめる展開と、仲間を探して再開する展開を用意。特定の大学・学生全体への断定ではなく、環境と自分の行動を考える分岐として扱います。"]],
+ {v:20,d:"2026年10月26日",t:"地域の人に会いに行く選択と、貯金を使う地域体験・進学ルートを追加",g:[
+  ["地域での出会いを、行動とつながりに",["貯金30万円を使って、行き先を決めずに知らない地域へ行く選択を追加。さつま町・海士町などをきっかけに、食堂や祭りの手伝い、フレキャンでお世話になった人への再訪を選べます。","地域の人に話しかける場面では、相手を選ぶと、おばちゃん食堂、空港まで送ってくれた地域のおじちゃん、物々交換を始めた近所のおじいさん、夕ご飯への招待などの出来事が起こり、人間関係・行動・知識に反映されます。","海で魚や貝をとる、夏の仕事終わりに海へ入る、お祭りを手伝う、地域の人と踊る体験も追加。地域経験から社会教育士を学び、自治体・行政の仕事を目指すルートも用意しました。"]],
+  ["進学ルートと年齢の再発を調整",["SAPIXで勉強を続ける選択が、東大を目指すルートに影響するよう変更。一般選抜は東京大学、総合型選抜は東京都市大学、指定校推薦は関東学院大学を目指す構成にしました。","東大の一般選抜に不合格の場合は、浪人して再挑戦するか東京都市大学へ進むかを選べます。浪人を1年重ねるごとに、ゲーム内の東大合格率に5ポイント加算します。これはゲーム用の仮定で、実際の合格率ではありません。","年齢別イベントは使用済みフラグを記録し、昔の年齢の選択肢が後の年齢で再び出ないようにします。"]]
+ ]},
  {v:19,d:"2026年10月20日",t:"高校期の同型イベント連続と年齢表示のずれを修正",g:[
   ["高校期の選択頻度を調整",["15〜18歳の四半期イベントを、同じ年に春夏秋冬と繰り返す方式から、1年に1回の年齢別イベントへ変更。過去に地域活動を選んでいない人には、地域参加を繰り返し勧めず、勉強・進路相談・休息などの選択を中心に表示します。"]],
   ["実年齢とタイトルを一致",["18〜21歳に発生する大学進路イベントや、18〜19歳に発生する提案の振り返りイベントのタイトルを、実際の年齢に合わせて表示します。"]],
