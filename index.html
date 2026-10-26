@@ -1518,11 +1518,14 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden)saveProgres
 function schedule(){clearTimeout(G.timer);saveProgress();if(G.dead||G.paused||G.waiting)return;
   G.timer=setTimeout(tick,G.skip?70:G.base/G.mult*(G.quiet?0.55:1))}
 function ask(d){if(!d.reflect&&anach(d.title))return;if(!d.reflect){if(d.text&&anach(d.text))d.text="";const ok=d.opts.filter(o=>!anach(o.t)&&!anach(o.sub||""));if(ok.length>=2)d.opts=ok;else if(ok.length<d.opts.length)return}if(!d.reflect&&G&&G.L&&!famCtx()){d.title=fitFam(d.title);if(d.text)d.text=fitFam(d.text);d.opts.forEach(o=>{o.t=fitFam(o.t);if(o.sub)o.sub=fitFam(o.sub)})}d._queuedAge=G.age;G.queue.push(d)}
+function askFirst(d){ask(d);const q=G.queue.pop();if(q)G.queue.unshift(q)}
 function showNext(){
   if(G.dead)return;
   if(!G.queue.length){G.waiting=false;G.cur=null;$("#sheet").hidden=true;renderAll();schedule();return}
   G.waiting=true;const d=G.queue.shift();if(d._queuedAge!=null&&d._queuedAge<G.age&&!d.keepAcrossYears){G.cur=null;showNext();return}if(d.valid&&!d.valid()){G.cur=null;showNext();return}G.cur=d;
   if(G.skip&&!d.reflect){G.skip=false;$("#bSkip").setAttribute("aria-pressed","false")}
+  // 演出付きの受験画面は、おまかせ進行中でも飛ばさず表示する
+  if(d.cinematicExam==="board"||d.cinematicExam==="comprehensive"){renderY7ExamBoard(d);return}
   if(G.auto){if(d.reflect){G.cur=null;showNext()}else autoPick();return}
   renderAll();
   const sh=$("#sheet");sh.hidden=false;sfx(d.reflect?"big":"ask");sh.classList.toggle("re",!!d.reflect);
@@ -1544,6 +1547,79 @@ function startCd(d){clearCd();const total=Math.round(clamp((d.reflect?15000:3000
     if(left<=0){clearCd();if(d.reflect){G.cur=null;showNext()}else{G.tout=true;autoPick();G.tout=false}}},150)}
 document.addEventListener("keydown",e=>{if(!G||!G.cur||$("#sheet").hidden||e.metaKey||e.ctrlKey||e.altKey)return;const tg=e.target&&e.target.tagName;if(tg==="INPUT"||tg==="TEXTAREA")return;
   const n=parseInt(e.key,10);if(n>=1&&n<=9){const b=$("#sheetIn").querySelectorAll(".opts button")[n-1];if(b){e.preventDefault();b.click()}}});
+
+/* Y7入試結果：一般選抜も総合型選抜も、合否一覧を番号順に開示する。得点開示は行わない。 */
+function y7ResumeExamPrompt(d){
+  const sh=$("#sheet"); if(!sh)return;
+  sh.hidden=true; G.cur=null; G.waiting=false;
+  showNext();
+}
+function renderY7ExamBoard(d){
+  clearCd();
+  const sh=$("#sheet"), box=$("#sheetIn"), isComprehensive=d.cinematicExam==="comprehensive";
+  const r=d.examData||d.admissionData||{};
+  const no=String(r.number||String(1000+Math.floor(Math.random()*9000)));
+  const school=isComprehensive?(r.school||"東京都市大学"):"東京大学";
+  const route=isComprehensive?"総合型選抜":"一般選抜";
+  const nums=new Set();
+  if(r.passed) nums.add(no);
+  while(nums.size<25){const candidate=String(1000+Math.floor(Math.random()*9000));if(!r.passed&&candidate===no)continue;nums.add(candidate);}
+  const ordered=[...nums].sort((a,b)=>Number(a)-Number(b));
+  sh.hidden=false; sh.classList.add("re");
+  box.innerHTML=`<div style="text-align:center;padding:8px 0 14px">
+    <div style="font-size:12px;letter-spacing:.18em;color:#9ca3af">${isComprehensive?"COMPREHENSIVE SELECTION":"GENERAL SELECTION"} · RESULT</div>
+    <h3 style="margin:8px 0;font-size:22px">${school}　${route} 合格発表</h3>
+    <p class="note">受験番号 <b style="font-size:20px;letter-spacing:.12em">${no}</b><br>掲示板に、自分の番号はあるだろうか。</p>
+    <div id="y7-board" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;background:#e8edf1;padding:10px;border:1px solid #cbd5e1;border-radius:8px;min-height:130px">
+      ${ordered.map((n,i)=>`<span data-y7n="${i}" data-number="${n}" style="display:flex;align-items:center;justify-content:center;min-height:28px;background:#fff;border:1px solid #d5dce2;border-radius:3px;font-variant-numeric:tabular-nums;color:#243746;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s">${n}</span>`).join("")}
+    </div>
+    <div id="y7-verdict" style="min-height:66px;padding:16px 4px 4px;font-size:27px;font-weight:900;letter-spacing:.08em;color:#c8372d"></div>
+    <p id="y7-board-note" class="note" style="min-height:24px">まだ、結果は見えない。</p>
+    <button id="y7-board-start" class="primary" style="width:100%;margin-top:8px">掲示板を確認する</button>
+    <button id="y7-board-skip" class="ghost" style="margin-top:8px;color:#8b9298">スキップ ▶▶</button>
+  </div>`;
+  const cells=[...box.querySelectorAll("[data-y7n]")], start=$("#y7-board-start"), skip=$("#y7-board-skip");
+  let timers=[], done=false, idx=0;
+  const cleanup=()=>{timers.forEach(clearTimeout);timers=[]};
+  const finish=()=>{
+    if(done)return;done=true;cleanup();
+    cells.forEach(el=>{el.style.opacity="1";el.style.transform="translateY(0)"});
+    const mine=cells.find(el=>el.dataset.number===no);
+    if(mine){mine.style.background="#fff2c6";mine.style.border="2px solid #c8372d";mine.style.color="#c8372d";mine.style.fontWeight="900";mine.style.boxShadow="0 0 0 3px #f9d5d2"}
+    $("#y7-verdict").textContent=r.passed?(isComprehensive?"合格！！":"あった！！"):"……ない。";
+    $("#y7-board-note").textContent=r.passed?"番号を見つけた。何度も見直す。間違いじゃない。":"何度見ても、番号は見つからない。胸の奥が冷たくなる。";
+    start.disabled=false;
+    start.textContent=isComprehensive?"合否結果を確認して次へ":"合否結果を確認する";
+    start.onclick=()=>choose(0);
+    skip.remove();
+  };
+  const revealNext=()=>{
+    if(idx>=cells.length){timers.push(setTimeout(finish,650));return}
+    const el=cells[idx], value=Number(el.dataset.number), target=Number(no);
+    el.style.opacity="1";el.style.transform="translateY(0)";
+    if(window.BGM&&window.BGM.se){try{window.BGM.se(idx%2?"roll2":"roll")}catch(e){}}
+    idx++;
+    let delay;
+    if(value===target){delay=2200;} // 合格なら自分の番号を見つけた瞬間にしっかり間を取る
+    else if(value>target){delay=72;} // 自分の番号を通り過ぎたら、また一気に速くなる
+    else {
+      const distance=target-value;
+      if(distance<=400) delay=1550;
+      else if(distance<=850) delay=1050;
+      else if(distance<=1500) delay=680;
+      else if(distance<=2600) delay=330;
+      else delay=105;
+    }
+    timers.push(setTimeout(revealNext,delay));
+  };
+  start.onclick=()=>{
+    start.disabled=true;start.textContent="受験番号を探しています…";
+    $("#y7-board-note").textContent="番号が一つずつ掲示されていく。自分の番号に近づいている……。";
+    timers.push(setTimeout(revealNext,850));
+  };
+  skip.onclick=()=>finish();
+}
+
 function choose(i){
   const d=G&&G.cur;
   if(!d||!Array.isArray(d.opts)||!Number.isInteger(i)||i<0||i>=d.opts.length)return;
@@ -1712,7 +1788,7 @@ const say=(t,c)=>line(t,c), chance=p=>R()<p;
 function events(a){const L=G.L;const k=L.know,rel=L.rel;war(a);if(L.forceDie)return;const WY=warYear();if(!WY)special(a);
   const say=line,chance=p=>R()<p;
   /* 浪人の翌年 */
-  if(L.retry&&a===19){L.retry=false;const p=SUCC(L.univ+15+(L.know-55)*0.6);
+  if(L.retry&&a===19&&!(L.y7&&L.y7.todaiRetryPending)){L.retry=false;const p=SUCC(L.univ+15+(L.know-55)*0.6);
     if(R()*100<p){L.edu="大学";L.school="大学生";L.u0=19;say(`1年の浪人を経て、大学に合格する。`,"big");L.hp+=8}else{say(`2度目の受験もうまくいかない。`,"big");L.hp-=10;L.edu="高校";jobAsk()}}
   /* --- 子ども時代 --- */
   if(a===1){say(YEAR0+a<1960?(L.farm?`田んぼのあぜで、母に背負われて過ごす。`:`母や祖母に背負われて過ごす。`):chance(0.45)?`保育園に通い始める。両親は共働き。`:`母と家で過ごす。`);say(`歩けるようになる。`)}
@@ -1975,35 +2051,103 @@ function makerisaStory(a){
     }
     return line(text,cls);
   };
+  // 2026-10-26追加：高校の早い段階で受験方式を仮決めし、高3で再選択する。
+  if(a>=15&&a<=16&&y>=2000&&L.school&&!Y.examRouteEarlyChoice){
+    Y.examRouteEarlyChoice=true;
+    ask({title:'15〜16歳：大学受験、どんな方法を考える？',text:'まだ最終決定ではない。高校進学を見据えて、受験方式ごとに必要な準備を知っておこう。地域での経験や探究を深める道、学校生活の積み重ねを生かす道、教科の学力を伸ばす道。それぞれ準備が違い、高3でもう一度選び直せる。',opts:[
+      {t:'総合型選抜を意識する',sub:'経験から生まれた問い、探究、伝える力を育てる',w:3,go(){Y.earlyApplicationStrategy='comprehensive';Y.applicationStrategy='comprehensive';Y.portfolio=!!(Y.portfolio||Y.localVisits||Y.projectStarted);Y.hsResearchRecord=!!(Y.hsResearchRecord||Y.studyLink);L.know+=1;say('総合型選抜を候補にした。何か特別な実績を急いで作るのではなく、学校や地域で気になったことを記録し、なぜ気になったのかを自分の言葉で考えていく。高校3年で、改めて方式を選び直すことにした。','big')}},
+      {t:'指定校推薦を意識する',sub:'評定・出席・提出物と、校内選考の条件を知る',w:3,go(){Y.earlyApplicationStrategy='designated';Y.applicationStrategy='designated';Y.designatedPrep=true;L.know+=1;say('指定校推薦も候補にした。評定や出席、提出物など日々の積み重ねが関係すること、大学・学部ごとに条件や枠が異なることを先生に聞いた。高3で募集枠と条件を確認して、もう一度決める。','big')}},
+      {t:'一般選抜を意識する',sub:'模試・科目ごとの学力・過去問を軸に準備する',w:3,go(){Y.earlyApplicationStrategy='general';Y.applicationStrategy='general';Y.hsStudyPlan=Y.hsStudyPlan||'review';Y.examPrepQuality=(Y.examPrepQuality||0)+1;L.know+=2;say('一般選抜を候補にした。模試の判定だけで決めず、科目ごとの得意・苦手を確認し、基礎を積み上げていく。高3では共通テストや個別試験、出願校と併願先を具体的に考え直す。','big')}}
+    ]});return;
+  }
   // 2026-10-20追加：資産形成と人生設計を、年齢ごとの意思決定として体験する。
   // 金額はゲーム内の概算であり、個別の投資・税務助言ではない。
   // 18歳の進路選択は、別イベントが同じ年に出ても消えないよう独立したY7イベントとして保持。
-  if(a>=18&&a<=21&&y>=2000&&!L.edu&&(!Y.universityPath||Y.todaiRetryPending)&&!L.used.has(`y7:university-path:${a}`)){
+
+  // 高校時代の地域活動を中心に据える：受験のための実績づくりではなく、現場との出会いから問いが生まれる。
+  if(a>=16&&a<=18&&y>=2000&&L.school&&!Y.highSchoolFieldExperience){
+    Y.highSchoolFieldExperience='shown';
+    ask({title:`${a}歳：高校の外に、知らない世界があった`,text:'先生から、町のイベントや若者会議を手伝ってみないかと声をかけられた。地域の人手不足を補うだけのつもりでも、現場へ行けば、教室では聞かなかった話や同世代との出会いがあるかもしれない。受験のための実績を作ることが目的ではない。まず、行ってみた結果、何が見えてくるだろう。',opts:[
+      {t:'地域のイベントを手伝い、終わったあとも話を聞く',sub:'知らなかった暮らしや仕事に触れる',w:4,go(){Y.highSchoolFieldExperience='participated';Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;Y.hsResearchRecord=true;L.action=(L.action||0)+2;L.rel+=3;L.know+=2;const p=Y.contacts.hsCommunity||(Y.contacts.hsCommunity={name:'高校時代に出会った地域の人',kind:'地域活動の協力者',meet:0,trust:0,last:0});p.meet++;p.trust=Math.min(5,p.trust+1);p.last=a;say('地域のイベントを手伝った。準備中に、運営する人から「若い人が来てくれるのは助かるけれど、続けて来てもらうには何を変えたらいいと思う？」と聞かれた。手伝うだけのつもりだったのに、いつの間にか自分も考える側になっていた。','big');ask({title:'現場で気になったことを、どうする？',text:'その場では答えが出なかった。学校で調べる、もう一度現場へ行く、今は気になることとして記録しておく。どれも次の一歩になる。',opts:[
+        {t:'もう一度会いに行き、地域の人と小さく試す',sub:'一度の体験を、継続する関係へ',w:4,go(){Y.highSchoolFieldExperience='continued';Y.localVisits=(Y.localVisits||0)+1;Y.projectStarted=true;Y.studyLink=true;Y.portfolio=true;L.action+=2;L.rel+=3;L.know+=2;const q=Y.contacts.hsCommunity;q.meet++;q.trust=Math.min(5,q.trust+1);say('もう一度現場へ行き、地域の人と小さな改善を試した。思った通りには進まず、準備や費用、参加する人の都合も考える必要があった。でも、誰かと一緒に試したことで「次は何を確かめたいか」が具体的になった。','big')}},
+        {t:'学校の授業で調べ、現場で聞いた話と比べる',sub:'教科の学びが、自分の疑問とつながる',w:3,go(){Y.studyLink=true;Y.hsResearchRecord=true;Y.portfolio=true;L.know+=3;L.action+=1;say('地域の人の話を手がかりに、授業や本、データを使って調べた。現場で聞いたことと資料の数字は一致する部分も、違う部分もある。勉強が、誰かの暮らしを理解するための道具になり始めた。','big')}},
+        {t:'今は答えを出さず、気になったことを記録する',sub:'すぐに進路や目標に変えなくてもいい',w:2,go(){Y.hsFieldNote=true;L.know+=1;say('すぐに企画を始めることはしなかった。ただ、何が気になったのかをメモしておく。地域に出た体験は、あとから別の授業や出会いとつながるかもしれない。','big')}}
+      ]})}},
+      {t:'若者会議の見学に行き、同世代の声を聞く',sub:'地域の仕組みを若い人の目線で考える',w:3,go(){Y.highSchoolFieldExperience='youth-council';Y.youthCouncil=true;Y.localRoute=true;L.action+=2;L.rel+=2;L.know+=2;say('若者会議を見学した。同世代の参加者が、通学路や居場所、地域で過ごす時間について意見を出していた。自分が当たり前だと思っていた不便も、仕組みを変える話につながるのかもしれない。','big')}},
+      {t:'今回は参加せず、学校生活や勉強を優先する',sub:'今は動かない選択もできる。入口を知ったことは残る',w:2,go(){Y.highSchoolFieldExperience='not-now';L.know+=1;say('今回は参加しないことにした。今は学校生活や勉強を優先する。それでも、地域の人と一緒に動く入口があることは知った。必要になったとき、また考え直せる。','big')}}
+    ]});return;
+  }
+  if(a>=17&&a<=18&&y>=2000&&L.school&&Y.hsExamFirst&&!Y.hsExamSecond){
+    Y.hsExamSecond=true;
+    const mock=Math.max(28,Math.min(82,Math.round((Y.hsMockScore||42)+(Y.examPrepQuality||0)*0.6+(Y.hsStudyPlan==='elite'?3:0))));
+    ask({title:'17歳・高校3年：受験方式をもう一度選ぶ',text:`以前考えた方式にこだわる必要はない。模試の目安は偏差値${mock}。総合型選抜・指定校推薦・一般選抜のどれを軸にするか、今の経験や成績、準備時間を見て決め直そう。選んだ方式に合わせて、ここから具体的な入試の流れへ進む。`,opts:[
+      {t:'一般選抜に決める',sub:'共通テスト・個別試験・模試・併願校を軸にする',w:4,go(){Y.applicationStrategy=Y.eliteCourse?'elite-general':'general';Y.finalApplicationStrategy='general';Y.hsMockScore=mock;Y.examPrepQuality=(Y.examPrepQuality||0)+3;Y.todaiAspiration=!!(Y.todaiAspiration||Y.eliteCourse);L.know+=4;L.hp=Math.max(0,L.hp-1);say('第一志望だけに賭けるのではなく、出題傾向と受験日程を調べ、併願校も含めて計画を立てた。模試の判定は参考にしつつ、苦手分野を一つずつ埋めていく。受験勉強に集中する時間は増えるが、合格後に何を学びたいのかも忘れないようにした。','big')}},
+      {t:'総合型選抜に決める',sub:'経験から生まれた問い、探究の過程、伝える力を整理する',w:4,go(){Y.applicationStrategy='comprehensive';Y.finalApplicationStrategy='comprehensive';Y.hsResearchRecord=true;Y.portfolio=true;Y.studyLink=!!(Y.studyLink||Y.localVisits||Y.projectStarted);L.know+=3;L.action=(L.action||0)+1;say('経験を並べるだけではなく、そこで何に疑問を持ち、誰の話を聞き、何を変えようとしたのかを書き出した。地域活動をしていない場合も、学校生活や身近な課題から問いを探す。自分の言葉で説明できるよう、先生や仲間に話してみることにした。','big')}},
+      {t:'指定校推薦に決める',sub:'評定・校内選考・募集枠・入学後の学びを確認する',w:3,go(){Y.applicationStrategy='designated';Y.finalApplicationStrategy='designated';Y.designatedPrep=true;L.know+=2;L.hp+=1;say('担任に評定と指定校推薦の募集枠、校内選考の条件を確認した。推薦は「楽な道」と決めつけず、日々の授業や提出物を積み重ねる必要がある。進学先の授業や校風も調べ、自分がそこで何をしたいかを考えることにした。','big')}},
+      {t:'エリートコースを続け、難関大一本に集中する',sub:'高い目標を追う一方、視野が狭くなっていないかも振り返る',w:3,go(){Y.eliteCourse=true;Y.todaiAspiration=true;Y.applicationStrategy='elite-general';Y.finalApplicationStrategy='general';Y.hsMockScore=Math.min(85,mock+3);Y.examPrepQuality=(Y.examPrepQuality||0)+5;L.know+=5;L.hp=Math.max(0,L.hp-3);L.rel=Math.max(0,L.rel-1);say('難関大を目指して、勉強時間をさらに増やした。模試の数字は伸びていくが、友人や地域の人と過ごす時間は少なくなる。努力すること自体が悪いわけではない。けれど、何のために学び、学んだことをどこで使うのかは、合格したあとも自分で問い続ける必要がある。','big')}}
+    ]});return;
+  }
+
+
+  if(a>=18&&a<=21&&y>=2000&&!["大学","専門"].includes(L.edu)&&(!Y.universityPath||Y.todaiRetryPending||Y.finalApplicationStrategy==="general")&&!L.used.has(`y7:university-path:${a}`)){
     const retry=!!Y.todaiRetryPending;
     L.used.add(`y7:university-path:${a}`);
     if(retry){
       const years=Y.roninYears||1;
-      const base=SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0));
+      const base=SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0)+(Y.hsMockScore?(Y.hsMockScore-50)*0.22:0)+(Y.examPrepQuality||0)+(Y.applicationStrategy==='elite-general'?3:0));
       const prob=Math.min(95,base+years*5);
       ask({title:`${a}歳：浪人${years}年目、東大にもう一度挑む？`,text:`第一志望に届かなかった経験を振り返り、勉強の仕方を変えて再挑戦する。ゲーム内の合格見込みは約${Math.round(prob)}%。浪人を1年重ねるごとに、合格率を5ポイントずつ加算する設定です（実際の入試合格率を示すものではありません）。`,opts:[
-        {t:'東大をもう一度受験する',sub:`合格見込み 約${Math.round(prob)}%（浪人${years}年分の加算を反映）`,w:3,go(){Y.universityPath='todai';Y.todaiRetryPending=false;if(R()*100<prob){L.edu='大学';L.school='東京大学の学生';L.todai=true;L.u0=a;L.know+=8;Y.todaiRoute=true;say('浪人して勉強の仕方を見直し、東京大学に合格した。遠回りした時間も、ただの空白ではなかった。ここから何を学び、何に使うかは自分でつくっていく。','big')}else{L.hp-=4;Y.todaiFailedAgain=true;say('もう一度挑戦したが、東京大学には届かなかった。続けるか、別の環境で学ぶか。受験以外にも未来はある。','big');ask({title:'次の一年をどうする？',text:'東大を目指してさらに浪人するか、東京都市大学など別の環境で学び始めるか。費用や心身の負担も考えて決める。',opts:[
-          {t:'もう1年、東大を目指す',sub:'費用と負担を見積もり、勉強方法を変えて再挑戦',w:2,go(){Y.roninYears=(Y.roninYears||0)+1;Y.todaiRetryPending=true;Y.universityPath='todai';L.school='浪人生';L.retry=true;L.know+=4;L.hp-=2;if(L.parentMoney<100)L.savings-=100;say(`浪人${Y.roninYears}年目に入る。次の受験では、ゲーム内の合格率にさらに5ポイントが加わる。`,'big')}},
+        {t:'東大をもう一度受験する',sub:`合格見込み 約${Math.round(prob)}%（浪人${years}年分の加算を反映）`,w:3,go(){Y.universityPath='todai';Y.todaiRetryPending=false;L.retry=false;if(R()*100<prob){L.edu='大学';L.school='東京大学の学生';L.todai=true;L.u0=a;L.know+=8;Y.todaiRoute=true;say('浪人して勉強の仕方を見直し、東京大学に合格した。遠回りした時間も、ただの空白ではなかった。ここから何を学び、何に使うかは自分でつくっていく。','big')}else{L.hp-=4;Y.todaiFailedAgain=true;say('もう一度挑戦したが、東京大学には届かなかった。続けるか、別の環境で学ぶか。受験以外にも未来はある。','big');ask({title:'次の一年をどうする？',text:'東大を目指してさらに浪人するか、東京都市大学など別の環境で学び始めるか。費用や心身の負担も考えて決める。',opts:[
+          {t:'もう1年、東大を目指す',sub:'費用と負担を見積もり、勉強方法を変えて再挑戦',w:2,go(){Y.roninYears=(Y.roninYears||0)+1;Y.todaiRetryPending=true;Y.universityPath='todai';L.school='浪人生';L.retry=true;dropQueued(/高校を卒業する|就職活動|働き始める/);L.know+=4;L.hp-=2;if(L.parentMoney<100)L.savings-=100;say(`浪人${Y.roninYears}年目に入る。次の受験では、ゲーム内の合格率にさらに5ポイントが加わる。`,'big')}},
           {t:'東京都市大学へ進み、別の場所で学ぶ',sub:'受験だけを続けず、大学での学びを始める',w:3,go(){Y.todaiRetryPending=false;Y.universityPath='safety-tokyo-city';L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=3;L.hp+=2;say('東京都市大学へ進むことにした。受験の結果だけで自分の可能性を決めず、大学で人と出会い、学びたいことを探していく。','big')}}
         ]})}}},
         {t:'東京都市大学へ進む',sub:'浪人を続けず、大学での学びを始める',w:3,go(){Y.todaiRetryPending=false;Y.universityPath='safety-tokyo-city';L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=3;L.hp+=2;say('浪人を続けず、東京都市大学へ進むことにした。受験の結果だけで自分の可能性を決めず、大学で人と出会い、学びたいことを探していく。','big')}}
       ]});return;
     }
+    // 高3で一般選抜を選んだ場合は、大学名を選ぶだけで終わらず、共通テスト→出願→個別試験→受験番号での合格発表の順に進む。
+    if(Y.finalApplicationStrategy==='general'){
+      const mock=Math.max(28,Math.min(85,Math.round((Y.hsMockScore||42)+(Y.examPrepQuality||0)*0.45)));
+      ask({title:`${a}歳：一般選抜・共通テストの自己採点`,text:`模試の目安は偏差値${mock}。本番の共通テストでは、科目ごとの得点と合計点を確認する。ゲーム内の得点は学習状況をもとにした演出で、実際の大学の配点・合格可能性を示すものではない。自己採点を見て、出願先をどうする？`,opts:[
+        {t:'第一志望の東京大学に出願し、個別試験に挑む',sub:'共通テストだけでなく、二次試験の科目別対策も続ける',w:4,go(){
+          const common=Math.max(320,Math.min(900,Math.round(500+(mock-50)*7+(Y.examPrepQuality||0)*2+(R()*90-45))));
+          const english=Math.max(20,Math.min(120,Math.round(70+(mock-50)*1.2+R()*24-12)));
+          const math=Math.max(20,Math.min(120,Math.round(65+(mock-50)*1.35+R()*26-13)));
+          const japanese=Math.max(20,Math.min(80,Math.round(45+(mock-50)*0.8+R()*18-9)));
+          const science=Math.max(20,Math.min(120,Math.round(62+(mock-50)*1.1+R()*24-12)));
+          const total=common+english+math+japanese+science;
+          const minimum=800+Math.round((R()*18)-9);
+          const passed=total>=minimum;
+          Y.generalExamRecord={common,english,math,japanese,science,total,minimum,passed,mock};
+          Y.universityPath='todai';Y.todaiAttempted=true;Y.generalExamStage='result';
+          say(`共通テストの自己採点を確認し、東京大学に出願した。個別試験では英語・数学・国語・理科の答案に向き合う。結果だけでなく、どの科目で点を取れたかも後から振り返れるように記録した。`,'big');
+          const r=Y.generalExamRecord;
+          askFirst({title:'東京大学・一般選抜 合格発表',text:'掲示板には受験番号が並んでいる。自分の番号はあるだろうか。数字が順番に現れ、自分の番号に近づくほど時間が長くなる。',cinematicExam:'board',examData:r,opts:[
+            {t:'合否結果を受けて、次の進路へ',sub:'合格なら大学での学びへ。不合格なら再挑戦か別の大学かを考える',w:4,go(){
+              askFirst({title:'一般選抜の結果を受けて、次はどうする？',text:r.passed?'合格した。受験はゴールではなく、大学で何を学び、誰と何をつくるかの始まりだ。':'第一志望には届かなかった。悔しさを抱えたまま、もう一年挑戦するか、別の大学で学び始めるかを選ぼう。',opts:[
+                ...(r.passed?[{t:'東京大学で学び始める',sub:'合否を受け止め、大学での問いと出会いへ',w:4,go(){L.edu='大学';L.school='東京大学の学生';L.todai=true;L.u0=a;L.know+=8;Y.todaiRoute=true;Y.generalExamStage='admitted';say('東京大学で学び始める。受験は終わりではなく、ここから何を学び、何を問い、誰と何をつくるかが始まる。','big')}}]:[
+                  {t:'浪人して再挑戦する',sub:'結果を受け止め、勉強の仕方を組み直す',w:3,go(){Y.roninYears=1;Y.todaiRetryPending=true;Y.universityPath='';Y.generalExamStage='retry';L.school='浪人生';L.retry=true;dropQueued(/高校を卒業する|就職活動|働き始める/);L.know+=3;L.hp=Math.max(0,L.hp-3);say('もう一年挑戦することにした。点数の開示に頼るのではなく、試験後の手応えや模試、間違えた問題を振り返り、学習計画を組み直す。浪人中は次の受験に向けた一年を過ごす。','big')}},
+                  {t:'東京都市大学など、別の大学で学び始める',sub:'受験結果だけで将来を決めず、学びたい内容から選び直す',w:3,go(){Y.universityPath='safety-tokyo-city';L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=3;L.hp+=2;Y.generalExamStage='alternate';say('東京大学には届かなかったが、東京都市大学で学び始めることにした。大学名だけで可能性を決めず、授業や地域での体験、人との出会いから、自分の問いを育てていく。','big')}}
+                ])
+              ]});
+            }}
+          ]});
+        }}
+      ]});return;
+    }
     Y.universityPath='pending';
-    ask({title:`${a}歳：高校卒業後、どこへ進む？`,text:'入試方式によって、出会える環境も準備することも違う。一般選抜で東京大学を目指す、総合型選抜で東京都市大学に挑戦する、指定校推薦で関東学院大学を目指す。学力や活動だけでなく、費用や大学との相性も調べて選ぶ。',opts:[
-      {t:'一般選抜で東京大学を受験する',sub:`知識を積み重ねて挑戦する。合格見込み 約${Math.round(SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0)))}%`,w:Y.todaiAspiration||Y.sapix?4:2,go(){const prob=SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0));Y.universityPath='todai';Y.todaiAttempted=true;if(R()*100<prob){L.edu='大学';L.school='東京大学の学生';L.todai=true;L.u0=a;L.know+=8;Y.todaiRoute=true;say('一般選抜で東京大学に合格した。積み重ねた勉強が結果につながった。ここからは、大学で何を問い、誰と何をつくるかが始まる。','big')}else{L.hp-=5;Y.universityFailed=true;Y.todaiRetryPending=false;say('東京大学の一般選抜では合格に届かなかった。ここで道が終わるわけではない。浪人して再挑戦するか、別の大学で学び始めるかを考える。','big');ask({title:'東大に届かなかった。次はどうする？',text:'もう一年、学び方を見直して挑戦することも、東京都市大学へ進むこともできる。',opts:[
-          {t:'1年浪人して、東大に再挑戦する',sub:'浪人1年目。次の合格率には5ポイントが加わる',w:2,go(){Y.roninYears=1;Y.todaiRetryPending=true;L.school='浪人生';L.retry=true;L.know+=4;if(L.parentMoney<100)L.savings-=100;say('浪人してもう一年挑戦する。模試の結果だけでなく、勉強方法や生活のリズムも見直す。次回はゲーム内の合格率に5ポイントが加わる。','big')}},
+    ask({title:`${a}歳：高校卒業後、どこへ進む？`,text:'高3で決めた受験方式をもとに進路へ進む。総合型選抜なら探究や経験を伝える準備、指定校推薦なら評定・校内選考、一般選抜なら共通テストと個別試験の流れが待っている。',opts:[
+      {t:'一般選抜で東京大学を受験する',sub:`知識を積み重ねて挑戦する。合格見込み 約${Math.round(SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0)+(Y.hsMockScore?(Y.hsMockScore-50)*0.22:0)+(Y.examPrepQuality||0)+(Y.applicationStrategy==='elite-general'?3:0)))}%`,w:Y.todaiAspiration||Y.sapix?4:2,go(){const prob=SUCC(12+(L.know-45)*0.55+(Y.todaiAspiration?12:0)+(Y.sapix?8:0)+(Y.hsMockScore?(Y.hsMockScore-50)*0.22:0)+(Y.examPrepQuality||0)+(Y.applicationStrategy==='elite-general'?3:0));Y.universityPath='todai';Y.todaiAttempted=true;if(R()*100<prob){L.edu='大学';L.school='東京大学の学生';L.todai=true;L.u0=a;L.know+=8;Y.todaiRoute=true;say('一般選抜で東京大学に合格した。積み重ねた勉強が結果につながった。ここからは、大学で何を問い、誰と何をつくるかが始まる。','big')}else{L.hp-=5;Y.universityFailed=true;Y.todaiRetryPending=false;say('東京大学の一般選抜では合格に届かなかった。ここで道が終わるわけではない。浪人して再挑戦するか、別の大学で学び始めるかを考える。','big');ask({title:'東大に届かなかった。次はどうする？',text:'もう一年、学び方を見直して挑戦することも、東京都市大学へ進むこともできる。',opts:[
+          {t:'1年浪人して、東大に再挑戦する',sub:'浪人1年目。次の合格率には5ポイントが加わる',w:2,go(){Y.roninYears=1;Y.todaiRetryPending=true;L.school='浪人生';L.retry=true;dropQueued(/高校を卒業する|就職活動|働き始める/);L.know+=4;if(L.parentMoney<100)L.savings-=100;say('浪人してもう一年挑戦する。模試の結果だけでなく、勉強方法や生活のリズムも見直す。次回はゲーム内の合格率に5ポイントが加わる。','big')}},
           {t:'東京都市大学へ進む',sub:'別の大学で学び、問いを深める',w:3,go(){Y.universityPath='safety-tokyo-city';L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=3;L.hp+=2;say('東京都市大学へ進むことにした。違う環境で出会う人や授業から、自分の問いを育てていく。','big')}}
         ]})}}},
-      {t:'総合型選抜で東京都市大学に挑戦する',sub:'地域活動や探究、考えの変化を自分の言葉で伝える',w:(Y.portfolio||Y.studyLink||Y.projectStarted)?4:2,go(){Y.universityPath='tokyo-city-comprehensive';const prep=(Y.portfolio?12:0)+(Y.studyLink?10:0)+(Y.projectStarted?8:0)+(Y.localVisits||0)*2;const prob=SUCC(35+prep+(L.rel-50)*0.12);if(R()*100<prob){L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=4;L.rel+=2;say('総合型選抜で東京都市大学に合格した。何を経験したかだけでなく、そこからどんな問いが生まれたかを伝えた。大学での学びが、地域での経験とつながっていく。','big')}else{L.hp-=3;Y.universityFailed=true;say('総合型選抜では合格に届かなかった。経験をしたことと、それを相手に伝えることは別の力だと気づき、別の道も考える。','big');ask({title:'次の進路を考える',text:'指定校推薦の条件を確認する、一般選抜を受ける、専門学校や就職を選ぶなど、道はひとつではない。',opts:[
-          {t:'指定校推薦の条件を確認する',sub:'校内選考と評定、募集枠を調べる',w:2,go(){Y.universityPath='designated-check';Y.designatedRetry=true;say('高校の先生に指定校推薦の条件を確認することにした。枠や評定の条件は学校ごとに違うため、実際に確認する必要がある。')}} ,
-          {t:'一般選抜で東大に挑戦する',sub:'試験に向けて準備する',w:2,go(){Y.universityPath='todai';Y.todaiRetryPending=true;Y.roninYears=0;L.school='受験準備';say('一般選抜で東京大学を目指すことにした。必要な科目や合格までの距離を調べ、勉強計画を立てる。','big')}}
-        ]})}}},
-      {t:'指定校推薦で関東学院大学を目指す',sub:'評定・校内選考・募集枠の条件を確認する',w:2,go(){Y.universityPath='kanto-gakuin-designated';const prob=SUCC(48+(L.know-50)*0.35+(L.hp>35?8:0));if(R()*100<prob){L.edu='大学';L.school='関東学院大学の学生';L.u0=a;L.know+=2;L.rel+=2;say('指定校推薦で関東学院大学に進むことになった。学校生活の積み重ねと、校内選考の条件を確認した経験が残った。','big')}else{Y.designatedFailed=true;L.hp-=2;say('指定校推薦は校内選考や枠の条件が合わず、進学先は決まらなかった。一般選抜や別の進路を調べ直すことにした。','big')}}},
+      {t:'総合型選抜で東京都市大学に挑戦する',sub:'地域活動や探究、考えの変化を自分の言葉で伝える',w:(Y.portfolio||Y.studyLink||Y.projectStarted)?4:2,go(){Y.universityPath='tokyo-city-comprehensive-pending';const prep=(Y.portfolio?12:0)+(Y.studyLink?10:0)+(Y.projectStarted?8:0)+(Y.localVisits||0)*2+(Y.hsResearchRecord?8:0)+(Y.applicationStrategy==='comprehensive'?6:0);const prob=SUCC(35+prep+(L.rel-50)*0.12);const passed=R()*100<prob;const admission={passed,number:String(1000+Math.floor(Math.random()*9000)),school:'東京都市大学'};Y.comprehensiveExamRecord=admission;askFirst({title:'東京都市大学・総合型選抜 合格発表',text:'高校や地域での経験、そこから生まれた問いを伝えた。結果発表の日。合格者一覧の番号を、一つずつ確かめていく。',cinematicExam:'comprehensive',admissionData:admission,opts:[
+        {t:'合否結果を確認して、次へ進む',sub:'合格なら東京都市大学へ。不合格でも次の道を選べる',w:4,go(){if(admission.passed){Y.universityPath='tokyo-city-comprehensive';Y.aoResult='pass';L.edu='大学';L.school='東京都市大学の学生';L.u0=a;L.know+=4;L.rel+=2;L.action=(L.action||0)+1;say('総合型選抜で東京都市大学に合格した。経験の大きさだけでなく、そこで何に疑問を持ち、誰の話を聞き、考えがどう変わったかを伝えた。ここからは、大学での体験と地域での活動を往復させていく。','big')}else{Y.universityPath='';Y.aoResult='fail';Y.universityFailed=true;L.hp-=3;say('総合型選抜では合格に届かなかった。経験したことを伝える難しさも感じた。それでも、地域で出会った人や、現場で生まれた問いはなくならない。一般選抜や指定校推薦、別の進路も含めて考える。','big');ask({title:'総合型選抜の結果を受けて、次はどうする？',text:'今回の結果だけで、地域活動や探究の意味が決まるわけではない。自分の状況に合う次の道を選ぼう。',opts:[
+          {t:'一般選抜に切り替えて挑戦する',sub:'教科の学力を積み上げながら、現場の問いも持ち続ける',w:3,go(){Y.universityPath='';Y.finalApplicationStrategy='general';Y.todaiRetryPending=false;L.know+=2;say('一般選抜に向けて学習計画を立て直した。地域で生まれた問いを忘れるのではなく、教科で得る知識も、その問いを深く考えるために使っていく。','big')}} ,
+          {t:'指定校推薦の条件を確認する',sub:'評定・校内選考・募集枠を先生と確認する',w:2,go(){Y.universityPath='';Y.designatedRetry=true;Y.applicationStrategy='designated';Y.finalApplicationStrategy='designated';say('高校の先生に指定校推薦の条件を確認することにした。枠や評定の条件は学校ごとに違う。条件を確認し、自分が大学で何を学びたいかも改めて考える。','big')}} ,
+          {t:'今ある地域活動を続けながら、次の進路を調べる',sub:'合否で、出会いや活動をなかったことにしない',w:3,go(){Y.universityPath='';Y.localRoute=true;L.action+=1;L.rel+=1;say('今関わっている地域の人に、結果とこれからのことを話した。合格はしなかったけれど、活動で生まれた疑問や関係は残っている。学び方や進路を選び直しながら、無理のない形で関わりを続けることにした。','big')}}
+        ]})}}}
+      ]})}},
+      {t:'指定校推薦で関東学院大学を目指す',sub:'評定・校内選考・募集枠の条件を確認する',w:2,go(){Y.universityPath='kanto-gakuin-designated';const prob=SUCC(48+(L.know-50)*0.35+(L.hp>35?8:0)+(Y.designatedPrep?10:0)+(Y.applicationStrategy==='designated'?6:0));if(R()*100<prob){L.edu='大学';L.school='関東学院大学の学生';L.u0=a;L.know+=2;L.rel+=2;say('指定校推薦で関東学院大学に進むことになった。学校生活の積み重ねと、校内選考の条件を確認した経験が残った。','big')}else{Y.designatedFailed=true;Y.universityPath='';L.hp-=2;say('指定校推薦は校内選考や枠の条件が合わず、進学先は決まらなかった。進路がここで終わるわけではない。一般選抜や別の大学、専門学校などを次の選択肢として調べ直すことにした。','big')}}},
       {t:'専門学校・職業訓練で実践的に学ぶ',sub:'資格や技能を身につけ、現場に近い場所で学ぶ',w:2,go(){Y.universityPath='vocational';L.edu='専門';L.school='専門学校生';L.field=pick(['IT','看護','調理','保育','デザイン','自動車整備']);L.know+=3;L.action=(L.action||0)+1;say(`${L.field}を学べる専門学校へ進む。大学に行かない選択も、学びを終えることではない。現場で必要になった知識を学び続ける道を選んだ。`,'big')}},
       {t:'就職して、社会に出てから学ぶ',sub:'収入と現場経験を得る',w:2,go(){Y.universityPath='work';L.edu='高校';L.school='';L.action=(L.action||0)+2;L.rel+=2;say('就職して社会に出ることにした。目の前の仕事をこなしながら、現場で何が問題になっているのかを見つけ、必要になった知識を学び直していく。','big');jobAsk()}}
     ]});return;
@@ -2068,6 +2212,31 @@ function makerisaStory(a){
       {t:'誘いを見なかったことにして、勉強を続ける',sub:'短期的には進むが、世界が狭くなる可能性も',w:2,go(){Y.todaiHumanMoment='ignore';L.know+=3;L.rel-=2;L.happy-=1;say('目の前の課題は片づいた。しかし、数週間後に連絡を見返したとき、誰かと話す機会を自分から遠ざけていたことに気づいた。知識が増えることと、人生の実感が増えることは、いつも同じではない。','big')}}
     ]});return;
   }
+
+  // 2026-10-26：模試・学習方針・出願戦略を高校生活の一要素として扱い、地域での体験と並行して積み重ねる。
+  // 受験だけに閉じるエリートコースと、地域での経験を学びにつなぐ道の両方を用意。
+  if(a>=16&&a<=17&&y>=2000&&L.school&&!Y.hsExamFirst){
+    Y.hsExamFirst=true;
+    if(Y.highRoute==='ELITE_EXAM'){Y.eliteRouteTurn=true;L.used.add('y7:elite-route-turn');}
+    const baseMock=Math.max(28,Math.min(72,Math.round(42+(L.know-50)*0.22+(Y.sapix?5:0)+(Y.highRoute==='ELITE_EXAM'?5:0))));
+    ask({title:'16歳・高校2年：模試の結果を、どう使う？',text:`模試の偏差値は約${baseMock}。数字は今の位置を示すだけで、将来を決める判定ではない。ここから勉強の仕方を変えることも、学校の外で問いを見つけることもできる。どんな高校生活にする？`,opts:[
+      {t:'エリートコースへ進み、難関大学を本気で目指す',sub:'模試の分析・過去問・学習計画を回す。知識は伸びるが、時間の使い方も変わる',w:4,go(){Y.eliteCourse=true;Y.todaiAspiration=true;Y.hsStudyPlan='elite';Y.applicationStrategy='elite-general';Y.hsMockScore=Math.min(78,baseMock+7);Y.examPrepQuality=(Y.examPrepQuality||0)+5;L.know+=6;L.hp=Math.max(0,L.hp-3);say(`模試の間違いを分野ごとに分け、毎週の計画を立てた。${Y.hsMockScore}相当まで伸びた設定になり、難関大を狙う準備が進む。放課後は塾や自習室で過ごす時間が増えた。成績が伸びる手応えはある。一方で、地域の人や学校外の大人と話す機会は、自分からつくらないと減っていく。`,'big')}},
+      {t:'勉強と地域の探究を両立する',sub:'現場で生まれた疑問を、授業や調べ学習につなぐ',w:4,go(){Y.hsStudyPlan='balanced';Y.hsResearchRecord=true;Y.portfolio=true;Y.studyLink=true;Y.hsMockScore=baseMock+2;Y.examPrepQuality=(Y.examPrepQuality||0)+2;L.know+=3;L.action=(L.action||0)+2;L.rel+=3;L.happy+=1;say('勉強の時間を確保しながら、地域で気になったことを調べ、話を聞き、記録することにした。模試の数字は急には大きく変わらない。それでも、教科書の知識と現場の疑問がつながり、総合型選抜でも説明できる経験が少しずつ増えていく。','big')}},
+      {t:'進路を急いで決めず、先生に勉強の仕方を相談する',sub:'苦手科目・生活リズム・部活との両立を一緒に整理する',w:3,go(){Y.hsStudyPlan='review';Y.hsMockScore=baseMock;Y.examPrepQuality=(Y.examPrepQuality||0)+1;L.know+=2;L.hp+=2;say('先生と模試を見直し、苦手科目と生活リズムを整理した。難関大を目指すか、別の進路を考えるかは、まだ決めなくていい。今の自分に合う方法を試し、次の模試で変化を確かめることにした。','big')}}
+    ]});return;
+  }
+
+  // 2026-10-26：大学生活を入学直後だけで終わらせず、2年次以降の学び・友人・現場をつなぐ。
+  if(a>=20&&a<=23&&y>=2000&&L.edu==='大学'&&!Y.universityStudyCycle){
+    Y.universityStudyCycle=true;
+    ask({title:`${a}歳：大学2年目以降、何を自分の学びにする？`,text:'1年目の新鮮さが落ち着き、講義や課題にも慣れてきた。大学で得た知識を深めることも、学生同士で企画をつくることも、地域の現場へ持ち出すこともできる。何を選ぶかで、次に出会う人や問いが変わっていく。',opts:[
+      {t:'ゼミや講義で理論を深め、地域の課題を研究する',sub:'文献・データ・当事者の声を組み合わせて考える',w:4,go(){Y.universityStudyCycle='seminar';Y.studyLink=true;L.know+=4;L.action++;say('講義で学んだ理論を使い、地域で見聞きした課題を調べ始めた。数字だけでは分からない事情を知るため、関係者の話も聞く。勉強は試験のためだけでなく、現場を理解する道具にもなり得ると感じた。','big')}},
+      {t:'学生仲間と企画を立ち上げ、試して振り返る',sub:'うまくいかなかった理由も次の改善材料にする',w:4,go(){Y.universityStudyCycle='project';Y.projectStarted=true;Y.portfolio=true;L.action+=3;L.rel+=3;L.know+=2;say('学生仲間と小さな企画を始めた。準備不足で思ったように人が集まらない。参加者に話を聞き、やり方を変えてもう一度試すことにした。活動の成果だけでなく、失敗から何を学んだかも記録に残した。','big')}},
+      {t:'地域活動掲示板から、以前会った人の困りごとを手伝う',sub:'一度の体験を、継続する関係に変える',w:4,go(){Y.universityStudyCycle='community';Y.localBoard=true;Y.localRoute=true;Y.localVisits=(Y.localVisits||0)+1;L.action+=2;L.rel+=4;L.know+=2;say('掲示板で以前出会った人の募集を見つけ、連絡してみた。現場では、授業で習った方法がそのまま使えるとは限らない。相手の事情を聞き、一緒にやり方を考えることで、次に学びたいことが具体的になった。','big')}},
+      {t:'今は余白をつくり、友人や自分の生活を整える',sub:'休むことも、長く学び続けるための選択',w:3,go(){Y.universityStudyCycle='rest';L.hp+=3;L.happy+=2;say('活動を増やす前に、睡眠や生活リズム、友人と過ごす時間を整えることにした。大学生活は成果を出すだけの期間ではない。自分の調子を保つことも、これから何かを続けるための準備になる。','big')}}
+    ]});return;
+  }
+
   if(a===18&&y>=2000&&!Y.moneyBasics&&!L.used.has('y7:money-basics')){
     Y.moneyBasics=true;L.used.add('y7:money-basics');
     ask({title:'18歳：初めて自分のお金を管理する',text:'進学や就職で、使えるお金と自分で払う費用が変わる。奨学金は借りるお金で、卒業後に返済が必要なものもある。手取りは額面給与より少なく、家賃や食費を払った残りが生活を支える。何を優先する？',opts:[
@@ -3743,6 +3912,27 @@ function soumato(age){if(G.auto||matchMedia("(prefers-reduced-motion: reduce)").
 /* 更新情報 */
 const Y7_PREF_CASES=[{"pref": "北海道", "name": "東川町の写真文化と移住・交流", "desc": "写真文化を軸に町外の人と関係をつくる"}, {"pref": "青森県", "name": "田舎館村の田んぼアート", "desc": "農業と観光を結び、地域の風景を発信する"}, {"pref": "岩手県", "name": "紫波町オガールプロジェクト", "desc": "公共施設と民間事業を組み合わせて駅前を再生する"}, {"pref": "宮城県", "name": "東松島のブルーインパルス・震災復興交流", "desc": "復興の経験を伝え、交流や産業につなげる"}, {"pref": "秋田県", "name": "五城目町の住民主体の小さな拠点", "desc": "買い物や交流の場を住民が支える"}, {"pref": "山形県", "name": "川西町きらりよしじまネットワーク", "desc": "住民組織が地域課題を話し合い活動する"}, {"pref": "福島県", "name": "会津若松のスマートシティ", "desc": "データを使って暮らしや地域産業の課題を考える"}, {"pref": "茨城県", "name": "取手市の起業家タウン", "desc": "起業相談や人のつながりから事業を育てる"}, {"pref": "栃木県", "name": "那須地域の観光・農産物連携", "desc": "地域資源を商品や仕事につなげる"}, {"pref": "群馬県", "name": "上野村の森林資源活用", "desc": "木材や地域資源を使い仕事をつくる"}, {"pref": "埼玉県", "name": "小川町の有機農業と地域資源PR", "desc": "農産物と地域の魅力を伝え、販路を開く"}, {"pref": "千葉県", "name": "いすみ市の有機米給食", "desc": "農業と学校給食をつなぎ地域内の循環をつくる"}, {"pref": "東京都", "name": "立川のシーズ立川", "desc": "子育てと仕事を両立できる場を市民活動から事業化する"}, {"pref": "神奈川県", "name": "横浜の地域課題解決型市民活動", "desc": "行政・企業・市民が連携して課題に取り組む"}, {"pref": "新潟県", "name": "十日町の大地の芸術祭", "desc": "アートをきっかけに地域を歩き、人と出会う"}, {"pref": "富山県", "name": "氷見の魚食文化と地域ブランド", "desc": "地元の食材と担い手をつなぐ"}, {"pref": "石川県", "name": "能登の里山里海の地域活動", "desc": "自然や暮らしの知恵を次世代へつなぐ"}, {"pref": "福井県", "name": "鯖江市の市民協働・ものづくり", "desc": "眼鏡産業などの技術と若い担い手を結ぶ"}, {"pref": "山梨県", "name": "小菅村の源流・観光まちづくり", "desc": "自然環境を守りながら交流や仕事を生む"}, {"pref": "長野県", "name": "塩尻市のテレワーク・地域人材育成", "desc": "デジタル環境を使って働き方の選択肢を増やす"}, {"pref": "岐阜県", "name": "飛騨市の広葉樹活用", "desc": "使われにくい木材に価値を見出し商品化する"}, {"pref": "静岡県", "name": "浜松の中山間地域の小さな拠点", "desc": "移動・買い物・交流の困りごとに地域で向き合う"}, {"pref": "愛知県", "name": "豊田市の山村地域の仕事づくり", "desc": "都市と山村をつなぎ、地域資源の活用を試す"}, {"pref": "三重県", "name": "尾鷲の林業・地域資源活用", "desc": "森の手入れを仕事や地域の将来につなぐ"}, {"pref": "滋賀県", "name": "近江八幡の水辺・町並み保全", "desc": "観光と暮らしの両立を考える"}, {"pref": "京都府", "name": "南丹市美山のかやぶき集落保全", "desc": "景観と生活を守りながら来訪者を受け入れる"}, {"pref": "大阪府", "name": "大阪の商店街空き店舗活用", "desc": "小さな商いと交流の場を生む"}, {"pref": "兵庫県", "name": "豊岡のコウノトリと農業", "desc": "環境保全と農産物の価値をつなぐ"}, {"pref": "奈良県", "name": "川上村の森林と水源保全", "desc": "森を守る仕事と下流の暮らしを結ぶ"}, {"pref": "和歌山県", "name": "田辺・熊野古道の地域ガイド", "desc": "文化や自然を伝える仕事をつくる"}, {"pref": "鳥取県", "name": "智頭町の森のようちえん・森林資源", "desc": "子育てや森林を地域の価値として活かす"}, {"pref": "島根県", "name": "海士町の島留学と地域づくり", "desc": "外から来た若者と地域の人が一緒に学ぶ"}, {"pref": "岡山県", "name": "西粟倉村の百年の森林構想", "desc": "森林資源から小さな事業や雇用を生み出す"}, {"pref": "広島県", "name": "東広島・ファームおだ", "desc": "農業と地域活動を組み合わせ集落を支える"}, {"pref": "山口県", "name": "萩の町並み保存と観光", "desc": "地域の歴史を守り、訪れる人との接点をつくる"}, {"pref": "徳島県", "name": "上勝町の葉っぱビジネス", "desc": "身近な葉を商品にし、高齢者も担い手になる"}, {"pref": "香川県", "name": "東かがわ市五名の地域活動", "desc": "地域住民が資源を持ち寄り暮らしを支える"}, {"pref": "愛媛県", "name": "内子町の町並み保存と農産物直売", "desc": "景観や農産物を地域の仕事につなげる"}, {"pref": "高知県", "name": "梼原町の集落活動センター", "desc": "集落の困りごとを住民が協力して解決する"}, {"pref": "福岡県", "name": "那珂川の南畑ぼうぶら会議", "desc": "住民と外から来る人が地域の魅力を形にする"}, {"pref": "佐賀県", "name": "有田焼の産地継承と新商品づくり", "desc": "伝統技術を次の世代や新しい市場につなぐ"}, {"pref": "長崎県", "name": "五島の移住・島の仕事づくり", "desc": "島の暮らしと仕事を実際に体験して考える"}, {"pref": "熊本県", "name": "水俣の環境再生と地域づくり", "desc": "公害の経験から環境と産業のあり方を問い直す"}, {"pref": "大分県", "name": "豊後高田の昭和の町", "desc": "商店街の歴史や店主の物語をまち歩きにつなぐ"}, {"pref": "宮崎県", "name": "椎葉村の地域資源と小さな事業", "desc": "山村の資源から暮らしを支える仕事を考える"}, {"pref": "鹿児島県", "name": "三島村の焼酎蔵プロジェクト", "desc": "地域の産品を事業にし、地域内の仕事をつくる"}, {"pref": "沖縄県", "name": "久米島の海洋深層水活用", "desc": "島の自然資源を産業に活かす一方、持続可能性も考える"}];
 const NEWS=[
+  {v:26,d:"2026年10月26日",t:"総合型選抜にも合格発表の焦らし演出を追加。得点開示を削除し、高校・大学の地域体験を重視",g:[
+    ["入試演出",["一般選抜の得点開示をなくし、受験番号の合格発表から次の進路へ進む流れに変更。総合型選抜（東京都市大学）にも番号順の合格者一覧を追加し、自分の番号に近づくほどゆっくり、通過後は高速で表示します。"]],
+    ["ゲームの中心",["高校時代に地域のイベントや若者会議に関わり、出会いから疑問が生まれ、授業の学びや継続的な行動につながるイベントを追加。受験はゲームの中心ではなく、地域での体験と東京都市大学での学びをつなぐ一要素として整理しました。"]]
+  ]},
+  {v:25,d:"2026年10月26日",t:"受験演出が表示されない条件を修正",g:[
+    ["演出の表示条件",["自動進行中でも合格発表の演出を飛ばさないようにしました。高校生の状態でも大学受験イベントに進めるよう、進路イベントの条件を修正しました。"]],
+    ["合格発表の結果データ",["合否の記録を合格発表の演出に正しく渡すように修正しました。"]]
+  ]},
+  {v:24,d:"2026年10月26日",t:"浪人中の誤った就職イベントを抑止し、合格発表を段階的な演出に",g:[
+    ["浪人ルート",["Y7の一般選抜で浪人を選んだ場合、旧来の一律の浪人イベントから就職へ流れないように修正しました。次の受験年まで浪人状態を維持します。"]],
+    ["合格発表の演出",["受験番号の掲示板を一度に結果表示せず、番号が順番に現れてから合否が分かるようにしました。スキップも可能です。"]]
+  ]},
+  {v:23,d:"2026年10月26日",t:"受験方式を早期に仮選択し、高3で再選択。一般選抜は試験から得点開示まで進む仕組みに",g:[
+    ["高校での受験方式選び",["15〜16歳で総合型選抜・指定校推薦・一般選抜をいったん候補にし、高3で今の成績や経験に合わせて選び直す流れを追加しました。"]],
+    ["一般選抜の流れ",["一般選抜を選んだ場合は、共通テストの自己採点、出願、個別試験、受験番号での合格発表、得点開示へ進みます。得点開示では科目別得点・総合点・ゲーム内の合格最低点目安を確認できます。表示得点と最低点はゲーム内の架空値で、実際の大学の配点・合格可能性を示すものではありません。"]]
+  ]},
+  {v:22,d:"2026年10月26日",t:"高校の受験戦略・エリートコース・大学での継続的な学びを拡充",g:[
+    ["高校生活を、受験の準備過程として追加",["16歳で模試の結果を見て、難関大を目指すエリートコース、勉強と地域探究を両立する道、先生に勉強方法を相談する道を選べるようにしました。","17歳では、一般選抜を軸に併願校を考える、総合型選抜に向けて経験から生まれた問いを整理する、指定校推薦の評定・校内選考・募集枠を確認する、難関大に集中する選択を追加しました。","高校時代の模試や学習計画、探究の記録、推薦準備が、大学入試のゲーム内合格見込みに反映されます。数値はゲーム内の仕組みであり、実際の合格率を予測するものではありません。"]],
+    ["大学生活を入学後も続く物語に",["大学2年目以降に、ゼミ・研究、学生仲間との企画、地域活動掲示板を通じた継続参加、生活を整える選択を追加。経験→問い→大学の知識→現場での実践が循環するようにしました。"]]
+  ]},
+
   {v:21,d:"2026年10月26日",t:"大学で地域に入りづらい現実と、そこからの再接続ストーリーを追加",g:[
     ["環境が行動を左右する大学生活の継続イベント",["東京都市大学のフレキャンでなじめなかった場合、あとから学生の誘いや地域の人との再接点が生まれる展開を追加。大きな決意を求めず、30分だけ話を聞く・詳しい話を聞く・今回は見送るなど、小さな選択を用意しました。","関東学院大学の地域創生ルートでは、周囲に流されて活動から離れたあと、地域の人の募集投稿を見かける展開を追加。一日だけ手伝う、同じ関心を持つ人を探す、投稿を保存する、という再接続の仕方を選べます。","東京大学ルートでは、勉強に集中して人との関係が細くなったあと、地域で出会った人から若者の意見を求められる展開を追加。地域へ行く、今回は断って次の接点を残す、誘いを見送る選択によって、その後の関係や行動が変わります。"]],
     ["描き方の方針",["大学名や学生全体を一括りに評価するのではなく、周囲の空気・時間の使い方・誘ってくれる人の存在・本人の小さな行動によって、地域に関わりやすくも、離れやすくもなるストーリーにしました。"]]
